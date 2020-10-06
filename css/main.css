@@ -7,23 +7,22 @@ html, body {
 #gameContainer {
  
 }
-
-.outer {
-
-  display: table;
-  position: absolute;
-  top: -20%;
-  left: 0;
-  height: 100%;
-  width: 100%;
+.row {
+  display:flex;
+  height:100%;
 }
 
-.middle {
-
-  display: table-cell;
-  vertical-align: middle;
+.column {
+  flex:33.3%
 }
 
+.left {
+  background-color: black;
+}
+
+.right {
+  background-color: black;
+}
 .inner {
   margin-left: auto;
   margin-right: auto;
