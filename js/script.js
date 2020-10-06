@@ -50,7 +50,7 @@ heart.addEventListener("click", ()=> {
    count(number)
 })
 
-let decayTick = 500
+let decayTick = 200
 
 setInterval(()=>{
 if(counter > 0) count(-1)

@@ -5,11 +5,11 @@ html, body {
   }
 
 #gameContainer {
-  background-color: aqua;
+ 
 }
 
 .outer {
-  background-color:red;
+
   display: table;
   position: absolute;
   top: -20%;
@@ -19,7 +19,7 @@ html, body {
 }
 
 .middle {
-  background-color: blue;
+
   display: table-cell;
   vertical-align: middle;
 }
