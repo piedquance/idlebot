@@ -18,38 +18,46 @@ html, body {
 
 .left {
   max-width: 400px;
-  background-color: #b2b2b2;
-  background-image: url(images/pane.png);
-  background-repeat: no-repeat;
-  background-position:center;
-  background-size: 100% 100%;
+  background-color: #000;
 }
 .right {
   max-width: 400px;
-  background-color: #b2b2b2;
-  background-image: url(images/pane.png);
-  background-repeat: no-repeat;
-  background-position:center;
-  background-size: 100% 100%;
+   background-color: #000;
 }
 #topPane {
-  background-color: #b2b2b2;
-  background-image: url(images/toppane.png);
-  background-repeat: no-repeat;
-  background-position:center;
-  background-size: 100% 100%;
+  background-color: #000;
   height:100px;
+  border-radius: 0 0 20px 20px;
+  border-width: 10px;
 }
 
 #message {
+
   font-family: 'Courier New', Courier, monospace;
-  font-size: 0.9vw;
+  font-size: 13px;
   color:#fff;
   text-align: left;
   margin:0;
   padding:10px;
-  margin-left:100px;
+  margin-left:70px;
+  overflow-y: hidden;
+  height:70px;
 }
+
+.upgrade {
+  background-image: url(images/option.png);
+  background-repeat: no-repeat;
+  background-position:center;
+  background-size: 100% 100%;
+}
+
+.upgradeDesc {
+  padding-left: 20px;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 13px;
+  color:#fff;
+}
+
 .inner {
   margin-left: auto;
   margin-right: auto;

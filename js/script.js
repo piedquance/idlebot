@@ -18,6 +18,12 @@ var number = 1;
 var d = document;
 var heart = d.getElementById("heart");
 var counterText = d.getElementById("counter");
+var message = d.getElementById("message");
+var title = d.querySelector("title")
+
+var messageChecker = new Array(1000);
+messageChecker.fill(false);
+
 
 function count(number) {
     counter += number;
@@ -50,8 +56,38 @@ heart.addEventListener("click", ()=> {
    count(number)
 })
 
+function checkMessage(text, check) {
+    if(check === false) {
+        message.innerHTML += text;
+        console.log(check);
+         return true;
+    }
+}
+
+
+
+
 let decayTick = 200
+let tick = 10;
+let frame = 0;
 
 setInterval(()=>{
 if(counter > 0) count(-1)
 }, decayTick)
+
+setInterval(()=>{
+frame++
+
+switch (counter) {
+    case 10:
+    messageChecker[0] = checkMessage("Energy received", messageChecker[0]);
+    break;
+    case 20:
+    messageChecker[0] = checkMessage("Energy received", messageChecker[0]);
+
+    default:break;
+}
+
+message.scrollTop = message.scrollHeight;
+title.innerHTML = counter + " - IdleBot"
+}, tick)
