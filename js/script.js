@@ -20,6 +20,13 @@ var heart = d.getElementById("heart");
 var counterText = d.getElementById("counter");
 var message = d.getElementById("message");
 var title = d.querySelector("title")
+var leftPane = d.getElementById("left")
+var bloodUpgrade = d.getElementById("bloodUpgrade")
+let data = {
+
+
+}
+
 
 var messageChecker = new Array(1000);
 messageChecker.fill(false);
@@ -64,7 +71,9 @@ function checkMessage(text, check) {
     }
 }
 
+function addUpgrade() {}
 
+function updateData() {}
 
 
 let decayTick = 200

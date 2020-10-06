@@ -2,6 +2,8 @@ html, body {
   margin: 0;
   height: 100%;
   overflow: hidden;
+  font-family: 'Courier New', Courier, monospace;
+  user-select: none;
   }
 
 #gameContainer {
@@ -39,24 +41,52 @@ html, body {
   text-align: left;
   margin:0;
   padding:10px;
-  margin-left:70px;
+  margin-left:20px;
   overflow-y: hidden;
   height:70px;
 }
 
 .upgrade {
-  background-image: url(images/option.png);
+  background-image: url(images/pane.png);
+  height:122px;
   background-repeat: no-repeat;
   background-position:center;
   background-size: 100% 100%;
 }
 
-.upgradeDesc {
-  padding-left: 20px;
-  font-family: 'Courier New', Courier, monospace;
-  font-size: 13px;
-  color:#fff;
+.upgrade:hover {
+  background-image: url(images/panehover.png);
 }
+
+.upgrade:active {
+  animation-name:upgradeClick;
+  animation-duration:0.1s;
+}
+
+.upgradeDesc, .upgradeCost {
+  padding-left: 25px;
+  font-weight: 1000;
+  font-size: 13px;
+  color:#222;
+  margin:0;
+  width:210px;
+}
+.upgradeName {
+  padding-left: 20px;
+  font-size: 20px;
+  font-weight: 1000;
+  padding-top:20px;
+  margin:0;
+}
+
+.upgradeNum {
+  position:relative;
+  top:-95px;
+  padding-left:270px;
+  font-size: 50px;
+  font-weight: 1000;
+}
+
 
 .inner {
   margin-left: auto;
@@ -101,11 +131,9 @@ html, body {
   background-size: auto;
   padding: 15px;
   text-align: center;
-  font-family: 'Courier New', Courier, monospace;
   font-size: 30px;
   font-weight: bold;
   margin:0;
-  user-select: none;
 }
 
 
@@ -118,4 +146,9 @@ html, body {
   0% { transform:scale(1);}
   30% { transform:scale(0.90);}
   100% {transform:scale(1);}
+}
+
+@keyframes upgradeClick {
+  0%  {  background-image: url(images/pane.png);}
+  100% {  background-image: url(images/panehover.png);}
 }
