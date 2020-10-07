@@ -39,21 +39,26 @@ function count(number) {
     countNum[1] = Math.floor((counter - countNum[2]*1000000)/1000);
     countNum[0] = Math.floor((counter - countNum[2]*1000000 - countNum[1]*1000));
     var space = " "
-
+    var specialSpace = ""
     for(let x = 2; x >= 0; x--) {
-        if(x === 0) {
+        if(x == 0) {
             space = " "
         } else space = " "
 
-        if(countNum[x].toString().length === 2){ StringCounter += space + "0 "
+        if(counter >= 10000 && x == 0) {
+            specialSpace=" "
+            console.log("aaa")
+        } else specialSpace= ""
+
+        if(countNum[x].toString().length === 2){ StringCounter += specialSpace + space + "0 "
             StringCounter += countNum[x].toString()[0] + "‎‎‎ " + countNum[x].toString()[1] 
     }
-        else if(countNum[x].toString().length === 1 && countNum[x].toString() !== "0"){ StringCounter += space + "0 0 "
+        else if(countNum[x].toString().length === 1 && countNum[x].toString() !== "0"){ StringCounter += specialSpace + space + "0 0 "
             StringCounter += countNum[x].toString()[0] + "‎‎‎ "
     }
-        else if(countNum[x].toString() === "0") {StringCounter += space + "0 0 0 "
+        else if(countNum[x].toString() === "0") {StringCounter += specialSpace + space + "0 0 0 "
 
-    } else if(countNum[x].toString().length === 3)  StringCounter += space + countNum[x].toString()[0] + "‎‎‎ " + countNum[x].toString()[1] + " " + countNum[x].toString()[2]
+    } else if(countNum[x].toString().length === 3)  StringCounter += specialSpace + space + countNum[x].toString()[0] + "‎‎‎ " + countNum[x].toString()[1] + " " + countNum[x].toString()[2]
 }
 
     counterText.innerHTML = StringCounter;
