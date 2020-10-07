@@ -38,8 +38,8 @@ var messagePresets = [
 
 //cost, increase rate, number of, reference, description, tick, data position, decay rate
 var upgradePresets = [
-    [10, 5, 0, "Blood Valve", "valve", "Pumps blood every 1 s<br>Decays every 5 s", 1000, 0, 5],
-    [20, 10, 0, "Blood Pipe", "pipe", "Pipes blood every 0.5 s<br>Decays every 10 s", 500, 1, 10],
+    [10, 5, 0, "Blood Valve", "valve", "Pumps blood every 1 s<br>Decays every 10 s", 1000, 0, 10],
+    [20, 10, 0, "Blood Pipe", "pipe", "Pipes blood every 0.5 s<br>Decays every 20 s", 500, 1, 20],
 ]
 
 
@@ -360,9 +360,10 @@ load.addEventListener("click", ()=>{ LOAD() })
 clear.addEventListener("click", ()=>{ CLEAR() })
 
 //////
-
+let pipeCount = 0;
 heart.addEventListener("click", ()=> {
-    count(number)
+
+    pipeCount++
     // heart.style = "  animation-name: click;animation-duration: 0.1s;"
     // setTimeout(()=>{ heart.style="" },100)
  })
@@ -379,6 +380,9 @@ if(data.counter > 0) count(-1)
 }, decayTick)
 
 setInterval(()=>{
+
+    count(pipeCount)
+    pipeCount = 0
 
 if(autosavetoggle) SAVE()
     
