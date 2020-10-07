@@ -227,7 +227,11 @@ function LOAD() {
 
     data.counter = localStorage.counter - 0;
     
-    data.upgrade = JSON.parse(localStorage.upgrade)
+    try {
+        data.upgrade = JSON.parse(localStorage.upgrade)
+    } catch (error) {
+        
+    } 
 
     data.messageChecker = JSON.parse(localStorage.messageChecker)
 
@@ -249,7 +253,7 @@ for(n in decayIntervals) clearInterval(decayIntervals.n)
 
 
     for(let n = 0; n < data.upgrade.length;n++) {
-        if(data.upgrade[n] !== null) {
+        if(data.upgrade[n] !== null && data.upgrade[n] !== undefined) {
         if(typeof data.upgrade[n][0] === "number") {
 
             var node = d.createElement("DIV");
@@ -281,10 +285,14 @@ for(n in decayIntervals) clearInterval(decayIntervals.n)
             }
             })
 
-            intervals[n] = setInterval(() => { count(data.upgrade[n][0]) }, data.upgrade[n][10]);
+            intervals[n] = setInterval(() => { 
+                
+              if(data.upgrade[n] !== undefined && data.upgrade[n] !== null)  count(data.upgrade[n][0]) 
+            
+            }, data.upgrade[n][10]);
 
             decayIntervals[n] = setInterval(()=>{
-                if(data.upgrade[n] !== null) {
+                if(data.upgrade[n] !== null && data.upgrade[n] !== undefined) {
                 if( data.upgrade[n][2] > 0) {
                 data.upgrade[n][2]--
                 data.upgrade[n][0]--
@@ -300,24 +308,34 @@ for(n in decayIntervals) clearInterval(decayIntervals.n)
 function CLEAR() {
 
 localStorage.setItem("counter", 0)
-localStorage.setItem("upgrade", new Array(100))
-for(x in localStorage.upgrade) x = new Array(20)
+localStorage.setItem("upgrade", JSON.stringify(new Array(100)))
+//for(x in localStorage.upgrade) x = new Array(20)
 
-localStorage.upgrade = new Array(100)
+localStorage.upgrade = JSON.stringify(new Array(100))
+
+
+
 
 data.counter = 0;
 data.upgrade = new Array(100)
 data.upgradeInstance = new Array(100)
+data.upgradeInstance.fill(false)
 
 for(n in data.upgrade) n = new Array(100)
 
 data.messageChecker= new Array(1000)
+data.messageChecker.fill(false)
 
+data.upgradeInstances
 
 leftPane.innerHTML = ""
 newmessages.innerHTML = ""
 counterText.innerHTML = "0 0 0 0 0 0  0 0 0"
-LOAD()
+//LOAD()
+// leftPane.innerHTML = ""
+// newmessages.innerHTML = ""
+// counterText.innerHTML = "0 0 0 0 0 0  0 0 0"
+// console.log(data.messageChecker)
 }
 
 //////
