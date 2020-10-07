@@ -29,15 +29,15 @@ var exportS = d.getElementById("export")
 var intervals = []
 var decayIntervals = []
 var messagePresets = [
-    "Energy received x10 - Blood Valve acquired",
-    "Energy received x20 - Blood Pipe acquired",
+    "Energy received x10",
+    "Energy received x20",
     "Energy received x100 - Imcoming transmission..."
 ]
 
 //cost, increase rate, number of, reference, description, tick, data position, decay rate
 var upgradePresets = [
-    [10, 5, 0, "Blood Valve", "valve", "Pumps blood every 1 s<br>Decays every 10 s", 1000, 0, 10],
-    [20, 10, 0, "Blood Pipe", "pipe", "Pipes blood every 0.5 s<br>Decays every 20 s", 500, 1, 20],
+    [10, 5, 0, "Blood Valve", "valve", "Pumps blood every 1 s<br>Decays every 10 s", 10, 0, 10],
+    [20, 7, 0, "Blood Pipe", "pipe", "Pipes blood every 0.5 s<br>Decays every 20 s", 5, 1, 20],
 ]
 
 
@@ -151,7 +151,7 @@ function addUpgrade(preset) {
     intervals[dataPosition] = setInterval(()=>{
         if(data.upgrade[preset[7]] !== null && data.upgrade[preset[7]] !== undefined) {
         count(data.upgrade[preset[7]][0])
-    }}, data.upgrade[dataPosition][10])
+    }}, tick * 1000)
 
     decayIntervals[dataPosition] = setInterval(()=>{
         if(data.upgrade[preset[7]] !== null && data.upgrade[preset[7]] !== undefined) {
@@ -373,15 +373,15 @@ heart.addEventListener("click", ()=> {
 //////
 
 let decayTick = 800
-let tick = 100;
+let tick = 10;
 let bloodTick = 500;
 let frame = 0;
 
 setInterval(()=>{
-if(data.counter > 0) count(-1)
+if(data.counter > 0) count(0)
 }, decayTick)
 
-LOAD();
+
 
 setInterval(()=>{
 
@@ -395,12 +395,11 @@ frame++
 switch (data.counter) {
     case 10:
     data.messageChecker[0] = checkMessage(messagePresets[0], data.messageChecker[0], 0);
-    //console.log(data.messageChecker[0])
-    addUpgrade(upgradePresets[0]); break;
+    break;
 
     case 20:
     data.messageChecker[1] = checkMessage(messagePresets[1], data.messageChecker[1], 1);
-    addUpgrade(upgradePresets[1]); break;
+    break;
 
     case 100:
     data.messageChecker[1] = checkMessage(messagePresets[2], data.messageChecker[1], 1);
@@ -417,3 +416,40 @@ title.innerHTML = Math.floor(data.counter) + " - IdleBot"
 
 updateData();
 }, tick)
+
+
+
+function node(text) {
+
+    console.log("click")
+
+    if(Nodes.hasOwnProperty(text)) {
+
+        let array = Nodes[text].split("|")
+        let linkarray = []
+        for(let n = 1; n < array.length; n++) {
+            linkarray[n-1] = array[n].split("~")
+        }
+        console.log(linkarray)
+
+        messages.innerHTML = "<p class='messageStrip'>"+ array[0] +"</p>"
+
+        for(n in linkarray) {
+            messages.innerHTML += "<br>> <a onclick=node('"+ linkarray[n][1] +"')>"+ linkarray[n][0] +"</a>"
+        }
+    }
+}
+
+
+let Nodes = {
+
+}
+
+function Node(title, text) {
+    this.text = text;
+    Nodes[title] = text;
+}
+
+Node("look_around", "Fields as far as the eye can see.|Get up~get_up")
+
+Node("get_up", "You try to get up. You fail.<br>But maybe if you had more power...")
