@@ -313,7 +313,7 @@ if(data.counter > 0) count(0)
 }, decayTick)
 
 autosavedelay = true;
-setTimeout(()=>{ autosavedelay = false}, 100)
+setTimeout(()=>{ LOAD(); autosavedelay = false}, 100)
 
 setInterval(()=>{
 
