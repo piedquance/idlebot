@@ -119,10 +119,11 @@ function addUpgrade(cost, increaseRate, number, name, reference, description, ti
     }, data.upgrade[dataPosition][10])
 
     setInterval(()=>{
-        if( data.upgrade[dataPosition][2] > 0)
+        if( data.upgrade[dataPosition][2] > 0) {
         data.upgrade[dataPosition][2]--
         data.upgrade[dataPosition][0]--
         data.upgrade[dataPosition][1] -= data.upgrade[dataPosition][6]
+        }
     }, decayRate * 1000)
 
         data.upgrade[dataPosition][5].addEventListener("click", ()=> {
