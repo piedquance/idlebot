@@ -312,14 +312,15 @@ setInterval(()=>{
 if(data.counter > 0) count(0)
 }, decayTick)
 
-
+autosavedelay = true;
+setTimeout(()=>{ autosavedelay = false}, 100)
 
 setInterval(()=>{
 
     count(pipeCount)
     pipeCount = 0
 
-if(autosavetoggle) SAVE()
+if(autosavetoggle && !autosavedelay) SAVE()
     
 frame++
 
