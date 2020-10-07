@@ -59,7 +59,8 @@ let data = {
     counter:0,
     upgrade: new Array(100),
     upgradeInstance: new Array(100),
-    messageChecker: new Array(1000)
+    messageChecker: new Array(1000),
+    adventureLog: new Array(),
 }
 
 
@@ -409,27 +410,29 @@ updateData();
 
 
 
-function link(text) {
-
-    console.log("click", text, Nodes.hasOwnProperty(text))
+function link(text, back) {
     
     if(Nodes.hasOwnProperty(text)) {
-
-        console.log("click")
 
         let array = Nodes[text].split("|")
         let linkarray = []
         for(let n = 1; n < array.length; n++) {
             linkarray[n-1] = array[n].split("~")
         }
-        console.log(linkarray)
 
         messages.innerHTML = "<p class='messageStrip'>"+ array[0] +"</p>"
 
         for(n in linkarray) {
-            messages.innerHTML += "<br>> <a onclick=link('"+ linkarray[n][1] +"')>"+ linkarray[n][0] +"</a>"
+            messages.innerHTML += "<br>> <a onclick=link('"+ linkarray[n][1] +"',false)>"+ linkarray[n][0] +"</a>"
         }
+
+        if(back) data.adventureLog.splice(data.adventureLog.length-1, 1)
+        else data.adventureLog[data.adventureLog.length] = text
+
+
+        messages.innerHTML += "<br><br> <a id='back' onclick=link('"+ data.adventureLog[data.adventureLog.length-2] + "',true)>Go Back </a>"
     }
+
 }
 
 let Nodes = {}
@@ -438,7 +441,7 @@ function Node(title, text) {
     Nodes[title] = text;
 }
 
-Node("home", "You are in a field. There is nothing around you, useful or otherwise.|Look_around~look_around|Get up~get_up")
+Node("home", "You are in a field. There is nothing around you, useful or otherwise.|Look around~look_around|Get up~get_up")
 link("home");
 
 Node("look_around", "Fields as far as the eye can see.|Get up~get_up")
