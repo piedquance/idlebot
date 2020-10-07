@@ -35,10 +35,10 @@ var messagePresets = [
 ]
 
 //cost, increase rate, number of, reference, description, tick, data position, decay rate
-var upgradePresets = [
-    [10, 5, 0, "Blood Valve", "valve", "Pumps blood every 1 s<br>Decays every 10 s", 10, 0, 10],
-    [20, 7, 0, "Blood Pipe", "pipe", "Pipes blood every 0.5 s<br>Decays every 20 s", 5, 1, 20],
-]
+var upgradePresets = {
+    blood :[10, 5, 0, "Blood Valve", "valve", "Pumps blood every 1 s<br>Decays every 10 s", 10, 0, 10],
+    pipe : [20, 7, 0, "Blood Pipe", "pipe", "Pipes blood every 0.5 s<br>Decays every 20 s", 5, 1, 20],
+}
 
 
 // data formatting for upgrades: 
@@ -175,7 +175,11 @@ function addUpgrade(preset) {
 
     data.upgrade[dataPosition][13] = true
     data.upgradeInstance[dataPosition] = true
+    data.upgrade[dataPosition][5].style.display = "none"
 }}
+
+addUpgrade(upgradePresets.blood)
+addUpgrade(upgradePresets.pipe)
 
 //////
 
@@ -405,11 +409,13 @@ updateData();
 
 
 
-function node(text) {
+function link(text) {
 
-    console.log("click")
-
+    console.log("click", text, Nodes.hasOwnProperty(text))
+    
     if(Nodes.hasOwnProperty(text)) {
+
+        console.log("click")
 
         let array = Nodes[text].split("|")
         let linkarray = []
@@ -421,20 +427,19 @@ function node(text) {
         messages.innerHTML = "<p class='messageStrip'>"+ array[0] +"</p>"
 
         for(n in linkarray) {
-            messages.innerHTML += "<br>> <a onclick=node('"+ linkarray[n][1] +"')>"+ linkarray[n][0] +"</a>"
+            messages.innerHTML += "<br>> <a onclick=link('"+ linkarray[n][1] +"')>"+ linkarray[n][0] +"</a>"
         }
     }
 }
 
-
-let Nodes = {
-
-}
+let Nodes = {}
 
 function Node(title, text) {
-    this.text = text;
     Nodes[title] = text;
 }
+
+Node("home", "You are in a field. There is nothing around you, useful or otherwise.|Look_around~look_around|Get up~get_up")
+link("home");
 
 Node("look_around", "Fields as far as the eye can see.|Get up~get_up")
 
