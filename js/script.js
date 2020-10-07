@@ -255,6 +255,7 @@ function CLEAR() {
 }
 
 let autosavetoggle = true;
+
 autosave.addEventListener("click", ()=>{
     autosavetoggle = !autosavetoggle
     
