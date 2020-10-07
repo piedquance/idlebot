@@ -25,7 +25,7 @@ var clear = d.getElementById("clear")
 var autosave = d.getElementById("autosave")
 var importS = d.getElementById("import")
 var exportS = d.getElementById("export")
-
+var exported = []
 var intervals = []
 var decayIntervals = []
 var messagePresets = [
@@ -35,10 +35,10 @@ var messagePresets = [
 ]
 
 //cost, increase rate, number of, reference, description, tick, data position, decay rate
-var upgradePresets = {
-    blood :[10, 5, 0, "Blood Valve", "valve", "Pumps blood every 1 s<br>Decays every 10 s", 10, 0, 10],
-    pipe : [20, 7, 0, "Blood Pipe", "pipe", "Pipes blood every 0.5 s<br>Decays every 20 s", 5, 1, 20],
-}
+var upgradePresets = [
+    [10, 5, 0, "Blood Valve", "blood", "Pumps blood every 1 s<br>Decays every 10 s", 10, 0, 10],
+    [20, 7, 0, "Blood Pipe", "pipe", "Pipes blood every 0.5 s<br>Decays every 20 s", 5, 1, 20],
+]
 
 
 // data formatting for upgrades: 
@@ -57,7 +57,7 @@ var upgradePresets = {
 
 let data = {
     counter:0,
-    upgrade: new Array(100),
+    upgrade: new Array(),
     upgradeInstance: new Array(100),
     messageChecker: new Array(1000),
     adventureLog: new Array(),
@@ -179,8 +179,8 @@ function addUpgrade(preset) {
     data.upgrade[dataPosition][5].style.display = "none"
 }}
 
-addUpgrade(upgradePresets.blood)
-addUpgrade(upgradePresets.pipe)
+addUpgrade(upgradePresets[0])
+addUpgrade(upgradePresets[1])
 
 //////
 
@@ -197,7 +197,6 @@ function updateData() {
 function checkUpgradeCost() {
     for(x in data.upgrade) {
         if(data.upgrade[x] !== null) {
-           // console.log(data.upgrade[x])
     if(data.counter>=data.upgrade[x][1]) {
         data.upgrade[x][4].style.color="#000"
         data.upgrade[x][5].style.borderColor = "white"
@@ -210,145 +209,52 @@ function checkUpgradeCost() {
 }}}
 
 //////
-localStorage.setItem("counter", 0)
-localStorage.setItem("upgrade", new Array(100))
-for(x in localStorage.upgrade) x = new Array(20)
-
-localStorage.upgrade = new Array(100)
-
 function SAVE() {
 
-    localStorage.counter = data.counter - 0;
+    localStorage.counter = JSON.stringify(data.counter);
 
-    localStorage.upgrade = JSON.stringify(data.upgrade)
+    for(n in data.upgrade) {
+        exported[n] = []
+        exported[n][0] = data.upgrade[n][1]
+        exported[n][1] = data.upgrade[n][2]
+    }
 
-    localStorage.messageChecker = JSON.stringify(data.messageChecker)
+    localStorage.upgrades = JSON.stringify(exported)
+
+
+    localStorage.adventureLog = JSON.stringify(data.adventureLog)
 
 }
 //////
 
 function LOAD() {
 
-    data.counter = localStorage.counter - 0;
-    
-    try {
-        data.upgrade = JSON.parse(localStorage.upgrade)
-    } catch (error) {
-        
-    } 
+    data.counter = JSON.parse(localStorage.counter);
 
-    data.messageChecker = JSON.parse(localStorage.messageChecker)
+    exported = JSON.parse(localStorage.upgrades)
 
-    fixData()
-}
-
-//////
-
-function fixData() {
-leftPane.innerHTML = ""
-newmessages.innerHTML = ""
-
-
-if(data.counter !== 0) {
-for(n in intervals) clearInterval(intervals.n)
-for(n in decayIntervals) clearInterval(decayIntervals.n)
-
-    for(let x = 0; data.messageChecker[x] === true; x++) {
-        checkMessage(messagePresets[x], false, x);
+    for(n in exported) {
+        data.upgrade[n][1] = exported[n][0]
+        data.upgrade[n][2] = exported[n][1]
     }
+
+    data.adventureLog = JSON.parse(localStorage.adventureLog)
 }
-
-
-
-    for(let n = 0; n < data.upgrade.length;n++) {
-        if(data.upgrade[n] !== null && data.upgrade[n] !== undefined) {
-        if(typeof data.upgrade[n][0] === "number") {
-
-            var node = d.createElement("DIV");
-            node.id = data.upgrade[n][15] + "Upgrade";
-            node.classList.add("upgrade");
-           
-            node.innerHTML = '<div class="generalUpgradeDesc"><p class="upgradeName">'+ data.upgrade[n][8] 
-            +'</p><p class="upgradeDesc">'+ data.upgrade[n][9]
-            +'</p><p class="upgradeCost" id="'+ data.upgrade[n][15] +'UpgradeCost">Cost:' + data.upgrade[n][1]
-            +'</p></div> <div class="generalUpgradeNum"><p class="upgradeNum" id="'+ data.upgrade[n][15] +'UpgradeNum">' + data.upgrade[n][2] + '</p></div>'
-
-            leftPane.appendChild(node)
-
-            data.upgrade[n][3] = d.getElementById(data.upgrade[n][15] + "UpgradeCost")
-
-            data.upgrade[n][4] = d.getElementById(data.upgrade[n][15] + "UpgradeNum")
-
-            data.upgrade[n][5] = d.getElementById(data.upgrade[n][15] + "Upgrade")
-
-            data.upgrade[n][5].addEventListener("click", ()=> {
-                if(data.upgrade[n] !== null) {
-                if(data.counter > data.upgrade[n][1]) {
-        
-                    data.upgrade[n][2]++
-                    data.upgrade[n][0]++
-                    data.counter -= data.upgrade[n][1]
-                    data.upgrade[n][1] += data.upgrade[n][6]
-                } 
-            }
-            })
-
-            intervals[n] = setInterval(() => { 
-                
-              if(data.upgrade[n] !== undefined && data.upgrade[n] !== null)  count(data.upgrade[n][0]) 
-            
-            }, data.upgrade[n][10]);
-
-            decayIntervals[n] = setInterval(()=>{
-                if(data.upgrade[n] !== null && data.upgrade[n] !== undefined) {
-                if( data.upgrade[n][2] > 0) {
-                data.upgrade[n][2]--
-                data.upgrade[n][0]--
-                data.upgrade[n][1] -= data.upgrade[n][6]
-                }
-            }}, data.upgrade[n][14] * 1000)
-        }}
-    }
-}
-
-//////
+data.upgrade[0][5].style.display = ""
 
 function CLEAR() {
+    localStorage.clear();
+    data.counter = 0;
 
-localStorage.setItem("counter", 0)
-localStorage.setItem("upgrade", JSON.stringify(new Array(100)))
-//for(x in localStorage.upgrade) x = new Array(20)
-
-localStorage.upgrade = JSON.stringify(new Array(100))
-
-
-
-
-data.counter = 0;
-data.upgrade = new Array(100)
-data.upgradeInstance = new Array(100)
-data.upgradeInstance.fill(false)
-
-for(n in data.upgrade) n = new Array(100)
-
-data.messageChecker= new Array(1000)
-data.messageChecker.fill(false)
-
-data.upgradeInstances
-
-leftPane.innerHTML = ""
-newmessages.innerHTML = ""
-counterText.innerHTML = "0 0 0 0 0 0  0 0 0"
-//LOAD()
-// leftPane.innerHTML = ""
-// newmessages.innerHTML = ""
-// counterText.innerHTML = "0 0 0 0 0 0  0 0 0"
-// console.log(data.messageChecker)
+    for(n in data.upgrade) {
+        data.upgrade[n][1] = upgradePresets[n][0]
+        data.upgrade[n][2] = 0
+    }
+    SAVE()
+    LOAD()
 }
 
-//////
-
-let autosavetoggle = false;
+let autosavetoggle = true;
 autosave.addEventListener("click", ()=>{
     autosavetoggle = !autosavetoggle
     
@@ -366,8 +272,23 @@ autosave.addEventListener("click", ()=>{
 save.addEventListener("click", ()=>{ SAVE() })
 load.addEventListener("click", ()=>{ LOAD() })
 clear.addEventListener("click", ()=>{ CLEAR() })
+exportS.addEventListener("click", ()=>{ 
+
+    alert("Copy this somewhere safe:\n" + JSON.stringify(localStorage))
+
+})
+importS.addEventListener("click", ()=>{ 
+
+    localStorage = JSON.parse(prompt("Please paste your save data here:\n"))
+    LOAD()
+
+ })
+importS.innerHTML = ""
+exportS.innerHTML = ""
+
 
 //////
+
 let pipeCount = 0;
 heart.addEventListener("click", ()=> {
 
@@ -440,7 +361,7 @@ let Nodes = {}
 function Node(title, text) {
     Nodes[title] = text;
 }
-
+//You wake up locked in a deserted jail cell, completely alone. There is nothing at all in your cell, useful or otherwise.
 Node("home", "You are in a field. There is nothing around you, useful or otherwise.|Look around~look_around|Get up~get_up")
 link("home");
 

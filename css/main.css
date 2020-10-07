@@ -79,7 +79,7 @@ a:active {
 
 .saveRow {
   position: absolute;
-  display:none;
+  /* display:none; */
   bottom:0;
 }
 
