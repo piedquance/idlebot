@@ -34,10 +34,7 @@ html, body {
   /* border-radius: 0 0 2
   0px 20px; */
 }
-#message {
-  font-family: 'Courier New', Courier, monospace;
-  font-size: 13px;
-  color:#fff;
+#messages {
   text-align: left;
   margin:0;
   padding:10px;
@@ -46,6 +43,17 @@ html, body {
   height:300px;
 }
 
+.messageStrip {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 13px;
+  color:#fff;
+  margin:0;
+}
+
+.flash {
+  animation-name:messageLoad;
+  animation-duration:0.5s;
+}
 
 .saveRow {
   position: absolute;
@@ -73,7 +81,6 @@ html, body {
 
 .upgrade {
   /* background-image: url(images/pane.png);
-
   background-repeat: no-repeat;
   background-position:center;
   background-size: 100% 100%; */
@@ -190,4 +197,10 @@ html, body {
 @keyframes upgradeClick {
   0%  {border-color:#fff; }
   100% { border-color:#444;}
+}
+
+@keyframes messageLoad {
+  0% {color:#fff; background-color: #000;}
+  30% {color:#000; background-color: #fff;}
+  100% {color:#fff; background-color: #000;}
 }

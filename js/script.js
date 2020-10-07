@@ -17,7 +17,7 @@ var number = 1;
 var d = document;
 var heart = d.getElementById("heart");
 var counterText = d.getElementById("counter");
-var message = d.getElementById("message");
+var messages = d.getElementById("messages");
 var title = d.querySelector("title")
 var leftPane = d.getElementById("left")
 
@@ -83,9 +83,12 @@ heart.addEventListener("click", ()=> {
 })
 
 
-function checkMessage(text, check) {
+function checkMessage(text, check, num) {
     if(check === false) {
-        message.innerHTML += "<br>" + text;
+        messages.innerHTML += '<p class="messageStrip" id="strip'+ num +'" style="animation-name:messageLoad;animation-duration:0.5s">' + text + '</p>';
+       setTimeout(()=>{
+        d.getElementById("strip" + num).style = "";
+       }, 500)
         console.log(check);
          return true;
     }
@@ -177,18 +180,18 @@ frame++
 
 switch (data.counter) {
     case 10:
-    messageChecker[0] = checkMessage("Energy received x10", messageChecker[0]);
+    messageChecker[0] = checkMessage("Energy received x10 - Blood Valve acquired", messageChecker[0], 0);
     addUpgrade(10, 5, 0, "Blood Valve", "valve", "Pumps blood every 1 s", 1000, 0);
     break;
     case 20:
-    messageChecker[1] = checkMessage("Energy received x20", messageChecker[1]);
+    messageChecker[1] = checkMessage("Energy received x20 - Blood Pipe acquired", messageChecker[1], 1);
     addUpgrade(20, 10, 0, "Blood Pipe", "pipe", "Pipes blood every 0.5 s", 500, 1);
     default:break;
 }
 
 checkUpgradeCost();
 
-message.scrollTop = message.scrollHeight;
+messages.scrollTop = messages.scrollHeight;
 title.innerHTML = Math.floor(data.counter) + " - IdleBot"
 
 updateData();
