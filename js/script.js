@@ -10,7 +10,6 @@
 // c.fillRect(0, 100, 100, 100);
 
 
-var counter = 0;
 var countNum = [];
 
 var StringCounter = "";
@@ -21,9 +20,28 @@ var counterText = d.getElementById("counter");
 var message = d.getElementById("message");
 var title = d.querySelector("title")
 var leftPane = d.getElementById("left")
-var bloodUpgrade = d.getElementById("bloodUpgrade")
-let data = {
 
+
+// data formatting for upgrades: 
+//------------------------------
+//name[0]=counter | name[1]=cost | name[2]=number
+//name[3]=cost reference | name[4]=number reference
+//name[5]=name reference | name[6] = cost increase
+//name[7]=string id | name[8]=string name
+//name[9]=string description | name[10]=tick
+//
+//upgrade[0] = blood
+//
+
+let data = {
+    counter:0,
+    upgrade: [[0, 10 , 0,
+         d.getElementById("bloodUpgradeCost"),
+         d.getElementById("bloodUpgradeNum"),
+         d.getElementById("bloodUpgrade"),
+         5, "bloodCounter", "Blood Valve", "Pumps blood every 0.5s", 500],
+
+]
 
 }
 
@@ -33,11 +51,11 @@ messageChecker.fill(false);
 
 
 function count(number) {
-    counter += number;
+    data.counter += number;
     StringCounter = ""
-    countNum[2] = Math.floor(counter/1000000);
-    countNum[1] = Math.floor((counter - countNum[2]*1000000)/1000);
-    countNum[0] = Math.floor((counter - countNum[2]*1000000 - countNum[1]*1000));
+    countNum[2] = Math.floor(data.counter/1000000);
+    countNum[1] = Math.floor((data.counter - countNum[2]*1000000)/1000);
+    countNum[0] = Math.floor((data.counter - countNum[2]*1000000 - countNum[1]*1000));
     var space = " "
     var specialSpace = ""
     for(let x = 2; x >= 0; x--) {
@@ -45,9 +63,8 @@ function count(number) {
             space = " "
         } else space = " "
 
-        if(counter >= 10000 && x == 0) {
+        if(data.counter >= 10000 && x == 0) {
             specialSpace=" "
-            console.log("aaa")
         } else specialSpace= ""
 
         if(countNum[x].toString().length === 2){ StringCounter += specialSpace + space + "0 "
@@ -77,36 +94,57 @@ function checkMessage(text, check) {
     }
 }
 
-function addUpgrade() {}
+function addUpgrade(upgrade) {
+ var node = d.createElement("DIV");
+ node.id = upgrade[7];
+ node.classList.add("upgrade");
 
-function updateData() {}
+ node.innerHTML = '<p class="upgradeName">'+ upgrade[8] 
+ +'</p><p class="upgradeDesc">'+ upgrade[9]
+ +'</p><p class="upgradeCost">Cost:' + upgrade[1] 
+ +'</p><p class="upgradeNum">' + upgrade[2] + '</p>'
+
+ leftPane.appendChild(node)
+}
+
+function updateData() {
+    for(x in data.upgrade) {
+        data.upgrade[x][3].innerHTML = "Cost: " + data.upgrade[x][1]
+        data.upgrade[x][4].innerHTML = data.upgrade[x][2]
+    }
+}
 
 function buyUpdate() {}
 
+function checkUpgradeCost() {
+    for(x in data.upgrade) {
 
-
-
-var bloodUpgradeNumRef = d.getElementById("bloodUpgradeNum")
-var bloodUpgradeCostRef = d.getElementById("bloodUpgradeCost")
-var bloodUpgradeNum = 0;
-var bloodUpgradeCounter = 0;
-var bloodUpgradeCost = 30;
-
-// var node = d.createElement("DIV");
-// node.id = "node";
-// node.classList.add("upgrade");
-// node.innerHTML = '<p class="upgradeName">Blood Valve</p><p class="upgradeDesc">I don\'t how this works but it does.</p><p class="upgradeCost">Cost: 20</p><p class="upgradeNum">' + bloodUpgradeNum + '</p>'
-
-// leftPane.appendChild(node)
-
-bloodUpgrade.addEventListener("click", ()=>{
-    if(counter > bloodUpgradeCost) {
-        bloodUpgradeNum++
-        bloodUpgradeCounter += 1
-        counter -= bloodUpgradeCost
-        bloodUpgradeCost += 5
+    if(data.counter>=data.upgrade[x][1]) {
+        data.upgrade[x][4].style.color="#000"
+        data.upgrade[x][5].style.borderColor = "white"
+        data.upgrade[x][5].classList.add("active");
+    } else {
+        data.upgrade[x][4].style.color="#888"
+        data.upgrade[x][5].style.borderColor = "black"
+        data.upgrade[x][5].classList.remove("active");
     }
-})
+}
+}
+
+
+for(x in data.upgrade) {
+    data.upgrade[x][5].addEventListener("click", ()=> {
+        if(data.counter > data.upgrade[x][1]) {
+
+            data.upgrade[x][2]++
+            data.upgrade[x][0] += 1
+            data.counter -= data.upgrade[x][1]
+            data.upgrade[x][1] += data.upgrade[x][6]
+        }
+    })
+}
+
+
 
 
 let decayTick = 200
@@ -115,13 +153,13 @@ let bloodTick = 500;
 let frame = 0;
 
 setInterval(()=>{
-if(counter > 0) count(-1)
+if(data.counter > 0) count(-1)
 }, decayTick)
 
 setInterval(()=>{
 frame++
 
-switch (counter) {
+switch (data.counter) {
     case 10:
     messageChecker[0] = checkMessage("Energy received", messageChecker[0]);
     break;
@@ -131,22 +169,18 @@ switch (counter) {
     default:break;
 }
 
-if(counter>=bloodUpgradeCost) {
-    bloodUpgradeNumRef.style.color="#000"
-    d.getElementById("bloodUpgrade").style.borderColor = "white"
-    d.getElementById("bloodUpgrade").classList.add("active");
-} else {
-    bloodUpgradeNumRef.style.color="#888"
-    d.getElementById("bloodUpgrade").style.borderColor = "black"
-    d.getElementById("bloodUpgrade").classList.remove("active");
-}
+checkUpgradeCost();
 
 message.scrollTop = message.scrollHeight;
-title.innerHTML = Math.floor(counter) + " - IdleBot"
-bloodUpgradeNumRef.innerHTML = bloodUpgradeNum
-bloodUpgradeCostRef.innerHTML = "Cost: " + bloodUpgradeCost
+title.innerHTML = Math.floor(data.counter) + " - IdleBot"
+
+
+updateData();
 }, tick)
 
+
+for(x in data.upgrade) {
 setInterval(()=>{
-    count(bloodUpgradeCounter)
-}, bloodTick)
+    count(data.upgrade[x][0])
+}, data.upgrade[x][10])
+}
