@@ -239,6 +239,8 @@ function LOAD() {
     }
 
     data.adventureLog = JSON.parse(localStorage.adventureLog)
+    
+    link(data.adventureLog[data.adventureLog.length - 1])
 }
 data.upgrade[0][5].style.display = ""
 
@@ -252,6 +254,7 @@ function CLEAR() {
     }
     SAVE()
     LOAD()
+    link("home")
 }
 
 let autosavetoggle = true;
