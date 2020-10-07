@@ -85,7 +85,7 @@ var bloodUpgradeNumRef = d.getElementById("bloodUpgradeNum")
 var bloodUpgradeCostRef = d.getElementById("bloodUpgradeCost")
 var bloodUpgradeNum = 0;
 var bloodUpgradeCounter = 0;
-var bloodUpgradeCost = 20;
+var bloodUpgradeCost = 30;
 
 // var node = d.createElement("DIV");
 // node.id = "node";
