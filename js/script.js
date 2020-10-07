@@ -17,13 +17,30 @@ var d = document;
 var heart = d.getElementById("heart");
 var counterText = d.getElementById("counter");
 var messages = d.getElementById("messages");
+var newmessages = d.getElementById("newmessages");
 var title = d.querySelector("title")
 var leftPane = d.getElementById("left")
+
 var save = d.getElementById("save")
 var load = d.getElementById("load")
+var clear = d.getElementById("clear")
 var autosave = d.getElementById("autosave")
 var importS = d.getElementById("import")
 var exportS = d.getElementById("export")
+
+var intervals = []
+var decayIntervals = []
+var messagePresets = [
+    "Energy received x10 - Blood Valve acquired",
+    "Energy received x20 - Blood Pipe acquired",
+    "Energy received x100 - Imcoming transmission..."
+]
+
+//cost, increase rate, number of, reference, description, tick, data position, decay rate
+var upgradePresets = [
+    [10, 5, 0, "Blood Valve", "valve", "Pumps blood every 1 s<br>Decays every 5 s", 1000, 0, 5],
+    [20, 10, 0, "Blood Pipe", "pipe", "Pipes blood every 0.5 s<br>Decays every 10 s", 500, 1, 10],
+]
 
 
 // data formatting for upgrades: 
@@ -35,6 +52,7 @@ var exportS = d.getElementById("export")
 //name[9]=string description | name[10]=tick
 //name[11]=string cost | name[12]=string number
 //name[13]=boolean | name[14]=decay rate
+//name[15]=plain reference
 //
 //upgrade[0] = blood
 //
@@ -42,13 +60,13 @@ var exportS = d.getElementById("export")
 let data = {
     counter:0,
     upgrade: new Array(100),
-    upgradeInstance : new Array(100)
+    upgradeInstance: new Array(100),
+    messageChecker: new Array(1000)
 }
 
 
-var messageChecker = new Array(1000);
 data.upgradeInstance.fill(false);
-messageChecker.fill(false);
+data.messageChecker.fill(false);
 
 //////
 
@@ -85,25 +103,38 @@ function count(number) {
 //////
 
 function checkMessage(text, check, num) {
-    if(check === false) {
-        messages.innerHTML += '<p class="messageStrip" id="strip'+ num +'" style="animation-name:messageLoad;animation-duration:0.5s">' + text + '</p>';
+    let result = false
+    if(check == true) return true;
+    else if(check === false) {
+        newmessages.innerHTML += '<p class="messageStrip" id="strip'+ num +'" style="animation-name:messageLoad;animation-duration:0.5s">' + text + '</p>';
        setTimeout(()=>{
         d.getElementById("strip" + num).style = "";
        }, 500)
-         return true;
+         result =  true;
     }
+    
+    return result;
 }
 
 //////
 
-function addUpgrade(cost, increaseRate, number, name, reference, description, tick, dataPosition, decayRate) {
+function addUpgrade(preset) {
+
+    let cost = preset[0]
+    let increaseRate = preset[1]
+    let number = preset[2]
+    let name = preset[3]
+    let reference = preset[4]
+    let description = preset[5]
+    let tick = preset[6]
+    let dataPosition = preset[7]
+    let decayRate = preset[8]
 
     if(!data.upgradeInstance[dataPosition]) {
 
  var node = d.createElement("DIV");
  node.id = reference + "Upgrade";
  node.classList.add("upgrade");
- //node.classList.add("active");
 
  node.innerHTML = '<div class="generalUpgradeDesc"><p class="upgradeName">'+ name 
  +'</p><p class="upgradeDesc">'+ description
@@ -116,20 +147,22 @@ function addUpgrade(cost, increaseRate, number, name, reference, description, ti
     d.getElementById(reference + "UpgradeCost"),
     d.getElementById(reference + "UpgradeNum"),
     d.getElementById(reference + "Upgrade"),
-    increaseRate, reference + "Upgrade", "Pipe Valve", "Pipes blood every 1s", tick,
-    reference+ "UpgradeCost", reference+ "UpgradeNum", false, decayRate]
+    increaseRate, reference + "Upgrade", name, description, tick,
+    reference+ "UpgradeCost", reference+ "UpgradeNum", false, decayRate, reference]
 
-    setInterval(()=>{
-        count(data.upgrade[dataPosition][0])
-    }, data.upgrade[dataPosition][10])
+    intervals[dataPosition] = setInterval(()=>{
+        if(data.upgrade[preset[7]] !== null && data.upgrade[preset[7]] !== undefined) {
+        count(data.upgrade[preset[7]][0])
+    }}, data.upgrade[dataPosition][10])
 
-    setInterval(()=>{
-        if( data.upgrade[dataPosition][2] > 0) {
+    decayIntervals[dataPosition] = setInterval(()=>{
+        if(data.upgrade[preset[7]] !== null && data.upgrade[preset[7]] !== undefined) {
+        if( data.upgrade[preset[7]][2] > 0) {
         data.upgrade[dataPosition][2]--
         data.upgrade[dataPosition][0]--
         data.upgrade[dataPosition][1] -= data.upgrade[dataPosition][6]
         }
-    }, decayRate * 1000)
+    }}, decayRate * 1000)
 
         data.upgrade[dataPosition][5].addEventListener("click", ()=> {
             if(data.counter > data.upgrade[dataPosition][1]) {
@@ -149,16 +182,18 @@ function addUpgrade(cost, increaseRate, number, name, reference, description, ti
 
 function updateData() {
     for(x in data.upgrade) {
+        if(data.upgrade[x] !== null) {
         data.upgrade[x][3].innerHTML = "Cost: " + data.upgrade[x][1]
         data.upgrade[x][4].innerHTML = data.upgrade[x][2]
-    }
+    }}
 }
 
 //////
 
 function checkUpgradeCost() {
     for(x in data.upgrade) {
-
+        if(data.upgrade[x] !== null) {
+           // console.log(data.upgrade[x])
     if(data.counter>=data.upgrade[x][1]) {
         data.upgrade[x][4].style.color="#000"
         data.upgrade[x][5].style.borderColor = "white"
@@ -168,7 +203,7 @@ function checkUpgradeCost() {
         data.upgrade[x][5].style.borderColor = "black"
         data.upgrade[x][5].classList.remove("active");
     }
-}}
+}}}
 
 //////
 localStorage.setItem("counter", 0)
@@ -183,14 +218,10 @@ function SAVE() {
 
     localStorage.upgrade = JSON.stringify(data.upgrade)
 
+    localStorage.messageChecker = JSON.stringify(data.messageChecker)
+
 }
 //////
-
-let upgradePreset = new Array(100)
-[
-[10, 5, 0, "Blood Valve", "valve", "Pumps blood every 1 s<br>Decays every 5 s", 1000, 0, 5],
-[20, 10, 0, "Blood Pipe", "pipe", "Pipes blood every 0.5 s<br>Decays every 10 s", 500, 1, 10]
-]
 
 function LOAD() {
 
@@ -198,15 +229,95 @@ function LOAD() {
     
     data.upgrade = JSON.parse(localStorage.upgrade)
 
+    data.messageChecker = JSON.parse(localStorage.messageChecker)
+
     fixData()
 }
 
 //////
 
 function fixData() {
+leftPane.innerHTML = ""
+newmessages.innerHTML = ""
+for(n in intervals) clearInterval(intervals.n)
+for(n in decayIntervals) clearInterval(decayIntervals.n)
 
-    
+    for(let x = 0; data.messageChecker[x] === true; x++) {
+        checkMessage(messagePresets[x], false, x);
+    }
 
+
+
+    for(let n = 0; n < data.upgrade.length;n++) {
+        if(data.upgrade[n] !== null) {
+        if(typeof data.upgrade[n][0] === "number") {
+
+            var node = d.createElement("DIV");
+            node.id = data.upgrade[n][15] + "Upgrade";
+            node.classList.add("upgrade");
+           
+            node.innerHTML = '<div class="generalUpgradeDesc"><p class="upgradeName">'+ data.upgrade[n][8] 
+            +'</p><p class="upgradeDesc">'+ data.upgrade[n][9]
+            +'</p><p class="upgradeCost" id="'+ data.upgrade[n][15] +'UpgradeCost">Cost:' + data.upgrade[n][1]
+            +'</p></div> <div class="generalUpgradeNum"><p class="upgradeNum" id="'+ data.upgrade[n][15] +'UpgradeNum">' + data.upgrade[n][2] + '</p></div>'
+
+            leftPane.appendChild(node)
+
+            data.upgrade[n][3] = d.getElementById(data.upgrade[n][15] + "UpgradeCost")
+
+            data.upgrade[n][4] = d.getElementById(data.upgrade[n][15] + "UpgradeNum")
+
+            data.upgrade[n][5] = d.getElementById(data.upgrade[n][15] + "Upgrade")
+
+            data.upgrade[n][5].addEventListener("click", ()=> {
+                if(data.upgrade[n] !== null) {
+                if(data.counter > data.upgrade[n][1]) {
+        
+                    data.upgrade[n][2]++
+                    data.upgrade[n][0]++
+                    data.counter -= data.upgrade[n][1]
+                    data.upgrade[n][1] += data.upgrade[n][6]
+                } 
+            }
+            })
+
+            intervals[n] = setInterval(() => { count(data.upgrade[n][0]) }, data.upgrade[n][10]);
+
+            decayIntervals[n] = setInterval(()=>{
+                if(data.upgrade[n] !== null) {
+                if( data.upgrade[n][2] > 0) {
+                data.upgrade[n][2]--
+                data.upgrade[n][0]--
+                data.upgrade[n][1] -= data.upgrade[n][6]
+                }
+            }}, data.upgrade[n][14] * 1000)
+        }}
+    }
+}
+
+//////
+
+function CLEAR() {
+
+localStorage.setItem("counter", 0)
+localStorage.setItem("upgrade", new Array(100))
+for(x in localStorage.upgrade) x = new Array(20)
+
+localStorage.upgrade = new Array(100)
+
+data.counter = 0;
+data.upgrade = new Array(100)
+data.upgradeInstance = new Array(100)
+
+for(n in data.upgrade) n = new Array(100)
+
+data.messageChecker= new Array(1000)
+
+
+leftPane.innerHTML = ""
+newmessages.innerHTML = ""
+counterText.innerHTML = "0 0 0 0 0 0  0 0 0"
+LOAD()
 }
 
 //////
@@ -227,9 +338,8 @@ autosave.addEventListener("click", ()=>{
 })
 
 save.addEventListener("click", ()=>{ SAVE() })
-load.addEventListener("click", ()=>{ LOAD() 
-console.log("LOAD!")
-})
+load.addEventListener("click", ()=>{ LOAD() })
+clear.addEventListener("click", ()=>{ CLEAR() })
 
 //////
 
@@ -258,12 +368,19 @@ frame++
 
 switch (data.counter) {
     case 10:
-    messageChecker[0] = checkMessage("Energy received x10 - Blood Valve acquired", messageChecker[0], 0);
-    addUpgrade(10, 5, 0, "Blood Valve", "valve", "Pumps blood every 1 s<br>Decays every 5 s", 1000, 0, 5);
-    break;
+    data.messageChecker[0] = checkMessage(messagePresets[0], data.messageChecker[0], 0);
+    //console.log(data.messageChecker[0])
+    addUpgrade(upgradePresets[0]); break;
+
     case 20:
-    messageChecker[1] = checkMessage("Energy received x20 - Blood Pipe acquired", messageChecker[1], 1);
-    addUpgrade(20, 10, 0, "Blood Pipe", "pipe", "Pipes blood every 0.5 s<br>Decays every 10 s", 500, 1, 10);
+    data.messageChecker[1] = checkMessage(messagePresets[1], data.messageChecker[1], 1);
+    addUpgrade(upgradePresets[1]); break;
+
+    case 100:
+    data.messageChecker[1] = checkMessage(messagePresets[2], data.messageChecker[1], 1);
+    break;
+
+
     default:break;
 }
 
@@ -274,5 +391,3 @@ title.innerHTML = Math.floor(data.counter) + " - IdleBot"
 
 updateData();
 }, tick)
-
-
