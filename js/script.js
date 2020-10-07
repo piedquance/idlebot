@@ -19,6 +19,11 @@ var counterText = d.getElementById("counter");
 var messages = d.getElementById("messages");
 var title = d.querySelector("title")
 var leftPane = d.getElementById("left")
+var save = d.getElementById("save")
+var load = d.getElementById("load")
+var autosave = d.getElementById("autosave")
+var importS = d.getElementById("import")
+var exportS = d.getElementById("export")
 
 
 // data formatting for upgrades: 
@@ -36,7 +41,7 @@ var leftPane = d.getElementById("left")
 
 let data = {
     counter:0,
-    upgrade: [],
+    upgrade: new Array(100),
     upgradeInstance : new Array(100)
 }
 
@@ -136,7 +141,6 @@ function addUpgrade(cost, increaseRate, number, name, reference, description, ti
             }
         })
 
-
     data.upgrade[dataPosition][13] = true
     data.upgradeInstance[dataPosition] = true
 }}
@@ -167,6 +171,67 @@ function checkUpgradeCost() {
 }}
 
 //////
+localStorage.setItem("counter", 0)
+localStorage.setItem("upgrade", new Array(100))
+for(x in localStorage.upgrade) x = new Array(20)
+
+localStorage.upgrade = new Array(100)
+
+function SAVE() {
+
+    localStorage.counter = data.counter - 0;
+
+    localStorage.upgrade = JSON.stringify(data.upgrade)
+
+}
+//////
+
+let upgradePreset = new Array(100)
+[
+[10, 5, 0, "Blood Valve", "valve", "Pumps blood every 1 s<br>Decays every 5 s", 1000, 0, 5],
+[20, 10, 0, "Blood Pipe", "pipe", "Pipes blood every 0.5 s<br>Decays every 10 s", 500, 1, 10]
+]
+
+function LOAD() {
+
+    data.counter = localStorage.counter - 0;
+    
+    data.upgrade = JSON.parse(localStorage.upgrade)
+
+    fixData()
+}
+
+//////
+
+function fixData() {
+
+    
+
+}
+
+//////
+
+let autosavetoggle = false;
+autosave.addEventListener("click", ()=>{
+    autosavetoggle = !autosavetoggle
+    
+    switch (autosavetoggle) {
+        case true:
+        autosave.innerHTML = "AUTOSAVE <span id='on'>ON</span>"
+        break;
+        case false:
+        autosave.innerHTML = "AUTOSAVE <span id='off'>OFF</span>"
+        break;
+    }
+
+})
+
+save.addEventListener("click", ()=>{ SAVE() })
+load.addEventListener("click", ()=>{ LOAD() 
+console.log("LOAD!")
+})
+
+//////
 
 heart.addEventListener("click", ()=> {
     count(number)
@@ -186,6 +251,9 @@ if(data.counter > 0) count(-1)
 }, decayTick)
 
 setInterval(()=>{
+
+if(autosavetoggle) SAVE()
+    
 frame++
 
 switch (data.counter) {
