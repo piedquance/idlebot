@@ -29,24 +29,21 @@ var leftPane = d.getElementById("left")
 //name[5]=name reference | name[6] = cost increase
 //name[7]=string id | name[8]=string name
 //name[9]=string description | name[10]=tick
+//name[11]=string cost | name[12]=string number
+//name[13]=boolean
 //
 //upgrade[0] = blood
 //
 
 let data = {
     counter:0,
-    upgrade: [[0, 10 , 0,
-         d.getElementById("bloodUpgradeCost"),
-         d.getElementById("bloodUpgradeNum"),
-         d.getElementById("bloodUpgrade"),
-         5, "bloodCounter", "Blood Valve", "Pumps blood every 0.5s", 500],
-
-]
-
+    upgrade: [],
+    upgradeInstance : new Array(100)
 }
 
 
 var messageChecker = new Array(1000);
+data.upgradeInstance.fill(false);
 messageChecker.fill(false);
 
 
@@ -88,24 +85,53 @@ heart.addEventListener("click", ()=> {
 
 function checkMessage(text, check) {
     if(check === false) {
-        message.innerHTML += text;
+        message.innerHTML += "<br>" + text;
         console.log(check);
          return true;
     }
 }
 
-function addUpgrade(upgrade) {
- var node = d.createElement("DIV");
- node.id = upgrade[7];
- node.classList.add("upgrade");
+function addUpgrade(cost, increaseRate, number, name, reference, description, tick, dataPosition) {
 
- node.innerHTML = '<p class="upgradeName">'+ upgrade[8] 
- +'</p><p class="upgradeDesc">'+ upgrade[9]
- +'</p><p class="upgradeCost">Cost:' + upgrade[1] 
- +'</p><p class="upgradeNum">' + upgrade[2] + '</p>'
+    if(!data.upgradeInstance[dataPosition]) {
+
+ var node = d.createElement("DIV");
+ node.id = reference + "Upgrade";
+ node.classList.add("upgrade");
+ //node.classList.add("active");
+
+ node.innerHTML = '<div class="generalUpgradeDesc"><p class="upgradeName">'+ name 
+ +'</p><p class="upgradeDesc">'+ description
+ +'</p><p class="upgradeCost" id="'+ reference +'UpgradeCost">Cost:' + cost
+ +'</p></div> <div class="generalUpgradeNum"><p class="upgradeNum" id="'+ reference +'UpgradeNum">' + number + '</p></div>'
 
  leftPane.appendChild(node)
-}
+
+ data.upgrade[dataPosition] =        [0, cost , number,
+    d.getElementById(reference + "UpgradeCost"),
+    d.getElementById(reference + "UpgradeNum"),
+    d.getElementById(reference + "Upgrade"),
+    increaseRate, reference + "Upgrade", "Pipe Valve", "Pipes blood every 1s", tick,
+    reference+ "UpgradeCost", reference+ "UpgradeNum", false]
+
+    setInterval(()=>{
+        count(data.upgrade[dataPosition][0])
+    }, data.upgrade[dataPosition][10])
+
+        data.upgrade[dataPosition][5].addEventListener("click", ()=> {
+            if(data.counter > data.upgrade[dataPosition][1]) {
+    
+                data.upgrade[dataPosition][2]++
+                data.upgrade[dataPosition][0] += 1
+                data.counter -= data.upgrade[dataPosition][1]
+                data.upgrade[dataPosition][1] += data.upgrade[dataPosition][6]
+            }
+        })
+
+
+    data.upgrade[dataPosition][13] = true
+    data.upgradeInstance[dataPosition] = true
+}}
 
 function updateData() {
     for(x in data.upgrade) {
@@ -132,17 +158,7 @@ function checkUpgradeCost() {
 }
 
 
-for(x in data.upgrade) {
-    data.upgrade[x][5].addEventListener("click", ()=> {
-        if(data.counter > data.upgrade[x][1]) {
 
-            data.upgrade[x][2]++
-            data.upgrade[x][0] += 1
-            data.counter -= data.upgrade[x][1]
-            data.upgrade[x][1] += data.upgrade[x][6]
-        }
-    })
-}
 
 
 
@@ -161,11 +177,12 @@ frame++
 
 switch (data.counter) {
     case 10:
-    messageChecker[0] = checkMessage("Energy received", messageChecker[0]);
+    messageChecker[0] = checkMessage("Energy received x10", messageChecker[0]);
+    addUpgrade(10, 5, 0, "Blood Valve", "valve", "Pumps blood every 1 s", 1000, 0);
     break;
     case 20:
-    messageChecker[0] = checkMessage("Energy received", messageChecker[0]);
-
+    messageChecker[1] = checkMessage("Energy received x20", messageChecker[1]);
+    addUpgrade(20, 10, 0, "Blood Pipe", "pipe", "Pipes blood every 0.5 s", 500, 1);
     default:break;
 }
 
@@ -174,13 +191,7 @@ checkUpgradeCost();
 message.scrollTop = message.scrollHeight;
 title.innerHTML = Math.floor(data.counter) + " - IdleBot"
 
-
 updateData();
 }, tick)
 
 
-for(x in data.upgrade) {
-setInterval(()=>{
-    count(data.upgrade[x][0])
-}, data.upgrade[x][10])
-}
