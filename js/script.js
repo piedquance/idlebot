@@ -133,7 +133,13 @@ switch (counter) {
 
 if(counter>=bloodUpgradeCost) {
     bloodUpgradeNumRef.style.color="#000"
-} else bloodUpgradeNumRef.style.color="#888"
+    d.getElementById("bloodUpgrade").style.borderColor = "white"
+    d.getElementById("bloodUpgrade").classList.add("active");
+} else {
+    bloodUpgradeNumRef.style.color="#888"
+    d.getElementById("bloodUpgrade").style.borderColor = "black"
+    d.getElementById("bloodUpgrade").classList.remove("active");
+}
 
 message.scrollTop = message.scrollHeight;
 title.innerHTML = Math.floor(counter) + " - IdleBot"
