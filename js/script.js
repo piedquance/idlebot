@@ -8,8 +8,6 @@
 // var c = canvas.getContext("2d");
 
 // c.fillRect(0, 100, 100, 100);
-
-
 var countNum = [];
 var StringCounter = "";
 var number = 1;
@@ -243,12 +241,16 @@ function LOAD() {
 function fixData() {
 leftPane.innerHTML = ""
 newmessages.innerHTML = ""
+
+
+if(data.counter !== 0) {
 for(n in intervals) clearInterval(intervals.n)
 for(n in decayIntervals) clearInterval(decayIntervals.n)
 
     for(let x = 0; data.messageChecker[x] === true; x++) {
         checkMessage(messagePresets[x], false, x);
     }
+}
 
 
 
@@ -378,6 +380,8 @@ let frame = 0;
 setInterval(()=>{
 if(data.counter > 0) count(-1)
 }, decayTick)
+
+LOAD();
 
 setInterval(()=>{
 
