@@ -29,9 +29,9 @@ var exportS = d.getElementById("export")
 var intervals = []
 var decayIntervals = []
 var messagePresets = [
-    "Energy received x10",
-    "Energy received x20",
-    "Energy received x100 - Imcoming transmission..."
+    ["Energy received x10", 10],
+    ["Energy received x20", 20],
+    ["Energy received x100 - Imcoming transmission...", 100]
 ]
 
 //cost, increase rate, number of, reference, description, tick, data position, decay rate
@@ -103,6 +103,7 @@ function count(number) {
 function checkMessage(text, check, num) {
     let result = false
     if(check == true) return true;
+
     else if(check === false) {
         newmessages.innerHTML += '<p class="messageStrip" id="strip'+ num +'" style="animation-name:messageLoad;animation-duration:0.5s">' + text + '</p>';
        setTimeout(()=>{
@@ -392,22 +393,7 @@ if(autosavetoggle) SAVE()
     
 frame++
 
-switch (data.counter) {
-    case 10:
-    data.messageChecker[0] = checkMessage(messagePresets[0], data.messageChecker[0], 0);
-    break;
-
-    case 20:
-    data.messageChecker[1] = checkMessage(messagePresets[1], data.messageChecker[1], 1);
-    break;
-
-    case 100:
-    data.messageChecker[1] = checkMessage(messagePresets[2], data.messageChecker[1], 1);
-    break;
-
-
-    default:break;
-}
+for(n in messagePresets) if(data.counter >= messagePresets[n][1]) data.messageChecker[n] = checkMessage(messagePresets[n][0], data.messageChecker[n], n);
 
 checkUpgradeCost();
 
