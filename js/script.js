@@ -215,8 +215,9 @@ function SAVE() {
 
     for(n in data.upgrade) {
         exported[n] = []
-        exported[n][0] = data.upgrade[n][1]
-        exported[n][1] = data.upgrade[n][2]
+        exported[n][0] = data.upgrade[n][0]
+        exported[n][1] = data.upgrade[n][1]
+        exported[n][2] = data.upgrade[n][2]
     }
 
     localStorage.upgrades = JSON.stringify(exported)
@@ -226,7 +227,7 @@ function SAVE() {
 
 }
 //////
-
+data.upgrade[0][5].style.display = ""
 function LOAD() {
 
     data.counter = JSON.parse(localStorage.counter);
@@ -234,21 +235,23 @@ function LOAD() {
     exported = JSON.parse(localStorage.upgrades)
 
     for(n in exported) {
-        data.upgrade[n][1] = exported[n][0]
-        data.upgrade[n][2] = exported[n][1]
+        data.upgrade[n][0] = exported[n][0]
+        data.upgrade[n][1] = exported[n][1]
+        data.upgrade[n][2] = exported[n][2]
     }
 
     data.adventureLog = JSON.parse(localStorage.adventureLog)
     
     link(data.adventureLog[data.adventureLog.length - 1])
 }
-data.upgrade[0][5].style.display = ""
 
 function CLEAR() {
     localStorage.clear();
     data.counter = 0;
 
     for(n in data.upgrade) {
+
+        data.upgrade[n][0] = 0
         data.upgrade[n][1] = upgradePresets[n][0]
         data.upgrade[n][2] = 0
     }
@@ -333,8 +336,6 @@ title.innerHTML = Math.floor(data.counter) + " - IdleBot"
 
 updateData();
 }, tick)
-
-
 
 function link(text, back) {
     
