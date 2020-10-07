@@ -163,7 +163,6 @@ html, body {
 #heart:active {
   animation-name: click;
   animation-duration: 0.1s;
-  transform:scale(1);
 }
 
 #counterDiv {

@@ -170,6 +170,8 @@ function checkUpgradeCost() {
 
 heart.addEventListener("click", ()=> {
     count(number)
+    // heart.style = "  animation-name: click;animation-duration: 0.1s;"
+    // setTimeout(()=>{ heart.style="" },100)
  })
 
 //////
