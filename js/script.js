@@ -63,6 +63,7 @@ heart.addEventListener("click", ()=> {
    count(number)
 })
 
+
 function checkMessage(text, check) {
     if(check === false) {
         message.innerHTML += text;
@@ -75,9 +76,37 @@ function addUpgrade() {}
 
 function updateData() {}
 
+function buyUpdate() {}
+
+
+
+
+var bloodUpgradeNumRef = d.getElementById("bloodUpgradeNum")
+var bloodUpgradeCostRef = d.getElementById("bloodUpgradeCost")
+var bloodUpgradeNum = 0;
+var bloodUpgradeCounter = 0;
+var bloodUpgradeCost = 20;
+
+// var node = d.createElement("DIV");
+// node.id = "node";
+// node.classList.add("upgrade");
+// node.innerHTML = '<p class="upgradeName">Blood Valve</p><p class="upgradeDesc">I don\'t how this works but it does.</p><p class="upgradeCost">Cost: 20</p><p class="upgradeNum">' + bloodUpgradeNum + '</p>'
+
+// leftPane.appendChild(node)
+
+bloodUpgrade.addEventListener("click", ()=>{
+    if(counter > bloodUpgradeCost) {
+        bloodUpgradeNum++
+        bloodUpgradeCounter += 1
+        counter -= bloodUpgradeCost
+        bloodUpgradeCost += 5
+    }
+})
+
 
 let decayTick = 200
-let tick = 10;
+let tick = 100;
+let bloodTick = 500;
 let frame = 0;
 
 setInterval(()=>{
@@ -97,6 +126,16 @@ switch (counter) {
     default:break;
 }
 
+if(counter>=bloodUpgradeCost) {
+    bloodUpgradeNumRef.style.color="#000"
+} else bloodUpgradeNumRef.style.color="#888"
+
 message.scrollTop = message.scrollHeight;
-title.innerHTML = counter + " - IdleBot"
+title.innerHTML = Math.floor(counter) + " - IdleBot"
+bloodUpgradeNumRef.innerHTML = bloodUpgradeNum
+bloodUpgradeCostRef.innerHTML = "Cost: " + bloodUpgradeCost
 }, tick)
+
+setInterval(()=>{
+    count(bloodUpgradeCounter)
+}, bloodTick)
