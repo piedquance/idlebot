@@ -148,6 +148,7 @@ html, body {
 }
 
 #heartCont {
+  pointer-events: none;
   position:relative;
   top:0;
   left:0;
