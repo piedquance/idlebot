@@ -45,16 +45,16 @@ var upgradePresets = [
 ]
 
 var specialPresets = [
-    [50, "SAVING", "Allows you to save.", 0, ()=>{
+    [30, "SAVING", "Allows you to save.", 0, ()=>{
         d.getElementById("saving").style.display = "initial"
         autosavetoggle = true;
-        }, 25, "saving"],
+        }, 20, "saving"],
 
     [50, "Research Blood Valves", "", 1, ()=>{
         data.upgrade[0][5].style.display = ""
     }, 40, "bloodvalves"],
 
-    [0, "Activate Viewport", "", 2, ()=>{
+    [10, "Activate Viewport", "", 2, ()=>{
         d.getElementById("messages").style.display = "inline"
         d.getElementById("newmessages").style.display = "inline"
     }, 0, "viewport"]
