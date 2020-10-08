@@ -19,6 +19,7 @@ var newmessages = d.getElementById("newmessages");
 var title = d.querySelector("title")
 var leftPane = d.getElementById("left")
 var rightPane = d.getElementById("right")
+var rightChildren = 0;
 
 var save = d.getElementById("save")
 var load = d.getElementById("load")
@@ -42,7 +43,9 @@ var upgradePresets = [
 ]
 
 var specialPresets = [
-    [50, "SAVING", "Allows you to save."]
+    [50, "SAVING", "Allows you to save.", 0, ()=>{
+        d.getElementById("saving").style.display = "initial"
+        } ]
 
 ]
 
@@ -64,13 +67,12 @@ var specialPresets = [
 let data = {
     counter:0,
     upgrade: new Array(),
-    upgradeInstance: new Array(100),
+    special: new Array(),
     messageChecker: new Array(1000),
     adventureLog: new Array(),
 }
 
 
-data.upgradeInstance.fill(false);
 data.messageChecker.fill(false);
 
 //////
@@ -195,20 +197,48 @@ function addUpgrade(preset) {
         })
 
     data.upgrade[dataPosition][13] = true
-    data.upgradeInstance[dataPosition] = true
     data.upgrade[dataPosition][5].style.display = "none"
 }
 
 addUpgrade(upgradePresets[0])
 addUpgrade(upgradePresets[1])
-
+data.upgrade[0][5].style.display = ""
 //////
 
 function addSpecial(preset) {
+ rightChildren++
+ let cost = preset[0]
+ let name = preset[1]
+ let description = preset[2]
+ let position = preset[3]
 
+    var node = d.createElement("DIV");
+    node.id = name + "Special";
+    node.classList.add("tile");
+   
+    node.innerHTML = '<div class="generalDesc"><div class="Name">'+ name +'</div><div class="Desc">'+ description +'</div></div><div class=generalNum><div class="Num" id="'+ name +'Cost">'+ cost +'</div></div>'
 
+    rightPane.appendChild(node)
+    data.special[position] = []
+    data.special[position][0] = cost
+    data.special[position][1] = d.getElementById(name + "Special")
+    data.special[position][2] = d.getElementById(name + "Cost")
+    data.special[position][3] = position
+    data.special[position][4] = false;
+    data.special[position][5] = rightChildren - 1
 
+    data.special[position][1].addEventListener("click", ()=> {
+
+        if(data.counter > data.special[position][0]) {
+            data.counter -= data.special[position][0]
+            rightPane.removeChild(right.childNodes[data.special[position][5]])
+
+        specialPresets[position][4]()
+        }
+    })
 }
+
+addSpecial(specialPresets[0])
 
 //////
 
@@ -237,6 +267,23 @@ function checkUpgradeCost() {
 }}}
 
 //////
+
+function checkSpecialCost() {
+    for(x in data.special) {
+        if(data.special[x] !== null) {
+    if(data.counter>=data.special[x][0]) {
+        data.special[x][2].style.color=""
+        data.special[x][1].style.borderColor = ""
+        data.special[x][1].classList.add("active");
+    } else {
+        data.special[x][2].style.color="#888"
+        data.special[x][1].style.borderColor = "black"
+        data.special[x][1].classList.remove("active");
+    }
+}}}
+
+//////
+
 function SAVE() {
 
     localStorage.counter = JSON.stringify(data.counter);
@@ -358,6 +405,7 @@ frame++
 for(n in messagePresets) if(data.counter >= messagePresets[n][1]) data.messageChecker[n] = checkMessage(messagePresets[n][0], data.messageChecker[n], n);
 
 checkUpgradeCost();
+checkSpecialCost();
 
 messages.scrollTop = messages.scrollHeight;
 title.innerHTML = Math.floor(data.counter) + " - IdleBot"
