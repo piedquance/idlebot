@@ -27,7 +27,8 @@ var clear = d.getElementById("clear")
 var autosave = d.getElementById("autosave")
 var importS = d.getElementById("import")
 var exportS = d.getElementById("export")
-var exported = []
+var exportedUpgrade = []
+var exportedSpecial = []
 var intervals = []
 var decayIntervals = []
 var messagePresets = [
@@ -45,10 +46,20 @@ var upgradePresets = [
 var specialPresets = [
     [50, "SAVING", "Allows you to save.", 0, ()=>{
         d.getElementById("saving").style.display = "initial"
-        } ]
+        autosavetoggle = true;
+        }, 25, "saving"],
+
+    [50, "Research Blood Valves", "", 1, ()=>{
+        data.upgrade[0][5].style.display = ""
+    }, 40, "bloodvalves"]
 
 ]
 
+function removeSpecials() {
+    d.getElementById("saving").style.display = "none"
+    data.upgrade[0][5].style.display = "none"
+    autosavetoggle = false;
+}
 
 // data formatting for upgrades: 
 //------------------------------
@@ -168,7 +179,7 @@ function addUpgrade(preset) {
         if( data.upgrade[preset[7]][2] > 0) {
         data.upgrade[dataPosition][2]--
         data.upgrade[dataPosition][0]--
-        console.log(data.upgrade[dataPosition][0])
+        //console.log(data.upgrade[dataPosition][0])
         data.upgrade[dataPosition][1] -= data.upgrade[dataPosition][6]
         }
     }}, decayRate * 1000)
@@ -188,7 +199,7 @@ function addUpgrade(preset) {
                     if( data.upgrade[preset[7]][2] > 0) {
                     data.upgrade[dataPosition][2]--
                     data.upgrade[dataPosition][0]--
-                    console.log(data.upgrade[dataPosition][0])
+                    //console.log(data.upgrade[dataPosition][0])
                     data.upgrade[dataPosition][1] -= data.upgrade[dataPosition][6]
                     }
                 }}, decayRate * 1000)
@@ -202,43 +213,47 @@ function addUpgrade(preset) {
 
 addUpgrade(upgradePresets[0])
 addUpgrade(upgradePresets[1])
-data.upgrade[0][5].style.display = ""
+//data.upgrade[0][5].style.display = ""
 //////
 
 function addSpecial(preset) {
  rightChildren++
  let cost = preset[0]
  let name = preset[1]
+ let reference = preset[6]
  let description = preset[2]
  let position = preset[3]
 
     var node = d.createElement("DIV");
-    node.id = name + "Special";
+    node.id = reference + "Special";
     node.classList.add("tile");
    
-    node.innerHTML = '<div class="generalDesc"><div class="Name">'+ name +'</div><div class="Desc">'+ description +'</div></div><div class=generalNum><div class="Num" id="'+ name +'Cost">'+ cost +'</div></div>'
+    node.innerHTML = '<div class="generalDesc"><div class="Name">'+ name +'</div><div class="Desc">'+ description +'</div></div><div class=generalNum><div class="Num" id="'+ reference +'Cost">'+ cost +'</div></div>'
 
     rightPane.appendChild(node)
     data.special[position] = []
     data.special[position][0] = cost
-    data.special[position][1] = d.getElementById(name + "Special")
-    data.special[position][2] = d.getElementById(name + "Cost")
+    data.special[position][1] = d.getElementById(reference + "Special")
+    data.special[position][2] = d.getElementById(reference + "Cost")
     data.special[position][3] = position
     data.special[position][4] = false;
     data.special[position][5] = rightChildren - 1
+    //console.log("initiation " + data.special[0][5])
+    data.special[position][1].style.display = "none"
 
     data.special[position][1].addEventListener("click", ()=> {
 
         if(data.counter > data.special[position][0]) {
             data.counter -= data.special[position][0]
-            rightPane.removeChild(right.childNodes[data.special[position][5]])
-
+            data.special[position][1].style.display = "none"
+            data.special[position][4] = true
         specialPresets[position][4]()
         }
     })
 }
 
 addSpecial(specialPresets[0])
+addSpecial(specialPresets[1])
 
 //////
 
@@ -285,44 +300,73 @@ function checkSpecialCost() {
 //////
 
 function SAVE() {
-
+    //console.log("before save " + data.special[0][5])
     localStorage.counter = JSON.stringify(data.counter);
 
+    localStorage.right = JSON.stringify(rightChildren);
+
     for(n in data.upgrade) {
-        exported[n] = []
-        exported[n][0] = data.upgrade[n][0]
-        exported[n][1] = data.upgrade[n][1]
-        exported[n][2] = data.upgrade[n][2]
+        exportedUpgrade[n] = []
+        exportedUpgrade[n][0] = data.upgrade[n][0]
+        exportedUpgrade[n][1] = data.upgrade[n][1]
+        exportedUpgrade[n][2] = data.upgrade[n][2]
     }
 
-    localStorage.upgrades = JSON.stringify(exported)
+    for(n in data.special) {
+        exportedSpecial[n] = []
+        exportedSpecial[n][0] = data.special[n][4]
+        exportedSpecial[n][1] = data.special[n][5]
+    }
 
+    localStorage.upgrades = JSON.stringify(exportedUpgrade)
+
+    localStorage.specials = JSON.stringify(exportedSpecial)
 
     localStorage.adventureLog = JSON.stringify(data.adventureLog)
-
+//console.log("after save " + console.log(data.special[0][5]))
 }
 //////
-data.upgrade[0][5].style.display = ""
-function LOAD() {
 
+function LOAD() {
+//console.log("before load " + data.special[0][5])
     data.counter = JSON.parse(localStorage.counter);
 
-    exported = JSON.parse(localStorage.upgrades)
+    rightChildren = JSON.parse(localStorage.right)
 
-    for(n in exported) {
-        data.upgrade[n][0] = exported[n][0]
-        data.upgrade[n][1] = exported[n][1]
-        data.upgrade[n][2] = exported[n][2]
+    exportedUpgrade = JSON.parse(localStorage.upgrades)
+
+    exportedSpecial = JSON.parse(localStorage.specials)
+
+    for(n in exportedUpgrade) {
+        data.upgrade[n][0] = exportedUpgrade[n][0]
+        data.upgrade[n][1] = exportedUpgrade[n][1]
+        data.upgrade[n][2] = exportedUpgrade[n][2]
     }
+
+    for(n in data.special) {
+       data.special[n][4] = exportedSpecial[n][0]
+       data.special[n][5] = exportedSpecial[n][1] 
+    }
+
+    removeSpecials()
+
+    for(n in data.special) if(data.special[n][4]) {
+        specialPresets[n][4]()
+        //console.log(n)
+        data.special[n][1].style.display = "none"
+    } else data.special[n][1].style.display = ""
+    
 
     data.adventureLog = JSON.parse(localStorage.adventureLog)
     
     link(data.adventureLog[data.adventureLog.length - 1])
+    //console.log("after load " + data.special[0][5])
 }
 
 function CLEAR() {
     localStorage.clear();
     data.counter = 0;
+    rightChildren = 0;
 
     for(n in data.upgrade) {
 
@@ -330,12 +374,19 @@ function CLEAR() {
         data.upgrade[n][1] = upgradePresets[n][0]
         data.upgrade[n][2] = 0
     }
+
+    for(n in data.special) {
+        data.special[n][1].style.display = "none"
+        data.special[n][4] = false;
+        data.special[n][5] = 0;
+    }
+
     SAVE()
     LOAD()
     link("home")
 }
 
-let autosavetoggle = true;
+let autosavetoggle = false;
 
 autosave.addEventListener("click", ()=>{
     autosavetoggle = !autosavetoggle
@@ -404,6 +455,10 @@ frame++
 
 for(n in messagePresets) if(data.counter >= messagePresets[n][1]) data.messageChecker[n] = checkMessage(messagePresets[n][0], data.messageChecker[n], n);
 
+for(n in specialPresets) {
+if(data.counter >= specialPresets[n][5] && !data.special[n][4]) {
+      data.special[n][1].style.display = ""
+}}
 checkUpgradeCost();
 checkSpecialCost();
 
