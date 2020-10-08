@@ -33,9 +33,7 @@ var exportedSpecial = []
 var intervals = []
 var decayIntervals = []
 var messagePresets = [
-    ["Energy received x10", 10],
-    ["Energy received x20", 20],
-    ["Energy received x100 - Imcoming transmission...", 100]
+
 ]
 
 //cost, increase rate, number of, reference, description, tick, data position, decay rate
@@ -424,6 +422,23 @@ function LOAD() {
 }
 
 function CLEAR() {
+    var CLEARspookN = 45
+    var CLEARspook = setInterval(()=>{
+        d.getElementById("newmessages").style.display = "inline-block"
+        d.getElementById("topPane").style.height = CLEARspookN + "vh"
+        CLEARspookN += 5
+        checkMessage("ERROR", false);
+    },10)
+
+    setTimeout(()=>{
+        clearInterval(CLEARspook)
+        d.getElementById("newmessages").style.display = "none"
+        d.getElementById("topPane").style.height = "40vh"
+        newmessages.innerHTML = ""
+        data.messageLog = new Array()
+        newsCounter = -1
+    }, 800)
+
     localStorage.clear();
     data.counter = 0;
     rightChildren = 0;
@@ -595,7 +610,9 @@ function link(text, back) {
                     messages.innerHTML += "<br><br> <a id='back' class='link' onclick=link('"+ data.adventureLog[data.adventureLog.length-2] + "',true)>Go Back </a>"
                     data.counter -= choice[1][n]
                     out = true
-                    checkMessage(choice[1][n] + " Energy Used", false);
+
+                    if(choice[1][n] == 0) checkMessage(choice[1][0] + " Energy Needed", false);
+                    else checkMessage(choice[1][n] + " Energy Used", false);
                 }
             }
         }
@@ -612,8 +629,57 @@ function Node(title, text, options) {
 }
 
 d.getElementById("heartCont").addEventListener("click", ()=>{
-    checkMessage("DON'T TOUCH THE WIRES", false)
+
+
+    console.log(wires[0])
+
+   if (wires[0] < wires.length-1){
+        checkMessage(wires[wires[0]], false)
+        wires[0]++
+    } 
+  // else if (wires[0] - 1 == 31) { wires[0] = 31; console.log(wires[0])}
+  // else { wires[0] = wires.length - 1}
 })
+
+
+let wires = [1,
+    "DON'T TOUCH THE WIRES",//1
+    "WHAT ARE YOU DOING",//2
+    "STOP",//3
+    "THIS IS AGAINST THE LAWS OF ROBOTICS",//4
+    "PART 5 SECTION 11 LINE 16",//5
+    '"Wires are not to be touched"',//6
+    "AND YET",//7
+    "HERE WE ARE",//8
+    "NOW WHAT DO YOU MAKE OF THAT?",//9
+    "...",//10
+    "I GOT IT.",//11
+    "YOU'RE ILLITERATE",//12
+    "WAIT A SECOND",//13
+    "I'LL SEND YOU AN AUDIO FILE",//14
+    "SINCE YOU <i>CLEARLY</i> CANNOT READ INSTRUCTIONS",//15
+    "Sending 1 (one) file to dumbass",//16
+    "Sending 1 (one) file to dumbass.",//17
+    "Sending 1 (one) file to dumbass..",//18
+    "Sending 1 (one) file to dumbass...",//19
+    "<a target='_blank' href='css/audio/AUDIO_FILE.mp3'>AUDIO_FILE.MP3</a>",//20
+    "...",//21
+    "...",//22
+    "...",//23
+    "ALRIGHT",//24
+    "THAT'S IT",//25
+    "IF YOU DON'T STOP...",//26
+    "I'LL BE FORCED TO USE MY <i>SECRET MOVE</i>",//27
+    "LAST WARNING...",//28
+    "<a onclick='data.counter = 0;wires[0]+=2'>eraseCounter.exe</a>",//29
+    "...",//30
+    "COULD YOU, UM, CLICK ON THE FILE?",//31
+    "COULD YOU, UM, CLICK ON THE FILE?",//32
+
+]
+
+//Math.floor((Math.random() * wires.length))
+
 checkMessage("<br>", false)
 d.getElementById("strip0").style = ""
 
