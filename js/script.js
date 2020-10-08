@@ -41,6 +41,11 @@ var upgradePresets = [
     [20, 7, 0, "Blood Pipe", "pipe", "Pipes blood every 0.5 s<br>Decays every 20 s", 5, 1, 20],
 ]
 
+var specialPresets = [
+    [50, "SAVING", "Allows you to save."]
+
+]
+
 
 // data formatting for upgrades: 
 //------------------------------
@@ -131,16 +136,16 @@ function addUpgrade(preset) {
     let dataPosition = preset[7]
     let decayRate = preset[8]
 
-    if(!data.upgradeInstance[dataPosition]) {
+   
 
  var node = d.createElement("DIV");
  node.id = reference + "Upgrade";
  node.classList.add("tile");
 
- node.innerHTML = '<div class="generalDesc"><p class="upgradeName">'+ name 
+ node.innerHTML = '<div class="generalDesc"><p class="Name">'+ name 
  +'</p><p class="Desc">'+ description
  +'</p><p class="Cost" id="'+ reference +'UpgradeCost">Cost:' + cost
- +'</p></div> <div class="UpgradeNum"><p class="upgradeNum" id="'+ reference +'UpgradeNum">' + number + '</p></div>'
+ +'</p></div> <div class="generalNum"><p class="Num" id="'+ reference +'UpgradeNum">' + number + '</p></div>'
 
  leftPane.appendChild(node)
 
@@ -173,16 +178,37 @@ function addUpgrade(preset) {
                 data.upgrade[dataPosition][0]++
                 data.counter -= data.upgrade[dataPosition][1]
                 data.upgrade[dataPosition][1] += data.upgrade[dataPosition][6]
+
+                clearInterval(decayIntervals[dataPosition])
+
+                decayIntervals[dataPosition] = setInterval(()=>{
+                    if(data.upgrade[preset[7]] !== null && data.upgrade[preset[7]] !== undefined) {
+                    if( data.upgrade[preset[7]][2] > 0) {
+                    data.upgrade[dataPosition][2]--
+                    data.upgrade[dataPosition][0]--
+                    console.log(data.upgrade[dataPosition][0])
+                    data.upgrade[dataPosition][1] -= data.upgrade[dataPosition][6]
+                    }
+                }}, decayRate * 1000)
+                
             }
         })
 
     data.upgrade[dataPosition][13] = true
     data.upgradeInstance[dataPosition] = true
     data.upgrade[dataPosition][5].style.display = "none"
-}}
+}
 
 addUpgrade(upgradePresets[0])
 addUpgrade(upgradePresets[1])
+
+//////
+
+function addSpecial(preset) {
+
+
+
+}
 
 //////
 
