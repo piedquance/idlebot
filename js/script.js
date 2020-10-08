@@ -354,7 +354,7 @@ function LOAD() {
         specialPresets[n][4]()
         //console.log(n)
         data.special[n][1].style.display = "none"
-    } else data.special[n][1].style.display = ""
+    } else data.special[n][1].style.display = "none"
     
 
     data.adventureLog = JSON.parse(localStorage.adventureLog)
