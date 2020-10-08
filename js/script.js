@@ -641,7 +641,7 @@ function Node(title, text, options) {
 d.getElementById("heartCont").addEventListener("click", ()=>{
 
 
-    console.log(wires[0])
+    //console.log(wires[0])
 
    if (wires[0] < 32){
         checkMessage(wires[wires[0]], false)
