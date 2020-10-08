@@ -357,6 +357,10 @@ function SAVE(clear) {
 
     localStorage.adventureLog = JSON.stringify(data.adventureLog)
 
+    localStorage.wireNumber = JSON.stringify(wires[0])
+
+    localStorage.wiresPauses = JSON.stringify(wiresPauses)
+
 }
 //////
 
@@ -364,6 +368,10 @@ function LOAD() {
     data.counter = parseInt(localStorage.counter);
 
     rightChildren = parseInt(localStorage.right)
+
+    wires[0] = parseInt(localStorage.wireNumber)
+
+    wiresPauses = JSON.parse(localStorage.wiresPauses)
 
     exportedUpgrade = JSON.parse(localStorage.upgrades)
 
@@ -417,8 +425,6 @@ function LOAD() {
     newmessages.innerHTML = ""
 
     for(n in templog) checkMessage(templog[n], false)
-
-
 }
 
 function CLEAR() {
@@ -443,6 +449,10 @@ function CLEAR() {
     data.counter = 0;
     rightChildren = 0;
     newsCounter = -1;
+    wires[0] = 1
+
+    wiresPauses = new Array(10)
+    wiresPauses.fill(false)
 
     for(n in data.upgrade) {
 
@@ -633,12 +643,14 @@ d.getElementById("heartCont").addEventListener("click", ()=>{
 
     console.log(wires[0])
 
-   if (wires[0] < wires.length-1){
+   if (wires[0] < 32){
         checkMessage(wires[wires[0]], false)
         wires[0]++
     } 
-  // else if (wires[0] - 1 == 31) { wires[0] = 31; console.log(wires[0])}
-  // else { wires[0] = wires.length - 1}
+   else if (wires[0] > 32 && wires[0] < wires.length) {
+    checkMessage(wires[wires[0]], false)
+    wires[0]++
+    }
 })
 
 
@@ -671,12 +683,16 @@ let wires = [1,
     "IF YOU DON'T STOP...",//26
     "I'LL BE FORCED TO USE MY <i>SECRET MOVE</i>",//27
     "LAST WARNING...",//28
-    "<a onclick='data.counter = 0;wires[0]+=2'>eraseCounter.exe</a>",//29
+    "<a onclick=' data.counter = 0; if(wiresPauses[0] === false){checkMessage(wires[32], false);wires[0]=34;wiresPauses[0] = true}'>eraseCounter.exe</a>",//29
     "...",//30
     "COULD YOU, UM, CLICK ON THE FILE?",//31
-    "COULD YOU, UM, CLICK ON THE FILE?",//32
-
+    "HAHAHAHAHA!",//32
+    "HAHAHAHAHA",
+    "YOU FOOL",
+    "FOU FELL INTO MY TRAP!"
 ]
+wiresPauses = new Array(10)
+wiresPauses.fill(false)
 
 //Math.floor((Math.random() * wires.length))
 
@@ -690,5 +706,5 @@ link("home");
 
 Node("look_around", ["Fields as far as the eye can see.|Get up~get_up"], [])
 
-Node("get_up", ["pingas", "You try to get up. You fail.<br>But maybe if you had more power..."], [10, 0])
+Node("get_up", ["You get up.", "You try to get up. You fail.<br>But maybe if you had more power..."], [10, 0])
 
