@@ -120,6 +120,22 @@ a:active {
   border-color: #fff;
   border-style: double;
   margin:10px;
+  animation-name: tile;
+  animation-duration:0.5s;
+}
+
+@keyframes tile {
+  0% {background-color: #fff;
+
+  }
+  100% { background-color: #b2b2b2;}
+}
+
+@keyframes tilerest {
+  0% {
+    color:#fff
+    }
+    100% {}
 }
 
 .UpgradeNum {
@@ -153,6 +169,8 @@ a:active {
   font-weight: 1000;
   padding-top:15px;
   margin:0;
+  animation-name: tilerest;
+  animation-duration:0.5s;
 }
 
 .Num {
@@ -161,6 +179,8 @@ a:active {
   font-size: 50px;
   font-weight: 1000;
   margin-top: 50px;
+  animation-name: tilerest;
+  animation-duration:0.5s;
 }
 
 
