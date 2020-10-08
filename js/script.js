@@ -29,7 +29,7 @@ var autosave = d.getElementById("autosave")
 var importS = d.getElementById("import")
 var exportS = d.getElementById("export")
 var exportedUpgrade = []
-var exportedSpecial = []
+var exportedSpecial = new Array()
 var intervals = []
 var decayIntervals = []
 var messagePresets = [
@@ -38,8 +38,8 @@ var messagePresets = [
 
 //cost, increase rate, number of, reference, description, tick, data position, decay rate
 var upgradePresets = [
-    [10, 5, 0, "Blood Valve", "blood", "Pumps blood every 1 s<br>Decays every 10 s", 10, 0, 10],
-    [20, 7, 0, "Blood Pipe", "pipe", "Pipes blood every 0.5 s<br>Decays every 20 s", 5, 1, 20],
+    [10, 5, 0, "Blood Valve", "blood", "Pumps blood every 1 s<br>Decays every 10 s", 1, 0, 10],
+    [20, 7, 0, "Blood Pipe", "pipe", "Pipes blood every 0.5 s<br>Decays every 20 s", 0.5, 1, 20],
 ]
 
 var specialPresets = [
@@ -56,7 +56,18 @@ var specialPresets = [
     [10, "Activate Viewport", "", 2, ()=>{
         d.getElementById("messages").style.display = "inline-block"
         d.getElementById("newmessages").style.display = "inline-block"
-    }, 5, "viewport"]
+    }, 5, "viewport"],
+
+    [100, "Upgrade Blood Valves", "Now twice as efficient!", 3, ()=> {
+
+        data.upgrade[0][10] = 0.01
+
+        intervals[0] = setInterval(()=>{
+            if(data.upgrade[0] !== null && data.upgrade[0] !== undefined) {
+            count(data.upgrade[0][0])
+        }}, data.upgrade[0][10] * 1000)
+
+    }, 70, "bloodbetter1"]
 
 ]
 
@@ -66,6 +77,13 @@ function removeSpecials() {
     data.upgrade[0][5].style.display = "none"
     d.getElementById("messages").style.display = "none"
     d.getElementById("newmessages").style.display = "none"
+    data.upgrade[0][10] = 1
+
+    intervals[0] = setInterval(()=>{
+        if(data.upgrade[0] !== null && data.upgrade[0] !== undefined) {
+        count(data.upgrade[0][0])
+    }}, data.upgrade[0][10] * 1000)
+
     autosavetoggle = false;
 }
 
@@ -196,7 +214,7 @@ function addUpgrade(preset) {
     intervals[dataPosition] = setInterval(()=>{
         if(data.upgrade[preset[7]] !== null && data.upgrade[preset[7]] !== undefined) {
         count(data.upgrade[preset[7]][0])
-    }}, tick * 1000)
+    }}, data.upgrade[0][10] * 1000)
 
     decayIntervals[dataPosition] = setInterval(()=>{
         if(data.upgrade[preset[7]] !== null && data.upgrade[preset[7]] !== undefined) {
@@ -233,8 +251,9 @@ function addUpgrade(preset) {
     data.upgrade[dataPosition][5].style.display = "none"
 }
 
-addUpgrade(upgradePresets[0])
-addUpgrade(upgradePresets[1])
+for(n in upgradePresets) addUpgrade(upgradePresets[n])
+
+
 //data.upgrade[0][5].style.display = ""
 //////
 
@@ -277,9 +296,7 @@ function addSpecial(preset) {
     })
 }
 
-addSpecial(specialPresets[0])
-addSpecial(specialPresets[1])
-addSpecial(specialPresets[2])
+for(n in specialPresets) addSpecial(specialPresets[n])
 
 //////
 
@@ -360,8 +377,8 @@ function SAVE(clear) {
     localStorage.wireNumber = JSON.stringify(wires[0])
 
     localStorage.wiresPauses = JSON.stringify(wiresPauses)
-
 }
+
 //////
 
 function LOAD() {
@@ -375,6 +392,8 @@ function LOAD() {
 
     exportedUpgrade = JSON.parse(localStorage.upgrades)
 
+    exportedSpecial = []
+
     exportedSpecial = JSON.parse(localStorage.specials)
 
     for(n in exportedUpgrade) {
@@ -383,7 +402,7 @@ function LOAD() {
         data.upgrade[n][2] = exportedUpgrade[n][2]
     }
 
-    for(n in data.special) {
+    for(n in exportedSpecial) {
        data.special[n][4] = exportedSpecial[n][0]
        data.special[n][5] = exportedSpecial[n][1]
        data.special[n][6] = exportedSpecial[n][2] 
@@ -540,6 +559,18 @@ if(data.counter > 0) count(0)
 autosavedelay = true;
 setTimeout(()=>{
 
+    for(n in exportedUpgrade) {
+        data.upgrade[n][0] = exportedUpgrade[n][0]
+        data.upgrade[n][1] = exportedUpgrade[n][1]
+        data.upgrade[n][2] = exportedUpgrade[n][2]
+    }
+
+    for(n in exportedSpecial) {
+       data.special[n][4] = exportedSpecial[n][0]
+       data.special[n][5] = exportedSpecial[n][1]
+       data.special[n][6] = exportedSpecial[n][2] 
+    }
+
     LOAD(); autosavedelay = false
 
 }, 50)
@@ -639,9 +670,6 @@ function Node(title, text, options) {
 }
 
 d.getElementById("heartCont").addEventListener("click", ()=>{
-
-
-    //console.log(wires[0])
 
    if (wires[0] < 32){
         checkMessage(wires[wires[0]], false)
