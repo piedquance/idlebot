@@ -32,6 +32,7 @@ var exportedSpecial = []
 var intervals = []
 var decayIntervals = []
 var messagePresets = [
+    ["<br>", 0],
     ["Energy received x10", 10],
     ["Energy received x20", 20],
     ["Energy received x100 - Imcoming transmission...", 100]
@@ -51,13 +52,20 @@ var specialPresets = [
 
     [50, "Research Blood Valves", "", 1, ()=>{
         data.upgrade[0][5].style.display = ""
-    }, 40, "bloodvalves"]
+    }, 40, "bloodvalves"],
+
+    [0, "Activate Viewport", "", 2, ()=>{
+        d.getElementById("messages").style.display = "initial"
+        d.getElementById("newmessages").style.display = "initial"
+    }, 0, "viewport"]
 
 ]
 
 function removeSpecials() {
     d.getElementById("saving").style.display = "none"
     data.upgrade[0][5].style.display = "none"
+    d.getElementById("messages").style.display = "none"
+    d.getElementById("newmessages").style.display = "none"
     autosavetoggle = false;
 }
 
@@ -185,7 +193,7 @@ function addUpgrade(preset) {
     }}, decayRate * 1000)
 
         data.upgrade[dataPosition][5].addEventListener("click", ()=> {
-            if(data.counter > data.upgrade[dataPosition][1]) {
+            if(data.counter >= data.upgrade[dataPosition][1]) {
     
                 data.upgrade[dataPosition][2]++
                 data.upgrade[dataPosition][0]++
@@ -245,7 +253,7 @@ function addSpecial(preset) {
 
     data.special[position][1].addEventListener("click", ()=> {
 
-        if(data.counter > data.special[position][0]) {
+        if(data.counter >= data.special[position][0]) {
             data.counter -= data.special[position][0]
             data.special[position][1].style.display = "none"
             data.special[position][4] = true
@@ -256,6 +264,7 @@ function addSpecial(preset) {
 
 addSpecial(specialPresets[0])
 addSpecial(specialPresets[1])
+addSpecial(specialPresets[2])
 
 //////
 
@@ -278,7 +287,7 @@ function checkUpgradeCost() {
         data.upgrade[x][5].classList.add("active");
     } else {
         data.upgrade[x][4].style.color="#888"
-        data.upgrade[x][5].style.borderColor = "black"
+        data.upgrade[x][5].style.borderColor = "#888"
         data.upgrade[x][5].classList.remove("active");
     }
 }}}
@@ -294,7 +303,7 @@ function checkSpecialCost() {
         data.special[x][1].classList.add("active");
     } else {
         data.special[x][2].style.color="#888"
-        data.special[x][1].style.borderColor = "black"
+        data.special[x][1].style.borderColor = "#888"
         data.special[x][1].classList.remove("active");
     }
 }}}
@@ -486,7 +495,7 @@ function link(text, back) {
             linkarray[n-1] = array[n].split("~")
         }
 
-        messages.innerHTML = "<p class='messageStrip'>"+ array[0] +"</p>"
+        messages.innerHTML = "<p class='messageStrip line'>"+ array[0] +"</p>"
 
         for(n in linkarray) {
             messages.innerHTML += "<br>> <a onclick=link('"+ linkarray[n][1] +"',false)>"+ linkarray[n][0] +"</a>"
