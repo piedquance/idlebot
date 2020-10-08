@@ -238,6 +238,8 @@ function addSpecial(preset) {
     data.special[position][3] = position
     data.special[position][4] = false;
     data.special[position][5] = rightChildren - 1
+    data.special[position][6] = false;
+
     //console.log("initiation " + data.special[0][5])
     data.special[position][1].style.display = "none"
 
@@ -316,6 +318,7 @@ function SAVE() {
         exportedSpecial[n] = []
         exportedSpecial[n][0] = data.special[n][4]
         exportedSpecial[n][1] = data.special[n][5]
+        exportedSpecial[n][2] = data.special[n][6]
     }
 
     localStorage.upgrades = JSON.stringify(exportedUpgrade)
@@ -345,7 +348,8 @@ function LOAD() {
 
     for(n in data.special) {
        data.special[n][4] = exportedSpecial[n][0]
-       data.special[n][5] = exportedSpecial[n][1] 
+       data.special[n][5] = exportedSpecial[n][1]
+       data.special[n][6] = exportedSpecial[n][2] 
     }
 
     removeSpecials()
@@ -354,7 +358,9 @@ function LOAD() {
         specialPresets[n][4]()
         //console.log(n)
         data.special[n][1].style.display = "none"
-    } else data.special[n][1].style.display = "none"
+    } else if (data.special[n][6])
+     data.special[n][1].style.display = ""
+     else data.special[n][1].style.display = "none"
     
 
     data.adventureLog = JSON.parse(localStorage.adventureLog)
@@ -378,6 +384,7 @@ function CLEAR() {
     for(n in data.special) {
         data.special[n][1].style.display = "none"
         data.special[n][4] = false;
+        data.special[n][6] = false;
         data.special[n][5] = 0;
     }
 
@@ -458,6 +465,7 @@ for(n in messagePresets) if(data.counter >= messagePresets[n][1]) data.messageCh
 for(n in specialPresets) {
 if(data.counter >= specialPresets[n][5] && !data.special[n][4]) {
       data.special[n][1].style.display = ""
+      data.special[n][6] = true;
 }}
 checkUpgradeCost();
 checkSpecialCost();
