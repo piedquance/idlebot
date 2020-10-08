@@ -48,6 +48,7 @@ var specialPresets = [
     [30, "SAVING", "Allows you to save.", 0, ()=>{
         d.getElementById("saving").style.display = "initial"
         autosavetoggle = true;
+        autosave.innerHTML = "AUTOSAVE <span id='on'>ON</span>"
         }, 20, "saving"],
 
     [50, "Research Blood Valves", "", 1, ()=>{
@@ -57,12 +58,13 @@ var specialPresets = [
     [10, "Activate Viewport", "", 2, ()=>{
         d.getElementById("messages").style.display = "inline-block"
         d.getElementById("newmessages").style.display = "inline-block"
-    }, 0, "viewport"]
+    }, 5, "viewport"]
 
 ]
 
 function removeSpecials() {
     d.getElementById("saving").style.display = "none"
+    autosave.innerHTML = "AUTOSAVE <span id='off'>OFF</span>"
     data.upgrade[0][5].style.display = "none"
     d.getElementById("messages").style.display = "none"
     d.getElementById("newmessages").style.display = "none"
@@ -137,14 +139,15 @@ function checkMessage(text, check) {
 
         newsCounter++
 
-        newmessages.innerHTML += '<p class="messageStrip" id="strip'+ newsCounter +'" style="animation-name:messageLoad;animation-duration:0.5s">' + text + '</p>';
+        newmessages.innerHTML += '<p class="messageStrip" id="strip'+ newsCounter 
+        +'" style="animation-name:messageLoad;animation-duration:0.5s">'+newsCounter+ '~ ' + text + '</p>';
        setTimeout(()=>{
+           if(d.getElementById("strip" + newsCounter != null)) {
         d.getElementById("strip" + newsCounter).style = "";
-       }, 500)
+       }}, 500)
          result =  true;
 
-       data.messageLog[newsCounter-1] = text
-
+       data.messageLog[newsCounter] = text
     }
     
     return result;
@@ -153,9 +156,10 @@ function checkMessage(text, check) {
 //Flash remover
 setInterval(()=>{
     for(let n = 0; n < newsCounter;n++)
+    if(d.getElementById("strip" + n) != null) {
     if(d.getElementById("strip" + n).style != "") {
         d.getElementById("strip" + n).style = ""
-    }}, 500)
+}}}, 500)
 
 //////
 
@@ -201,7 +205,6 @@ function addUpgrade(preset) {
         if( data.upgrade[preset[7]][2] > 0) {
         data.upgrade[dataPosition][2]--
         data.upgrade[dataPosition][0]--
-        //console.log(data.upgrade[dataPosition][0])
         data.upgrade[dataPosition][1] -= data.upgrade[dataPosition][6]
         }
     }}, decayRate * 1000)
@@ -221,7 +224,6 @@ function addUpgrade(preset) {
                     if( data.upgrade[preset[7]][2] > 0) {
                     data.upgrade[dataPosition][2]--
                     data.upgrade[dataPosition][0]--
-                    //console.log(data.upgrade[dataPosition][0])
                     data.upgrade[dataPosition][1] -= data.upgrade[dataPosition][6]
                     }
                 }}, decayRate * 1000)
@@ -264,8 +266,6 @@ function addSpecial(preset) {
     data.special[position][4] = false;
     data.special[position][5] = rightChildren - 1
     data.special[position][6] = false;
-
-    //console.log("initiation " + data.special[0][5])
     data.special[position][1].style.display = "none"
 
     data.special[position][1].addEventListener("click", ()=> {
@@ -327,10 +327,12 @@ function checkSpecialCost() {
 
 //////
 
-function SAVE() {
-    //console.log("before save " + data.special[0][5])
-    localStorage.counter = JSON.stringify(data.counter);
+function SAVE(clear) {
 
+    if(!autosavetoggle && !clear) checkMessage("STATE SAVED", false)
+
+    localStorage.counter = JSON.stringify(data.counter);
+    localStorage.autosavetoggle = JSON.stringify(autosavetoggle)
     localStorage.right = JSON.stringify(rightChildren);
 
     for(n in data.upgrade) {
@@ -351,18 +353,19 @@ function SAVE() {
 
     localStorage.specials = JSON.stringify(exportedSpecial)
 
+    localStorage.messageLog = JSON.stringify(data.messageLog)
+
+    localStorage.messageChecker = JSON.stringify(data.messageChecker)
+
     localStorage.adventureLog = JSON.stringify(data.adventureLog)
-//console.log("after save " + console.log(data.special[0][5]))
-    if(!autosavetoggle) checkMessage("STATE SAVED", false)
 
 }
 //////
 
 function LOAD() {
-//console.log("before load " + data.special[0][5])
-    data.counter = JSON.parse(localStorage.counter);
+    data.counter = parseInt(localStorage.counter);
 
-    rightChildren = JSON.parse(localStorage.right)
+    rightChildren = parseInt(localStorage.right)
 
     exportedUpgrade = JSON.parse(localStorage.upgrades)
 
@@ -384,23 +387,47 @@ function LOAD() {
 
     for(n in data.special) if(data.special[n][4]) {
         specialPresets[n][4]()
-        //console.log(n)
         data.special[n][1].style.display = "none"
     } else if (data.special[n][6])
      data.special[n][1].style.display = ""
      else data.special[n][1].style.display = "none"
-    
+
+    autosavetoggle = false
+    let newLocal = localStorage.autosavetoggle;
+    autosavetoggle = JSON.parse(newLocal)
+
+    switch (autosavetoggle) {
+        case true:
+        autosave.innerHTML = "AUTOSAVE <span id='on'>ON</span>"
+        break;
+        case false:
+        autosave.innerHTML = "AUTOSAVE <span id='off'>OFF</span>"
+        break;
+    }
 
     data.adventureLog = JSON.parse(localStorage.adventureLog)
     
     link(data.adventureLog[data.adventureLog.length - 1])
-    //console.log("after load " + data.special[0][5])
+
+    newmessages.innerHTML = ""
+    data.messageLog = []
+
+    let templog = JSON.parse(localStorage.messageLog)
+
+    newsCounter = -1
+
+    newmessages.innerHTML = ""
+
+    for(n in templog) checkMessage(templog[n], false)
+
+
 }
 
 function CLEAR() {
     localStorage.clear();
     data.counter = 0;
     rightChildren = 0;
+    newsCounter = -1;
 
     for(n in data.upgrade) {
 
@@ -416,8 +443,15 @@ function CLEAR() {
         data.special[n][5] = 0;
     }
 
-    SAVE()
+    data.adventureLog = []
+
+
+    data.messageChecker = new Array()
+    data.messageChecker.fill(false);
+    data.messageLog = new Array()
+    SAVE(true)
     LOAD()
+
     link("home")
 }
 
@@ -432,7 +466,7 @@ autosave.addEventListener("click", ()=>{
         autosave.innerHTML = "AUTOSAVE <span id='on'>ON</span>"
         break;
         case false:
-        checkMessage("AUTOSAVE DISACTIVATED", false)
+        checkMessage("AUTOSAVE DEACTIVATED", false)
         autosave.innerHTML = "AUTOSAVE <span id='off'>OFF</span>"
         break;
     }
@@ -479,14 +513,18 @@ if(data.counter > 0) count(0)
 }, decayTick)
 
 autosavedelay = true;
-setTimeout(()=>{ LOAD(); autosavedelay = false}, 100)
+setTimeout(()=>{
+
+    LOAD(); autosavedelay = false
+
+}, 50)
 
 setInterval(()=>{
 
     count(pipeCount)
     pipeCount = 0
 
-if(autosavetoggle && !autosavedelay) SAVE()
+if(autosavetoggle && !autosavedelay) SAVE(false)
     
 frame++
 
@@ -533,11 +571,9 @@ function link(text, back) {
         messages.innerHTML += "<br><br> <a id='back' class='link' onclick=link('"+ data.adventureLog[data.adventureLog.length-2] + "',true)>Go Back </a>"
     
     } else {
-        console.log("here")
         let out = false
         for(n in choice[0]) {
             if(!out) {
-                console.log(choice[0][n])
                 if(data.counter >= choice[1][n]) {
 
                     let array = choice[0][n].split("|")
@@ -561,15 +597,10 @@ function link(text, back) {
                     out = true
                     checkMessage(choice[1][n] + " Energy Used", false);
                 }
-
             }
         }
-
-
     }
-
 }
-
 }
 
 let Nodes = {}
@@ -594,6 +625,4 @@ link("home");
 Node("look_around", ["Fields as far as the eye can see.|Get up~get_up"], [])
 
 Node("get_up", ["pingas", "You try to get up. You fail.<br>But maybe if you had more power..."], [10, 0])
-
-
 
