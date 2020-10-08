@@ -20,6 +20,7 @@ var title = d.querySelector("title")
 var leftPane = d.getElementById("left")
 var rightPane = d.getElementById("right")
 var rightChildren = 0;
+var newsCounter = -1;
 
 var save = d.getElementById("save")
 var load = d.getElementById("load")
@@ -32,7 +33,6 @@ var exportedSpecial = []
 var intervals = []
 var decayIntervals = []
 var messagePresets = [
-    ["<br>", 0],
     ["Energy received x10", 10],
     ["Energy received x20", 20],
     ["Energy received x100 - Imcoming transmission...", 100]
@@ -55,8 +55,8 @@ var specialPresets = [
     }, 40, "bloodvalves"],
 
     [10, "Activate Viewport", "", 2, ()=>{
-        d.getElementById("messages").style.display = "inline"
-        d.getElementById("newmessages").style.display = "inline"
+        d.getElementById("messages").style.display = "inline-block"
+        d.getElementById("newmessages").style.display = "inline-block"
     }, 0, "viewport"]
 
 ]
@@ -89,6 +89,7 @@ let data = {
     special: new Array(),
     messageChecker: new Array(1000),
     adventureLog: new Array(),
+    messageLog : new Array(),
 }
 
 
@@ -128,20 +129,33 @@ function count(number) {
 }
 //////
 
-function checkMessage(text, check, num) {
+function checkMessage(text, check) {
     let result = false
     if(check == true) return true;
 
     else if(check === false) {
-        newmessages.innerHTML += '<p class="messageStrip" id="strip'+ num +'" style="animation-name:messageLoad;animation-duration:0.5s">' + text + '</p>';
+
+        newsCounter++
+
+        newmessages.innerHTML += '<p class="messageStrip" id="strip'+ newsCounter +'" style="animation-name:messageLoad;animation-duration:0.5s">' + text + '</p>';
        setTimeout(()=>{
-        d.getElementById("strip" + num).style = "";
+        d.getElementById("strip" + newsCounter).style = "";
        }, 500)
          result =  true;
+
+       data.messageLog[newsCounter-1] = text
+
     }
     
     return result;
 }
+//////
+//Flash remover
+setInterval(()=>{
+    for(let n = 0; n < newsCounter;n++)
+    if(d.getElementById("strip" + n).style != "") {
+        d.getElementById("strip" + n).style = ""
+    }}, 500)
 
 //////
 
@@ -236,7 +250,10 @@ function addSpecial(preset) {
     node.id = reference + "Special";
     node.classList.add("tile");
    
-    node.innerHTML = '<div class="generalDesc"><div class="Name">'+ name +'</div><div class="Desc">'+ description +'</div></div><div class=generalNum><div class="Num" id="'+ reference +'Cost">'+ cost +'</div></div>'
+    node.innerHTML = '<div class="generalDesc"><div class="Name">'+ name 
+    +'</div><div class="Desc">'+ description 
+    +'</div></div><div class=generalNum><div class="Num" id="'+ reference 
+    +'Cost">'+ cost +'</div></div>'
 
     rightPane.appendChild(node)
     data.special[position] = []
@@ -336,6 +353,8 @@ function SAVE() {
 
     localStorage.adventureLog = JSON.stringify(data.adventureLog)
 //console.log("after save " + console.log(data.special[0][5]))
+    if(!autosavetoggle) checkMessage("STATE SAVED", false)
+
 }
 //////
 
@@ -409,9 +428,11 @@ autosave.addEventListener("click", ()=>{
     
     switch (autosavetoggle) {
         case true:
+        checkMessage("AUTOSAVE ACTIVATED", false)
         autosave.innerHTML = "AUTOSAVE <span id='on'>ON</span>"
         break;
         case false:
+        checkMessage("AUTOSAVE DISACTIVATED", false)
         autosave.innerHTML = "AUTOSAVE <span id='off'>OFF</span>"
         break;
     }
@@ -469,7 +490,7 @@ if(autosavetoggle && !autosavedelay) SAVE()
     
 frame++
 
-for(n in messagePresets) if(data.counter >= messagePresets[n][1]) data.messageChecker[n] = checkMessage(messagePresets[n][0], data.messageChecker[n], n);
+for(n in messagePresets) if(data.counter >= messagePresets[n][1]) data.messageChecker[n] = checkMessage(messagePresets[n][0], data.messageChecker[n]);
 
 for(n in specialPresets) {
 if(data.counter >= specialPresets[n][5] && !data.special[n][4]) {
@@ -479,17 +500,21 @@ if(data.counter >= specialPresets[n][5] && !data.special[n][4]) {
 checkUpgradeCost();
 checkSpecialCost();
 
-messages.scrollTop = messages.scrollHeight;
+newmessages.scrollTop = newmessages.scrollHeight;
 title.innerHTML = Math.floor(data.counter) + " - IdleBot"
 
 updateData();
 }, tick)
 
 function link(text, back) {
-    
+
     if(Nodes.hasOwnProperty(text)) {
 
-        let array = Nodes[text].split("|")
+        let choice = Nodes[text]
+
+        if(choice[0].length === 1) {
+
+        let array = choice[0][0].split("|")
         let linkarray = []
         for(let n = 1; n < array.length; n++) {
             linkarray[n-1] = array[n].split("~")
@@ -506,19 +531,69 @@ function link(text, back) {
 
 
         messages.innerHTML += "<br><br> <a id='back' class='link' onclick=link('"+ data.adventureLog[data.adventureLog.length-2] + "',true)>Go Back </a>"
+    
+    } else {
+        console.log("here")
+        let out = false
+        for(n in choice[0]) {
+            if(!out) {
+                console.log(choice[0][n])
+                if(data.counter >= choice[1][n]) {
+
+                    let array = choice[0][n].split("|")
+                    let linkarray = []
+                    for(let n = 1; n < array.length; n++) {
+                        linkarray[n-1] = array[n].split("~")
+                    }
+            
+                    messages.innerHTML = "<p class='messageStrip line'>"+ array[0] +"</p>"
+            
+                    for(n in linkarray) {
+                        messages.innerHTML += "<br> <span class='bracket'> ></span> <a class='link' onclick=link('"+ linkarray[n][1] +"',false)>"+ linkarray[n][0] +"</a>"
+                    }
+            
+                    if(back) data.adventureLog.splice(data.adventureLog.length-1, 1)
+                    else data.adventureLog[data.adventureLog.length] = text
+            
+            
+                    messages.innerHTML += "<br><br> <a id='back' class='link' onclick=link('"+ data.adventureLog[data.adventureLog.length-2] + "',true)>Go Back </a>"
+                    data.counter -= choice[1][n]
+                    out = true
+                    checkMessage(choice[1][n] + " Energy Used", false);
+                }
+
+            }
+        }
+
+
     }
+
+}
 
 }
 
 let Nodes = {}
 
-function Node(title, text) {
-    Nodes[title] = text;
+function Node(title, text, options) {
+    Nodes[title] = []
+    Nodes[title][0] = text;
+    Nodes[title][1] = options;
 }
+
+d.getElementById("heartCont").addEventListener("click", ()=>{
+    checkMessage("DON'T TOUCH THE WIRES", false)
+})
+checkMessage("<br>", false)
+d.getElementById("strip0").style = ""
+
+
 //You wake up locked in a deserted jail cell, completely alone. There is nothing at all in your cell, useful or otherwise.
-Node("home", "You are in a field. There is nothing around you, useful or otherwise.|Look around~look_around|Get up~get_up")
+Node("home", ["You are in a field. There is nothing around you, useful or otherwise.|Look around~look_around|Get up~get_up"], [])
 link("home");
 
-Node("look_around", "Fields as far as the eye can see.|Get up~get_up")
+Node("look_around", ["Fields as far as the eye can see.|Get up~get_up"], [])
 
-Node("get_up", "You try to get up. You fail.<br>But maybe if you had more power...")
+Node("get_up", ["pingas", "You try to get up. You fail.<br>But maybe if you had more power..."], [10, 0])
+
+
+
