@@ -50,6 +50,14 @@ html, body {
   font-size: 13px;
 }
 
+.bracket {
+  margin-left:20px;
+}
+
+#back {
+  margin-left:20px;
+}
+
 #newmessages {
   display:none;
   z-index: 9;
@@ -61,6 +69,7 @@ html, body {
   font-size: 13px;
   color:#fff;
   margin:0;
+  margin-left:20px;
 }
 
 .line {

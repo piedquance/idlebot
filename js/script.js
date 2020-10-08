@@ -55,8 +55,8 @@ var specialPresets = [
     }, 40, "bloodvalves"],
 
     [0, "Activate Viewport", "", 2, ()=>{
-        d.getElementById("messages").style.display = "initial"
-        d.getElementById("newmessages").style.display = "initial"
+        d.getElementById("messages").style.display = "inline"
+        d.getElementById("newmessages").style.display = "inline"
     }, 0, "viewport"]
 
 ]
@@ -498,14 +498,14 @@ function link(text, back) {
         messages.innerHTML = "<p class='messageStrip line'>"+ array[0] +"</p>"
 
         for(n in linkarray) {
-            messages.innerHTML += "<br>> <a onclick=link('"+ linkarray[n][1] +"',false)>"+ linkarray[n][0] +"</a>"
+            messages.innerHTML += "<br> <span class='bracket'> ></span> <a class='link' onclick=link('"+ linkarray[n][1] +"',false)>"+ linkarray[n][0] +"</a>"
         }
 
         if(back) data.adventureLog.splice(data.adventureLog.length-1, 1)
         else data.adventureLog[data.adventureLog.length] = text
 
 
-        messages.innerHTML += "<br><br> <a id='back' onclick=link('"+ data.adventureLog[data.adventureLog.length-2] + "',true)>Go Back </a>"
+        messages.innerHTML += "<br><br> <a id='back' class='link' onclick=link('"+ data.adventureLog[data.adventureLog.length-2] + "',true)>Go Back </a>"
     }
 
 }
