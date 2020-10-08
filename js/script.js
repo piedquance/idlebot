@@ -18,6 +18,7 @@ var messages = d.getElementById("messages");
 var newmessages = d.getElementById("newmessages");
 var title = d.querySelector("title")
 var leftPane = d.getElementById("left")
+var rightPane = d.getElementById("right")
 
 var save = d.getElementById("save")
 var load = d.getElementById("load")
@@ -134,12 +135,12 @@ function addUpgrade(preset) {
 
  var node = d.createElement("DIV");
  node.id = reference + "Upgrade";
- node.classList.add("upgrade");
+ node.classList.add("tile");
 
- node.innerHTML = '<div class="generalUpgradeDesc"><p class="upgradeName">'+ name 
- +'</p><p class="upgradeDesc">'+ description
- +'</p><p class="upgradeCost" id="'+ reference +'UpgradeCost">Cost:' + cost
- +'</p></div> <div class="generalUpgradeNum"><p class="upgradeNum" id="'+ reference +'UpgradeNum">' + number + '</p></div>'
+ node.innerHTML = '<div class="generalDesc"><p class="upgradeName">'+ name 
+ +'</p><p class="Desc">'+ description
+ +'</p><p class="Cost" id="'+ reference +'UpgradeCost">Cost:' + cost
+ +'</p></div> <div class="UpgradeNum"><p class="upgradeNum" id="'+ reference +'UpgradeNum">' + number + '</p></div>'
 
  leftPane.appendChild(node)
 
@@ -160,6 +161,7 @@ function addUpgrade(preset) {
         if( data.upgrade[preset[7]][2] > 0) {
         data.upgrade[dataPosition][2]--
         data.upgrade[dataPosition][0]--
+        console.log(data.upgrade[dataPosition][0])
         data.upgrade[dataPosition][1] -= data.upgrade[dataPosition][6]
         }
     }}, decayRate * 1000)
@@ -198,8 +200,8 @@ function checkUpgradeCost() {
     for(x in data.upgrade) {
         if(data.upgrade[x] !== null) {
     if(data.counter>=data.upgrade[x][1]) {
-        data.upgrade[x][4].style.color="#000"
-        data.upgrade[x][5].style.borderColor = "white"
+        data.upgrade[x][4].style.color=""
+        data.upgrade[x][5].style.borderColor = ""
         data.upgrade[x][5].classList.add("active");
     } else {
         data.upgrade[x][4].style.color="#888"

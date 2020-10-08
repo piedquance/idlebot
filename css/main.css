@@ -112,11 +112,7 @@ a:active {
 #on {color:#ff6e6e}
 #off {color: #000}
 
-.upgrade {
-  /* background-image: url(images/pane.png);
-  background-repeat: no-repeat;
-  background-position:center;
-  background-size: 100% 100%; */
+.tile {
   height:100px;
   display:flex;
   background-color: #b2b2b2;
@@ -126,7 +122,7 @@ a:active {
   margin:20px;
 }
 
-.generalUpgradeDesc {
+.UpgradeNum {
   flex:50%
 }
 
@@ -134,7 +130,7 @@ a:active {
   flex:50%
 }
 
-.upgrade:hover {
+.tile:hover {
   border-color:#444;
 }
 
@@ -143,7 +139,7 @@ a:active {
   animation-duration:0.1s;
 }
 
-.upgradeDesc, .upgradeCost {
+.Desc, .Cost {
   padding-left: 25px;
   font-weight: 1000;
   font-size: 13px;
