@@ -39,7 +39,7 @@ var messagePresets = [
 
 //cost, increase rate, number of, reference, description, tick, data position, decay rate
 var upgradePresets = [
-    [10, 5, 0, "Blood Valve", "blood", "Pumps blood every 1 s<br>Decays every 10 s", 1, 0, 10],
+    [10, 5, 0, "Blood Valve", "blood", "Pumps blood every 1 s<br>Decays every 10 s", 1, 0, 100],
     [20, 7, 0, "Blood Pipe", "pipe", "Pipes blood every 0.5 s<br>Decays every 20 s", 0.5, 1, 20],
 ]
 
@@ -61,10 +61,12 @@ var specialPresets = [
 
     [100, "Upgrade Blood Valves", "Now twice as efficient!", 3, ()=> {
 
-        data.upgrade[0][10] = 0.01
+        data.upgrade[0][10] = 0.5
+
+        clearInterval(intervals[0])
 
         intervals[0] = setInterval(()=>{
-            if(data.upgrade[0] !== null && data.upgrade[0] !== undefined) {
+            if(data.upgrade[0] !== null && data.upgrade[0] !== undefined &&data.upgrade[0][2] > 0) {
             count(data.upgrade[0][0])
         }}, data.upgrade[0][10] * 1000)
 
@@ -73,6 +75,7 @@ var specialPresets = [
 ]
 
 function removeSpecials() {
+
     d.getElementById("saving").style.display = "none"
     autosave.innerHTML = "AUTOSAVE <span id='off'>OFF</span>"
     data.upgrade[0][5].style.display = "none"
@@ -80,10 +83,11 @@ function removeSpecials() {
     d.getElementById("newmessages").style.display = "none"
     data.upgrade[0][10] = 1
 
-    intervals[0] = setInterval(()=>{
-        if(data.upgrade[0] !== null && data.upgrade[0] !== undefined) {
-        count(data.upgrade[0][0])
-    }}, data.upgrade[0][10] * 1000)
+    // intervals[0] = setInterval(()=>{
+    //     if(data.upgrade[0] !== null && data.upgrade[0] !== undefined) {
+    //     count(data.upgrade[0][0])
+    //     console.log("Annnnnnd it's gone.")
+    // }}, data.upgrade[0][10] * 1000)
 
     autosavetoggle = false;
 }
@@ -215,8 +219,9 @@ function addUpgrade(preset) {
     reference+ "UpgradeCost", reference+ "UpgradeNum", false, decayRate, reference]
 
     intervals[dataPosition] = setInterval(()=>{
-        if(data.upgrade[preset[7]] !== null && data.upgrade[preset[7]] !== undefined) {
+        if(data.upgrade[preset[7]] !== null && data.upgrade[preset[7]] !== undefined && data.upgrade[preset[7]][2] > 0) {
         count(data.upgrade[preset[7]][0])
+
     }}, data.upgrade[0][10] * 1000)
 
     decayIntervals[dataPosition] = setInterval(()=>{
@@ -500,7 +505,6 @@ Node("get_up", ["You get up.", "You try to get up. You fail.<br>But maybe if you
 let saveslot = "";
 
 function SAVE(isClear) {
-
     if(!autosavetoggle && !isClear) checkMessage("STATE SAVED", false)
 
     //btoa(unescape(encodeURIComponent(str)))
@@ -510,7 +514,7 @@ function SAVE(isClear) {
     saveslot = ""
     saveslot += btoa(unescape(encodeURIComponent(messages.innerHTML))) + "|"
     saveslot +=  btoa(unescape(encodeURIComponent(newmessages.innerHTML))) + "|"
-    saveslot +=  btoa(unescape(encodeURIComponent(leftPane.innerHTML))) + "|"
+    //saveslot +=  btoa(unescape(encodeURIComponent(leftPane.innerHTML))) + "|"
    // saveslot +=  btoa(unescape(encodeURIComponent(rightPane.innerHTML))) + "|"
     saveslot +=  btoa(unescape(encodeURIComponent(counterText.innerHTML))) + "|"
    // saveslot +=  btoa(unescape(encodeURIComponent(d.getElementById("saving").innerHTML))) + "|"
@@ -551,9 +555,10 @@ let loadDump = ""
 let loadArray = []
 
 function LOAD() {
+ try {
+     
 
     loadDump = decodeURIComponent(escape(window.atob(localStorage.data)))
-
 
     loadArray = loadDump.split("|")
 
@@ -571,38 +576,35 @@ function LOAD() {
         loadArray[n] = decodeURIComponent(escape(window.atob(loadArray[n])));
     }
 
-    console.log(loadArray)
-
     //decodeURIComponent(escape(window.atob(b64)));
 
     messages.innerHTML = loadArray[0]
     newmessages.innerHTML = loadArray[1]
-    leftPane.innerHTML = loadArray[2]
+    //leftPane.innerHTML = loadArray[2]
    // rightPane.innerHTML = loadArray[3]
-    counterText.innerHTML = loadArray[3]
+    counterText.innerHTML = loadArray[2]
    // d.getElementById("saving").innerHTML = loadArray[4]
-    data.adventureLog = JSON.parse(loadArray[4])
-    data.messageLog = JSON.parse(loadArray[5])
-    newsCounter = parseInt(loadArray[6])
+    data.adventureLog = JSON.parse(loadArray[3])
+    data.messageLog = JSON.parse(loadArray[4])
+    newsCounter = parseInt(loadArray[5])
+    wires[0] = parseInt(loadArray[7]) //skip 1
+    wiresPauses = loadArray[8] === "true"?true:false
+    data.counter = parseInt(loadArray[9])
 
-    wires[0] = parseInt(loadArray[8])
-    wiresPauses = loadArray[9] === "true"?true:false
-    data.counter = parseInt(loadArray[10])
-
-    for(n in loadArray[11]) {
-            data.upgrade[n][0] = parseInt(loadArray[11][n][0])
-            data.upgrade[n][1] = parseInt(loadArray[11][n][1])
-            data.upgrade[n][2] = parseInt(loadArray[11][n][2])
+    for(n in loadArray[10]) {
+            data.upgrade[n][0] = parseInt(loadArray[10][n][0])
+            data.upgrade[n][1] = parseInt(loadArray[10][n][1])
+            data.upgrade[n][2] = parseInt(loadArray[10][n][2])
     }
 
-    for(n in loadArray[12]) {
-        data.special[n][4] = loadArray[12][n][0] === "true"?true:false
-        data.special[n][5] = parseInt(loadArray[12][n][1])
-        data.special[n][6] = loadArray[12][n][2] === "true"?true:false
+    for(n in loadArray[11]) {
+        data.special[n][4] = loadArray[11][n][0] === "true"?true:false
+        data.special[n][5] = parseInt(loadArray[11][n][1])
+        data.special[n][6] = loadArray[11][n][2] === "true"?true:false
        // specialPresets[n][4]()
     }
 
-    console.log(data.special[0][4])
+    //console.log(data.special[0][4])
 
     removeSpecials()
 
@@ -616,8 +618,24 @@ function LOAD() {
 
 
 
-    autosavetoggle = Boolean(loadArray[7])
+    autosavetoggle = loadArray[6] === "true"?true:false
 
+    switch (autosavetoggle) {
+        case true:
+        autosave.innerHTML = "AUTOSAVE <span id='on'>ON</span>"
+        break;
+        case false:
+        autosave.innerHTML = "AUTOSAVE <span id='off'>OFF</span>"
+        break;
+    }
+
+
+
+} catch (error) {
+     CLEAR()
+     console.log(`There was an error in load: ${error}`)
+     alert(`There was an error on load. Here's your data: ${localStorage.data}`)
+}
 }
 
 
@@ -645,15 +663,19 @@ function CLEAR() {
     newsCounter = -1;
     wires[0] = 1
 
-    wiresPauses = new Array(10)
-    wiresPauses.fill(false)
+    for(n in intervals) {
+        clearInterval(intervals[n])
+    }
+
+    wiresPauses = false
 
     removeSpecials()
 
     leftPane.innerHTML  = ""
 
     for(n in data.upgrade) {
-
+        
+        data.upgrade[n][5].style.display = "none"
         data.upgrade[n][0] = 0
         data.upgrade[n][1] = upgradePresets[n][0]
         data.upgrade[n][2] = 0
@@ -665,11 +687,13 @@ function CLEAR() {
         data.special[n][6] = false;
         data.special[n][5] = 0;
     }
+    for(n in upgradePresets) addUpgrade(upgradePresets[n])
 
     data.adventureLog = []
     //messages.innerHTML = ""
     newmessages.innerHTML = ""
 
+    autosavetoggle = false
 
     data.messageChecker = new Array()
     data.messageChecker.fill(false);
@@ -719,8 +743,13 @@ exportS.addEventListener("click", ()=>{
 
 importS.addEventListener("click", ()=>{ 
 
-    localStorage.data = JSON.parse(prompt("Please paste your save data here:\n"))
-    LOAD()
+    try {
+        localStorage.data = prompt("Please paste your save data here:\n")
+        LOAD()
+    } catch (error) {
+        alert("There was an error in importing your data. Please try again.")
+        console.log(`There was an error in importing: ${error}`)
+    }
 
  })
 
@@ -739,21 +768,24 @@ heart.addEventListener("click", ()=> {
 let decayTick = 800
 let tick = 10;
 let bloodTick = 500;
-let frame = 0;
 
-setInterval(()=>{
-if(data.counter > 0) count(0)
-}, decayTick)
+// setInterval(()=>{
+// if(data.counter > 0) count(0)
+// }, decayTick)
 
  autosavedelay = true;
 
  setTimeout(()=>{
 
-     LOAD(); autosavedelay = false
-
+     LOAD(); 
+     autosavedelay = false
  }, 50)
 
 // if(localStorage.firstSave !== "true") CLEAR()
+
+var date = new Date(); let currentYear = date.getFullYear(); 
+
+console.log(`IdleBot ~~ An incremental game\nCopyright © ${currentYear} https://shutterstacks.net`)
 
 setInterval(()=>{
 
@@ -761,8 +793,6 @@ setInterval(()=>{
     pipeCount = 0
 
  if(autosavetoggle && !autosavedelay) SAVE(false)
-    
-frame++
 
 for(n in messagePresets) if(data.counter >= messagePresets[n][1]) data.messageChecker[n] = checkMessage(messagePresets[n][0], data.messageChecker[n]);
 
