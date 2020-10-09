@@ -500,7 +500,7 @@ link("home");
 
 Node("look_around", ["Fields as far as the eye can see.|Get up~get_up"], [])
 
-Node("get_up", ["You get up.", "You try to get up. You fail.<br>But maybe if you had more power..."], [10, 0])
+Node("get_up", ["You get up.|Look at yourself[MISSING]~", "You try to get up. You fail.<br>But maybe if you had more power..."], [10, 0])
 
 
 
