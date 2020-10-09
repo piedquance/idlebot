@@ -499,9 +499,9 @@ Node("get_up", ["You get up.", "You try to get up. You fail.<br>But maybe if you
 
 let saveslot = "";
 
-function SAVE() {
+function SAVE(isClear) {
 
-    if(!autosavetoggle) checkMessage("STATE SAVED", false)
+    if(!autosavetoggle && !isClear) checkMessage("STATE SAVED", false)
 
     //btoa(unescape(encodeURIComponent(str)))
     //localStorage.firstSave = "true"
@@ -542,6 +542,7 @@ function SAVE() {
 
     localStorage.data = btoa(unescape(encodeURIComponent(saveslot)))
 
+    return localStorage.data
 }
 
 //////
@@ -673,7 +674,7 @@ function CLEAR() {
     data.messageChecker = new Array()
     data.messageChecker.fill(false);
     data.messageLog = new Array()
-    SAVE()
+    SAVE(true)
     removeSpecials()
     autosavetoggle = false
     link("home")
@@ -699,23 +700,29 @@ autosave.addEventListener("click", ()=>{
 
 })
 
-save.addEventListener("click", ()=>{ SAVE() })
+save.addEventListener("click", ()=>{ SAVE(false) })
 load.addEventListener("click", ()=>{ LOAD() ; })
 clear.addEventListener("click", ()=>{ CLEAR() })
 exportS.addEventListener("click", ()=>{ 
 
-    alert("Copy this somewhere safe:\n" + JSON.stringify(localStorage))
+    let exportFile = SAVE(false)
+
+    const text = exportFile
+    try {
+       navigator.clipboard.writeText('"' +text + '"')
+       checkMessage("DATA COPIED TO CLIPBOARD", false)
+    } catch (err) {
+        checkMessage("DATA FAILED TO EXPORT", false)
+    }
 
 })
 
 importS.addEventListener("click", ()=>{ 
 
-    localStorage = JSON.parse(prompt("Please paste your save data here:\n"))
+    localStorage.data = JSON.parse(prompt("Please paste your save data here:\n"))
     LOAD()
 
  })
-importS.innerHTML = ""
-exportS.innerHTML = ""
 
 //////
 
@@ -753,7 +760,7 @@ setInterval(()=>{
     count(pipeCount)
     pipeCount = 0
 
- if(autosavetoggle && !autosavedelay) SAVE()
+ if(autosavetoggle && !autosavedelay) SAVE(false)
     
 frame++
 
