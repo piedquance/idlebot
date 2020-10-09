@@ -48,7 +48,7 @@ var specialPresets = [
         d.getElementById("saving").style.display = "initial"
         autosavetoggle = true;
         autosave.innerHTML = "AUTOSAVE <span id='on'>ON</span>"
-        }, 20, "saving"],
+        }, 20, "savingYEAH"],
 
     [50, "Research Blood Valves", "", 1, ()=>{
         data.upgrade[0][5].style.display = ""
@@ -57,7 +57,7 @@ var specialPresets = [
     [10, "Activate Viewport", "", 2, ()=>{
         d.getElementById("messages").style.display = "inline-block"
         d.getElementById("newmessages").style.display = "inline-block"
-    }, 5, "viewport"],
+    }, 5, "viewportYEAH"],
 
     [100, "Upgrade Blood Valves", "Now twice as efficient!", 3, ()=> {
 
@@ -119,6 +119,7 @@ data.messageChecker.fill(false);
 function count(number) {
     data.counter += number;
     StringCounter = ""
+
     countNum[2] = Math.floor(data.counter/1000000);
     countNum[1] = Math.floor((data.counter - countNum[2]*1000000)/1000);
     countNum[0] = Math.floor((data.counter - countNum[2]*1000000 - countNum[1]*1000));
@@ -171,6 +172,7 @@ function checkMessage(text, check) {
 }
 //////
 //Flash remover
+
 setInterval(()=>{
     for(let n = 0; n < newsCounter;n++)
     if(d.getElementById("strip" + n) != null) {
@@ -276,6 +278,7 @@ function addSpecial(preset) {
     +'Cost">'+ cost +'</div></div>'
 
     rightPane.appendChild(node)
+
     data.special[position] = []
     data.special[position][0] = cost
     data.special[position][1] = d.getElementById(reference + "Special")
@@ -342,45 +345,6 @@ function checkSpecialCost() {
 }}}
 
 //////
-
-let autosavetoggle = false;
-
-autosave.addEventListener("click", ()=>{
-    autosavetoggle = !autosavetoggle
-    
-    switch (autosavetoggle) {
-        case true:
-        checkMessage("AUTOSAVE ACTIVATED", false)
-        autosave.innerHTML = "AUTOSAVE <span id='on'>ON</span>"
-        break;
-        case false:
-        checkMessage("AUTOSAVE DEACTIVATED", false)
-        autosave.innerHTML = "AUTOSAVE <span id='off'>OFF</span>"
-        break;
-    }
-
-})
-
-save.addEventListener("click", ()=>{ SAVE() })
-load.addEventListener("click", ()=>{ LOAD() ; })
-clear.addEventListener("click", ()=>{ CLEAR() })
-exportS.addEventListener("click", ()=>{ 
-
-    alert("Copy this somewhere safe:\n" + JSON.stringify(localStorage))
-
-})
-importS.addEventListener("click", ()=>{ 
-
-    localStorage = JSON.parse(prompt("Please paste your save data here:\n"))
-    LOAD()
-
- })
-importS.innerHTML = ""
-exportS.innerHTML = ""
-
-
-//////
-
 
 function link(text, back) {
 
@@ -451,7 +415,8 @@ function Node(title, text, options) {
     Nodes[title][1] = options;
 }
 
-d.getElementById("heartCont").addEventListener("click", ()=>{
+heartCon = d.getElementById("heartCont")
+heartCon.addEventListener("click", ()=>{
 
     switch (true) {
         case (wires[0] < 32):
@@ -469,8 +434,7 @@ d.getElementById("heartCont").addEventListener("click", ()=>{
 })
 
 function wireStop() {
-    if(wiresPauses[0]) {
-        console.log(wires[0])
+    if(wiresPauses) {
         checkMessage(wires[wires[0]], false)
         wires[0]++
 
@@ -505,15 +469,14 @@ let wires = [1,
     "IF YOU DON'T STOP...",//26
     "I'LL BE FORCED TO USE MY <i>SECRET MOVE</i>",//27
     "LAST WARNING...",//28
-    "<a onclick=' data.counter = 0; if(wiresPauses[0] === false){checkMessage(wires[32], false);wires[0]++;wiresPauses[0] = true}'>eraseCounter.exe</a>",//29
+    "<a onclick=' data.counter = 0; if(wiresPauses === false){checkMessage(wires[32], false);wires[0]++;wiresPauses = true}'>eraseCounter.exe</a>",//29
     "...",//30
     "COULD YOU, UM, CLICK ON THE FILE?",//31
     "HAHAHAHAHA!",//32
     "YOU FOOL.",//33
     "FOU FELL INTO MY TRAP!"//34
 ]
-wiresPauses = new Array(10)
-wiresPauses.fill(false)
+wiresPauses = false
 
 //Math.floor((Math.random() * wires.length))
 
@@ -533,113 +496,129 @@ Node("get_up", ["You get up.", "You try to get up. You fail.<br>But maybe if you
 
 //////
 
-function SAVE(clear) {
 
-    if(!autosavetoggle && !clear) checkMessage("STATE SAVED", false)
+let saveslot = "";
 
+function SAVE() {
 
-    localStorage.firstSave = "true"
-    localStorage.counter = JSON.stringify(data.counter);
-    localStorage.autosavetoggle = JSON.stringify(autosavetoggle)
-    localStorage.right = JSON.stringify(rightChildren);
+    if(!autosavetoggle) checkMessage("STATE SAVED", false)
+
+    //btoa(unescape(encodeURIComponent(str)))
+    //localStorage.firstSave = "true"
+
+    localStorage.data = ""
+    saveslot = ""
+    saveslot += btoa(unescape(encodeURIComponent(messages.innerHTML))) + "|"
+    saveslot +=  btoa(unescape(encodeURIComponent(newmessages.innerHTML))) + "|"
+    saveslot +=  btoa(unescape(encodeURIComponent(leftPane.innerHTML))) + "|"
+   // saveslot +=  btoa(unescape(encodeURIComponent(rightPane.innerHTML))) + "|"
+    saveslot +=  btoa(unescape(encodeURIComponent(counterText.innerHTML))) + "|"
+   // saveslot +=  btoa(unescape(encodeURIComponent(d.getElementById("saving").innerHTML))) + "|"
+    saveslot += btoa(unescape(encodeURIComponent(JSON.stringify(data.adventureLog)))) + "|"
+    saveslot += btoa(unescape(encodeURIComponent(JSON.stringify(data.messageLog)))) + "|"
+    saveslot += btoa(unescape(encodeURIComponent(newsCounter))) + "|"
+    saveslot += btoa(unescape(encodeURIComponent(autosavetoggle))) + "|"
+    saveslot += btoa(unescape(encodeURIComponent(wires[0]))) + "|"
+    saveslot += btoa(unescape(encodeURIComponent(wiresPauses))) + "|"
+    saveslot += btoa(unescape(encodeURIComponent(data.counter))) + "|"
 
     for(n in data.upgrade) {
-        exportedUpgrade[n] = []
-        exportedUpgrade[n][0] = data.upgrade[n][0]
-        exportedUpgrade[n][1] = data.upgrade[n][1]
-        exportedUpgrade[n][2] = data.upgrade[n][2]
+
+        saveslot +=  btoa(unescape(encodeURIComponent(data.upgrade[n][0]))) + "~"
+        saveslot +=  btoa(unescape(encodeURIComponent(data.upgrade[n][1]))) + "~"
+        saveslot +=  btoa(unescape(encodeURIComponent(data.upgrade[n][2]))) 
+        if(n != data.upgrade.length - 1) saveslot += "?"
     }
+
+    saveslot += "|"
 
     for(n in data.special) {
-        exportedSpecial[n] = []
-        exportedSpecial[n][0] = data.special[n][4]
-        exportedSpecial[n][1] = data.special[n][5]
-        exportedSpecial[n][2] = data.special[n][6]
+
+        saveslot +=  btoa(unescape(encodeURIComponent(data.special[n][4]))) + "~"
+        saveslot +=  btoa(unescape(encodeURIComponent(data.special[n][5]))) + "~"
+        saveslot +=  btoa(unescape(encodeURIComponent(data.special[n][6]))) 
+        if(n != data.special.length - 1) saveslot += "?"
     }
 
-    localStorage.upgrades = JSON.stringify(exportedUpgrade)
+    localStorage.data = btoa(unescape(encodeURIComponent(saveslot)))
 
-    localStorage.specials = JSON.stringify(exportedSpecial)
-
-    localStorage.messageLog = JSON.stringify(data.messageLog)
-
-    localStorage.messageChecker = JSON.stringify(data.messageChecker)
-
-    localStorage.adventureLog = JSON.stringify(data.adventureLog)
-
-    localStorage.wireNumber = JSON.stringify(wires[0])
-
-    localStorage.wiresPauses = JSON.stringify(wiresPauses)
-   // console.log(localStorage.counter)
 }
 
 //////
 
+let loadDump = ""
+let loadArray = []
+
 function LOAD() {
-    //console.log(localStorage.counter)
-    data.counter = parseInt(localStorage.counter);
-  //  console.log(localStorage.counter)
-    rightChildren = parseInt(localStorage.right)
 
-    wires[0] = parseInt(localStorage.wireNumber)
+    loadDump = decodeURIComponent(escape(window.atob(localStorage.data)))
 
-    wiresPauses = JSON.parse(localStorage.wiresPauses)
 
-    exportedUpgrade = JSON.parse(localStorage.upgrades)
+    loadArray = loadDump.split("|")
 
-    exportedSpecial = JSON.parse(localStorage.specials)
-
-    for(n in exportedUpgrade) {
-        data.upgrade[n][0] = exportedUpgrade[n][0]
-        data.upgrade[n][1] = exportedUpgrade[n][1]
-        data.upgrade[n][2] = exportedUpgrade[n][2]
+    for(let n = loadArray.length - 2; n < loadArray.length; n++) {
+        loadArray[n] = loadArray[n].split("?")
+        for(m in loadArray[n]) {
+            loadArray[n][m] = loadArray[n][m].split("~")
+            for(o in loadArray[n][m]) {
+                loadArray[n][m][o] = decodeURIComponent(escape(window.atob(loadArray[n][m][o])));
+            }
+        }
     }
 
-    for(n in exportedSpecial) {
-       data.special[n][4] = exportedSpecial[n][0]
-       data.special[n][5] = exportedSpecial[n][1]
-       data.special[n][6] = exportedSpecial[n][2] 
+    for(let n = 0; n < loadArray.length - 2; n ++) {
+        loadArray[n] = decodeURIComponent(escape(window.atob(loadArray[n])));
     }
+
+    console.log(loadArray)
+
+    //decodeURIComponent(escape(window.atob(b64)));
+
+    messages.innerHTML = loadArray[0]
+    newmessages.innerHTML = loadArray[1]
+    leftPane.innerHTML = loadArray[2]
+   // rightPane.innerHTML = loadArray[3]
+    counterText.innerHTML = loadArray[3]
+   // d.getElementById("saving").innerHTML = loadArray[4]
+    data.adventureLog = JSON.parse(loadArray[4])
+    data.messageLog = JSON.parse(loadArray[5])
+    newsCounter = parseInt(loadArray[6])
+
+    wires[0] = parseInt(loadArray[8])
+    wiresPauses = loadArray[9] === "true"?true:false
+    data.counter = parseInt(loadArray[10])
+
+    for(n in loadArray[11]) {
+            data.upgrade[n][0] = parseInt(loadArray[11][n][0])
+            data.upgrade[n][1] = parseInt(loadArray[11][n][1])
+            data.upgrade[n][2] = parseInt(loadArray[11][n][2])
+    }
+
+    for(n in loadArray[12]) {
+        data.special[n][4] = loadArray[12][n][0] === "true"?true:false
+        data.special[n][5] = parseInt(loadArray[12][n][1])
+        data.special[n][6] = loadArray[12][n][2] === "true"?true:false
+       // specialPresets[n][4]()
+    }
+
+    console.log(data.special[0][4])
 
     removeSpecials()
 
     for(n in data.special) if(data.special[n][4]) {
         specialPresets[n][4]()
         data.special[n][1].style.display = "none"
-    } else if (data.special[n][6])
-     data.special[n][1].style.display = ""
-     else data.special[n][1].style.display = "none"
 
-    autosavetoggle = false
-    let newLocal = localStorage.autosavetoggle;
-    autosavetoggle = JSON.parse(newLocal)
+         }  else if (data.special[n][6]) data.special[n][1].style.display = ""
 
-    switch (autosavetoggle) {
-        case true:
-        autosave.innerHTML = "AUTOSAVE <span id='on'>ON</span>"
-        break;
-        case false:
-        autosave.innerHTML = "AUTOSAVE <span id='off'>OFF</span>"
-        break;
-    }
+            else data.special[n][1].style.display = "none"
 
-    data.adventureLog = JSON.parse(localStorage.adventureLog)
-    
-    link(data.adventureLog[data.adventureLog.length - 1])
 
-    data.adventureLog.splice(data.adventureLog.length-1, 1)
 
-    newmessages.innerHTML = ""
-    data.messageLog = []
+    autosavetoggle = Boolean(loadArray[7])
 
-    let templog = JSON.parse(localStorage.messageLog)
-
-    newsCounter = -1
-
-    newmessages.innerHTML = ""
-
-    for(n in templog) checkMessage(templog[n], false)
 }
+
 
 function CLEAR() {
     var CLEARspookN = 45
@@ -659,8 +638,7 @@ function CLEAR() {
         newsCounter = -1
     }, 800)
 
-    localStorage.clear();
-    localStorage.firstSave = "false"
+    localStorage.data = ""
     data.counter = 0;
     rightChildren = 0;
     newsCounter = -1;
@@ -668,6 +646,10 @@ function CLEAR() {
 
     wiresPauses = new Array(10)
     wiresPauses.fill(false)
+
+    removeSpecials()
+
+    leftPane.innerHTML  = ""
 
     for(n in data.upgrade) {
 
@@ -684,21 +666,58 @@ function CLEAR() {
     }
 
     data.adventureLog = []
+    //messages.innerHTML = ""
+    newmessages.innerHTML = ""
 
 
     data.messageChecker = new Array()
     data.messageChecker.fill(false);
     data.messageLog = new Array()
-    SAVE(true)
-    LOAD()
-
+    SAVE()
+    removeSpecials()
     autosavetoggle = false
-    localStorage.firstSave = "false"
-    console.log(autosavetoggle)
     link("home")
 }
 
+//////
 
+let autosavetoggle = false;
+
+autosave.addEventListener("click", ()=>{
+    autosavetoggle = !autosavetoggle
+    
+    switch (autosavetoggle) {
+        case true:
+        checkMessage("AUTOSAVE ACTIVATED", false)
+        autosave.innerHTML = "AUTOSAVE <span id='on'>ON</span>"
+        break;
+        case false:
+        checkMessage("AUTOSAVE DEACTIVATED", false)
+        autosave.innerHTML = "AUTOSAVE <span id='off'>OFF</span>"
+        break;
+    }
+
+})
+
+save.addEventListener("click", ()=>{ SAVE() })
+load.addEventListener("click", ()=>{ LOAD() ; })
+clear.addEventListener("click", ()=>{ CLEAR() })
+exportS.addEventListener("click", ()=>{ 
+
+    alert("Copy this somewhere safe:\n" + JSON.stringify(localStorage))
+
+})
+
+importS.addEventListener("click", ()=>{ 
+
+    localStorage = JSON.parse(prompt("Please paste your save data here:\n"))
+    LOAD()
+
+ })
+importS.innerHTML = ""
+exportS.innerHTML = ""
+
+//////
 
 let pipeCount = 0;
 heart.addEventListener("click", ()=> {
@@ -719,20 +738,22 @@ setInterval(()=>{
 if(data.counter > 0) count(0)
 }, decayTick)
 
-autosavedelay = true;
-setTimeout(()=>{
+ autosavedelay = true;
 
-    LOAD(); autosavedelay = false
+ setTimeout(()=>{
 
-}, 50)
+     LOAD(); autosavedelay = false
 
-if(localStorage.firstSave !== "true") CLEAR()
+ }, 50)
+
+// if(localStorage.firstSave !== "true") CLEAR()
 
 setInterval(()=>{
+
     count(pipeCount)
     pipeCount = 0
 
-if(autosavetoggle && !autosavedelay) SAVE(false)
+ if(autosavetoggle && !autosavedelay) SAVE()
     
 frame++
 
