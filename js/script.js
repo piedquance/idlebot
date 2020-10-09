@@ -598,6 +598,45 @@ function LOAD() {
     wiresPauses = loadArray[9] === "true"?true:false
     data.counter = parseInt(loadArray[10])
 
+    for(let n = 3; n <= messages.children.length - 4; n += 3) {
+        //console.log(messages.children[n].onclick)
+        if(messages.children[n].attributes.onclick.value.includes("''")) {
+
+        
+
+            for(m in Nodes[data.adventureLog[data.adventureLog.length - 1]][0]) {
+
+               if (Nodes[data.adventureLog[data.adventureLog.length - 1]][0][m].split("|")[0] ===  messages.children[0].innerHTML) {
+
+
+               // console.log(Nodes[data.adventureLog[data.adventureLog.length - 1]][0][m].split("|").length)
+
+
+                    for(var i = 1; i < Nodes[data.adventureLog[data.adventureLog.length - 1]][0][m].split("|").length; i++) {
+
+                        messages.children[n].attributes.onclick.value = `link("${Nodes[data.adventureLog[data.adventureLog.length - 1]][0][m].split("|")[i].split("~")[1]}",false);`
+
+                        //console.log(Nodes[data.adventureLog[data.adventureLog.length - 1]][0][m].split("|")[i].split("~"))
+
+                        messages.children[n].innerHTML = `"${Nodes[data.adventureLog[data.adventureLog.length - 1]][0][m].split("|")[i].split("~")[0]}"`
+
+                    }
+                
+                   
+                  // console.log(Nodes[data.adventureLog[data.adventureLog.length - 1]][0][n].split("|")[0])
+
+               }
+
+
+            }
+
+        } 
+    }
+
+
+
+
+
     for(n in loadArray[11]) {
             data.upgrade[n][0] = parseInt(loadArray[11][n][0])
             data.upgrade[n][1] = parseInt(loadArray[11][n][1])
