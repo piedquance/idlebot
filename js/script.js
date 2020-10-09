@@ -21,6 +21,7 @@ var leftPane = d.getElementById("left")
 var rightPane = d.getElementById("right")
 var rightChildren = 0;
 var newsCounter = -1;
+var stopIt = new Audio('css/audio/AUDIO_FILE.mp3');
 
 var save = d.getElementById("save")
 var load = d.getElementById("load")
@@ -342,163 +343,6 @@ function checkSpecialCost() {
 
 //////
 
-function SAVE(clear) {
-
-    if(!autosavetoggle && !clear) checkMessage("STATE SAVED", false)
-
-    localStorage.counter = JSON.stringify(data.counter);
-    localStorage.autosavetoggle = JSON.stringify(autosavetoggle)
-    localStorage.right = JSON.stringify(rightChildren);
-
-    for(n in data.upgrade) {
-        exportedUpgrade[n] = []
-        exportedUpgrade[n][0] = data.upgrade[n][0]
-        exportedUpgrade[n][1] = data.upgrade[n][1]
-        exportedUpgrade[n][2] = data.upgrade[n][2]
-    }
-
-    for(n in data.special) {
-        exportedSpecial[n] = []
-        exportedSpecial[n][0] = data.special[n][4]
-        exportedSpecial[n][1] = data.special[n][5]
-        exportedSpecial[n][2] = data.special[n][6]
-    }
-
-    localStorage.upgrades = JSON.stringify(exportedUpgrade)
-
-    localStorage.specials = JSON.stringify(exportedSpecial)
-
-    localStorage.messageLog = JSON.stringify(data.messageLog)
-
-    localStorage.messageChecker = JSON.stringify(data.messageChecker)
-
-    localStorage.adventureLog = JSON.stringify(data.adventureLog)
-
-    localStorage.wireNumber = JSON.stringify(wires[0])
-
-    localStorage.wiresPauses = JSON.stringify(wiresPauses)
-}
-
-//////
-
-function LOAD() {
-    data.counter = parseInt(localStorage.counter);
-
-    rightChildren = parseInt(localStorage.right)
-
-    wires[0] = parseInt(localStorage.wireNumber)
-
-    wiresPauses = JSON.parse(localStorage.wiresPauses)
-
-    exportedUpgrade = JSON.parse(localStorage.upgrades)
-
-    exportedSpecial = []
-
-    exportedSpecial = JSON.parse(localStorage.specials)
-
-    for(n in exportedUpgrade) {
-        data.upgrade[n][0] = exportedUpgrade[n][0]
-        data.upgrade[n][1] = exportedUpgrade[n][1]
-        data.upgrade[n][2] = exportedUpgrade[n][2]
-    }
-
-    for(n in exportedSpecial) {
-       data.special[n][4] = exportedSpecial[n][0]
-       data.special[n][5] = exportedSpecial[n][1]
-       data.special[n][6] = exportedSpecial[n][2] 
-    }
-
-    removeSpecials()
-
-    for(n in data.special) if(data.special[n][4]) {
-        specialPresets[n][4]()
-        data.special[n][1].style.display = "none"
-    } else if (data.special[n][6])
-     data.special[n][1].style.display = ""
-     else data.special[n][1].style.display = "none"
-
-    autosavetoggle = false
-    let newLocal = localStorage.autosavetoggle;
-    autosavetoggle = JSON.parse(newLocal)
-
-    switch (autosavetoggle) {
-        case true:
-        autosave.innerHTML = "AUTOSAVE <span id='on'>ON</span>"
-        break;
-        case false:
-        autosave.innerHTML = "AUTOSAVE <span id='off'>OFF</span>"
-        break;
-    }
-
-    data.adventureLog = JSON.parse(localStorage.adventureLog)
-    
-    link(data.adventureLog[data.adventureLog.length - 1])
-
-    newmessages.innerHTML = ""
-    data.messageLog = []
-
-    let templog = JSON.parse(localStorage.messageLog)
-
-    newsCounter = -1
-
-    newmessages.innerHTML = ""
-
-    for(n in templog) checkMessage(templog[n], false)
-}
-
-function CLEAR() {
-    var CLEARspookN = 45
-    var CLEARspook = setInterval(()=>{
-        d.getElementById("newmessages").style.display = "inline-block"
-        d.getElementById("topPane").style.height = CLEARspookN + "vh"
-        CLEARspookN += 5
-        checkMessage("ERROR", false);
-    },10)
-
-    setTimeout(()=>{
-        clearInterval(CLEARspook)
-        d.getElementById("newmessages").style.display = "none"
-        d.getElementById("topPane").style.height = "40vh"
-        newmessages.innerHTML = ""
-        data.messageLog = new Array()
-        newsCounter = -1
-    }, 800)
-
-    localStorage.clear();
-    data.counter = 0;
-    rightChildren = 0;
-    newsCounter = -1;
-    wires[0] = 1
-
-    wiresPauses = new Array(10)
-    wiresPauses.fill(false)
-
-    for(n in data.upgrade) {
-
-        data.upgrade[n][0] = 0
-        data.upgrade[n][1] = upgradePresets[n][0]
-        data.upgrade[n][2] = 0
-    }
-
-    for(n in data.special) {
-        data.special[n][1].style.display = "none"
-        data.special[n][4] = false;
-        data.special[n][6] = false;
-        data.special[n][5] = 0;
-    }
-
-    data.adventureLog = []
-
-
-    data.messageChecker = new Array()
-    data.messageChecker.fill(false);
-    data.messageLog = new Array()
-    SAVE(true)
-    LOAD()
-
-    link("home")
-}
-
 let autosavetoggle = false;
 
 autosave.addEventListener("click", ()=>{
@@ -518,7 +362,7 @@ autosave.addEventListener("click", ()=>{
 })
 
 save.addEventListener("click", ()=>{ SAVE() })
-load.addEventListener("click", ()=>{ LOAD() })
+load.addEventListener("click", ()=>{ LOAD() ; })
 clear.addEventListener("click", ()=>{ CLEAR() })
 exportS.addEventListener("click", ()=>{ 
 
@@ -537,68 +381,6 @@ exportS.innerHTML = ""
 
 //////
 
-let pipeCount = 0;
-heart.addEventListener("click", ()=> {
-
-    pipeCount++
-    // heart.style = "  animation-name: click;animation-duration: 0.1s;"
-    // setTimeout(()=>{ heart.style="" },100)
- })
-
-//////
-
-let decayTick = 800
-let tick = 10;
-let bloodTick = 500;
-let frame = 0;
-
-setInterval(()=>{
-if(data.counter > 0) count(0)
-}, decayTick)
-
-autosavedelay = true;
-setTimeout(()=>{
-
-    for(n in exportedUpgrade) {
-        data.upgrade[n][0] = exportedUpgrade[n][0]
-        data.upgrade[n][1] = exportedUpgrade[n][1]
-        data.upgrade[n][2] = exportedUpgrade[n][2]
-    }
-
-    for(n in exportedSpecial) {
-       data.special[n][4] = exportedSpecial[n][0]
-       data.special[n][5] = exportedSpecial[n][1]
-       data.special[n][6] = exportedSpecial[n][2] 
-    }
-
-    LOAD(); autosavedelay = false
-
-}, 50)
-
-setInterval(()=>{
-
-    count(pipeCount)
-    pipeCount = 0
-
-if(autosavetoggle && !autosavedelay) SAVE(false)
-    
-frame++
-
-for(n in messagePresets) if(data.counter >= messagePresets[n][1]) data.messageChecker[n] = checkMessage(messagePresets[n][0], data.messageChecker[n]);
-
-for(n in specialPresets) {
-if(data.counter >= specialPresets[n][5] && !data.special[n][4]) {
-      data.special[n][1].style.display = ""
-      data.special[n][6] = true;
-}}
-checkUpgradeCost();
-checkSpecialCost();
-
-newmessages.scrollTop = newmessages.scrollHeight;
-title.innerHTML = Math.floor(data.counter) + " - IdleBot"
-
-updateData();
-}, tick)
 
 function link(text, back) {
 
@@ -671,16 +453,28 @@ function Node(title, text, options) {
 
 d.getElementById("heartCont").addEventListener("click", ()=>{
 
-   if (wires[0] < 32){
-        checkMessage(wires[wires[0]], false)
-        wires[0]++
-    } 
-   else if (wires[0] > 32 && wires[0] < wires.length) {
-    checkMessage(wires[wires[0]], false)
-    wires[0]++
+    switch (true) {
+        case (wires[0] < 32):
+            checkMessage(wires[wires[0]], false);
+            wires[0]++;
+            break;
+        case (wires[0] >= 32 && wires[0] < 35):
+            wireStop();
+            break;
+        case (wires[0] == 35):
+            stopIt.play();
+            break;
     }
+
 })
 
+function wireStop() {
+    if(wiresPauses[0]) {
+        console.log(wires[0])
+        checkMessage(wires[wires[0]], false)
+        wires[0]++
+
+    }}
 
 let wires = [1,
     "DON'T TOUCH THE WIRES",//1
@@ -702,7 +496,7 @@ let wires = [1,
     "Sending 1 (one) file to dumbass.",//17
     "Sending 1 (one) file to dumbass..",//18
     "Sending 1 (one) file to dumbass...",//19
-    "<a target='_blank' href='css/audio/AUDIO_FILE.mp3'>AUDIO_FILE.MP3</a>",//20
+    "<a onclick='stopIt.play()'>AUDIO_FILE.MP3</a>",//20
     "...",//21
     "...",//22
     "...",//23
@@ -711,13 +505,12 @@ let wires = [1,
     "IF YOU DON'T STOP...",//26
     "I'LL BE FORCED TO USE MY <i>SECRET MOVE</i>",//27
     "LAST WARNING...",//28
-    "<a onclick=' data.counter = 0; if(wiresPauses[0] === false){checkMessage(wires[32], false);wires[0]=34;wiresPauses[0] = true}'>eraseCounter.exe</a>",//29
+    "<a onclick=' data.counter = 0; if(wiresPauses[0] === false){checkMessage(wires[32], false);wires[0]++;wiresPauses[0] = true}'>eraseCounter.exe</a>",//29
     "...",//30
     "COULD YOU, UM, CLICK ON THE FILE?",//31
     "HAHAHAHAHA!",//32
-    "HAHAHAHAHA",
-    "YOU FOOL",
-    "FOU FELL INTO MY TRAP!"
+    "YOU FOOL.",//33
+    "FOU FELL INTO MY TRAP!"//34
 ]
 wiresPauses = new Array(10)
 wiresPauses.fill(false)
@@ -736,3 +529,225 @@ Node("look_around", ["Fields as far as the eye can see.|Get up~get_up"], [])
 
 Node("get_up", ["You get up.", "You try to get up. You fail.<br>But maybe if you had more power..."], [10, 0])
 
+
+
+//////
+
+function SAVE(clear) {
+
+    if(!autosavetoggle && !clear) checkMessage("STATE SAVED", false)
+
+
+    localStorage.firstSave = "true"
+    localStorage.counter = JSON.stringify(data.counter);
+    localStorage.autosavetoggle = JSON.stringify(autosavetoggle)
+    localStorage.right = JSON.stringify(rightChildren);
+
+    for(n in data.upgrade) {
+        exportedUpgrade[n] = []
+        exportedUpgrade[n][0] = data.upgrade[n][0]
+        exportedUpgrade[n][1] = data.upgrade[n][1]
+        exportedUpgrade[n][2] = data.upgrade[n][2]
+    }
+
+    for(n in data.special) {
+        exportedSpecial[n] = []
+        exportedSpecial[n][0] = data.special[n][4]
+        exportedSpecial[n][1] = data.special[n][5]
+        exportedSpecial[n][2] = data.special[n][6]
+    }
+
+    localStorage.upgrades = JSON.stringify(exportedUpgrade)
+
+    localStorage.specials = JSON.stringify(exportedSpecial)
+
+    localStorage.messageLog = JSON.stringify(data.messageLog)
+
+    localStorage.messageChecker = JSON.stringify(data.messageChecker)
+
+    localStorage.adventureLog = JSON.stringify(data.adventureLog)
+
+    localStorage.wireNumber = JSON.stringify(wires[0])
+
+    localStorage.wiresPauses = JSON.stringify(wiresPauses)
+   // console.log(localStorage.counter)
+}
+
+//////
+
+function LOAD() {
+    //console.log(localStorage.counter)
+    data.counter = parseInt(localStorage.counter);
+  //  console.log(localStorage.counter)
+    rightChildren = parseInt(localStorage.right)
+
+    wires[0] = parseInt(localStorage.wireNumber)
+
+    wiresPauses = JSON.parse(localStorage.wiresPauses)
+
+    exportedUpgrade = JSON.parse(localStorage.upgrades)
+
+    exportedSpecial = JSON.parse(localStorage.specials)
+
+    for(n in exportedUpgrade) {
+        data.upgrade[n][0] = exportedUpgrade[n][0]
+        data.upgrade[n][1] = exportedUpgrade[n][1]
+        data.upgrade[n][2] = exportedUpgrade[n][2]
+    }
+
+    for(n in exportedSpecial) {
+       data.special[n][4] = exportedSpecial[n][0]
+       data.special[n][5] = exportedSpecial[n][1]
+       data.special[n][6] = exportedSpecial[n][2] 
+    }
+
+    removeSpecials()
+
+    for(n in data.special) if(data.special[n][4]) {
+        specialPresets[n][4]()
+        data.special[n][1].style.display = "none"
+    } else if (data.special[n][6])
+     data.special[n][1].style.display = ""
+     else data.special[n][1].style.display = "none"
+
+    autosavetoggle = false
+    let newLocal = localStorage.autosavetoggle;
+    autosavetoggle = JSON.parse(newLocal)
+
+    switch (autosavetoggle) {
+        case true:
+        autosave.innerHTML = "AUTOSAVE <span id='on'>ON</span>"
+        break;
+        case false:
+        autosave.innerHTML = "AUTOSAVE <span id='off'>OFF</span>"
+        break;
+    }
+
+    data.adventureLog = JSON.parse(localStorage.adventureLog)
+    
+    link(data.adventureLog[data.adventureLog.length - 1])
+
+    data.adventureLog.splice(data.adventureLog.length-1, 1)
+
+    newmessages.innerHTML = ""
+    data.messageLog = []
+
+    let templog = JSON.parse(localStorage.messageLog)
+
+    newsCounter = -1
+
+    newmessages.innerHTML = ""
+
+    for(n in templog) checkMessage(templog[n], false)
+}
+
+function CLEAR() {
+    var CLEARspookN = 45
+    var CLEARspook = setInterval(()=>{
+        d.getElementById("newmessages").style.display = "inline-block"
+        d.getElementById("topPane").style.height = CLEARspookN + "vh"
+        CLEARspookN += 5
+        checkMessage("ERROR", false);
+    },10)
+
+    setTimeout(()=>{
+        clearInterval(CLEARspook)
+        d.getElementById("newmessages").style.display = "none"
+        d.getElementById("topPane").style.height = "40vh"
+        newmessages.innerHTML = ""
+        data.messageLog = new Array()
+        newsCounter = -1
+    }, 800)
+
+    localStorage.clear();
+    localStorage.firstSave = "false"
+    data.counter = 0;
+    rightChildren = 0;
+    newsCounter = -1;
+    wires[0] = 1
+
+    wiresPauses = new Array(10)
+    wiresPauses.fill(false)
+
+    for(n in data.upgrade) {
+
+        data.upgrade[n][0] = 0
+        data.upgrade[n][1] = upgradePresets[n][0]
+        data.upgrade[n][2] = 0
+    }
+
+    for(n in data.special) {
+        data.special[n][1].style.display = "none"
+        data.special[n][4] = false;
+        data.special[n][6] = false;
+        data.special[n][5] = 0;
+    }
+
+    data.adventureLog = []
+
+
+    data.messageChecker = new Array()
+    data.messageChecker.fill(false);
+    data.messageLog = new Array()
+    SAVE(true)
+    LOAD()
+
+    autosavetoggle = false
+    localStorage.firstSave = "false"
+    console.log(autosavetoggle)
+    link("home")
+}
+
+
+
+let pipeCount = 0;
+heart.addEventListener("click", ()=> {
+
+    pipeCount++
+    // heart.style = "  animation-name: click;animation-duration: 0.1s;"
+    // setTimeout(()=>{ heart.style="" },100)
+ })
+
+//////
+
+let decayTick = 800
+let tick = 10;
+let bloodTick = 500;
+let frame = 0;
+
+setInterval(()=>{
+if(data.counter > 0) count(0)
+}, decayTick)
+
+autosavedelay = true;
+setTimeout(()=>{
+
+    LOAD(); autosavedelay = false
+
+}, 50)
+
+if(localStorage.firstSave !== "true") CLEAR()
+
+setInterval(()=>{
+    count(pipeCount)
+    pipeCount = 0
+
+if(autosavetoggle && !autosavedelay) SAVE(false)
+    
+frame++
+
+for(n in messagePresets) if(data.counter >= messagePresets[n][1]) data.messageChecker[n] = checkMessage(messagePresets[n][0], data.messageChecker[n]);
+
+for(n in specialPresets) {
+if(data.counter >= specialPresets[n][5] && !data.special[n][4]) {
+      data.special[n][1].style.display = ""
+      data.special[n][6] = true;
+}}
+checkUpgradeCost();
+checkSpecialCost();
+
+newmessages.scrollTop = newmessages.scrollHeight;
+title.innerHTML = Math.floor(data.counter) + " - IdleBot"
+
+updateData();
+}, tick)
