@@ -517,20 +517,6 @@ function SAVE(isClear) {
 
     localStorage.data = ""
     saveslot = ""
-    saveslot += btoa(unescape(encodeURIComponent(messages.innerHTML))) + "|"
-    saveslot +=  btoa(unescape(encodeURIComponent(newmessages.innerHTML))) + "|"
-    //saveslot +=  btoa(unescape(encodeURIComponent(leftPane.innerHTML))) + "|"
-   // saveslot +=  btoa(unescape(encodeURIComponent(rightPane.innerHTML))) + "|"
-    saveslot +=  btoa(unescape(encodeURIComponent(counterText.innerHTML))) + "|"
-   // saveslot +=  btoa(unescape(encodeURIComponent(d.getElementById("saving").innerHTML))) + "|"
-    saveslot += btoa(unescape(encodeURIComponent(JSON.stringify(data.adventureLog)))) + "|"
-    saveslot += btoa(unescape(encodeURIComponent(JSON.stringify(data.messageLog)))) + "|"
-    saveslot += btoa(unescape(encodeURIComponent(JSON.stringify(messagePresets)))) + "|"
-    saveslot += btoa(unescape(encodeURIComponent(newsCounter))) + "|"
-    saveslot += btoa(unescape(encodeURIComponent(autosavetoggle))) + "|"
-    saveslot += btoa(unescape(encodeURIComponent(wires[0]))) + "|"
-    saveslot += btoa(unescape(encodeURIComponent(wiresPauses))) + "|"
-    saveslot += btoa(unescape(encodeURIComponent(data.counter))) + "|"
 
     for(n in data.upgrade) {
 
@@ -550,6 +536,23 @@ function SAVE(isClear) {
         if(n != data.special.length - 1) saveslot += "?"
     }
 
+    saveslot += "|"
+
+    saveslot += btoa(unescape(encodeURIComponent(messages.innerHTML))) + "|"
+    saveslot += btoa(unescape(encodeURIComponent(newmessages.innerHTML))) + "|"
+    saveslot += btoa(unescape(encodeURIComponent(counterText.innerHTML))) + "|"
+    saveslot += btoa(unescape(encodeURIComponent(JSON.stringify(data.adventureLog)))) + "|"
+    saveslot += btoa(unescape(encodeURIComponent(JSON.stringify(data.messageLog)))) + "|"
+    saveslot += btoa(unescape(encodeURIComponent(JSON.stringify(messagePresets)))) + "|"
+    saveslot += btoa(unescape(encodeURIComponent(newsCounter))) + "|"
+    saveslot += btoa(unescape(encodeURIComponent(autosavetoggle))) + "|"
+    saveslot += btoa(unescape(encodeURIComponent(wires[0]))) + "|"
+    saveslot += btoa(unescape(encodeURIComponent(wiresPauses))) + "|"
+    saveslot += btoa(unescape(encodeURIComponent(data.counter))) + "|"
+
+    // saveslot += btoa(unescape(encodeURIComponent(""))) + "|"
+    //for new save data
+
     localStorage.data = btoa(unescape(encodeURIComponent(saveslot)))
 
     return localStorage.data
@@ -560,6 +563,8 @@ function SAVE(isClear) {
 let loadDump = ""
 let loadArray = []
 
+let test = ""
+
 function LOAD() {
  try {
      
@@ -568,7 +573,7 @@ function LOAD() {
 
     loadArray = loadDump.split("|")
 
-    for(let n = loadArray.length - 2; n < loadArray.length; n++) {
+    for(let n = 0; n <= 1; n++) {
         loadArray[n] = loadArray[n].split("?")
         for(m in loadArray[n]) {
             loadArray[n][m] = loadArray[n][m].split("~")
@@ -578,79 +583,56 @@ function LOAD() {
         }
     }
 
-    for(let n = 0; n < loadArray.length - 2; n ++) {
+    for(let n = 2; n < loadArray.length - 1; n++) {
         loadArray[n] = decodeURIComponent(escape(window.atob(loadArray[n])));
     }
 
-    //decodeURIComponent(escape(window.atob(b64)));
+    let loadNullCheck = new Array()
 
-    messages.innerHTML = loadArray[0]
-    newmessages.innerHTML = loadArray[1]
-    //leftPane.innerHTML = loadArray[2]
-   // rightPane.innerHTML = loadArray[3]
-    counterText.innerHTML = loadArray[2]
-   // d.getElementById("saving").innerHTML = loadArray[4]
-    data.adventureLog = JSON.parse(loadArray[3])
-    data.messageLog = JSON.parse(loadArray[4])
-    messagePresets = JSON.parse(loadArray[5])
-    newsCounter = parseInt(loadArray[6])
-    wires[0] = parseInt(loadArray[8]) //skip 1
-    wiresPauses = loadArray[9] === "true"?true:false
-    data.counter = parseInt(loadArray[10])
+
+    for(n in loadArray) if(loadArray[n] !== undefined && loadArray[n] !== null) loadNullCheck[n] = true
+
+    if(loadNullCheck[0]) for(n in loadArray[0]) {
+        data.upgrade[n][0] = parseInt(loadArray[0][n][0])
+        data.upgrade[n][1] = parseInt(loadArray[0][n][1])
+        data.upgrade[n][2] = parseInt(loadArray[0][n][2])
+}
+
+    if(loadNullCheck[1]) for(n in loadArray[1]) {
+        data.special[n][4] = loadArray[1][n][0] === "true"?true:false
+        data.special[n][5] = parseInt(loadArray[1][n][1])
+        data.special[n][6] = loadArray[1][n][2] === "true"?true:false
+}
+
+
+
+    if(loadNullCheck[2]) messages.innerHTML = loadArray[2]
+    if(loadNullCheck[3]) newmessages.innerHTML = loadArray[3]
+    if(loadNullCheck[4]) counterText.innerHTML = loadArray[4]
+    if(loadNullCheck[5]) data.adventureLog = JSON.parse(loadArray[5])
+    if(loadNullCheck[6]) data.messageLog = JSON.parse(loadArray[6])
+    if(loadNullCheck[7]) messagePresets = JSON.parse(loadArray[7])
+    if(loadNullCheck[8]) newsCounter = parseInt(loadArray[8])
+    if(loadNullCheck[10]) wires[0] = parseInt(loadArray[10]) //skip 1
+    if(loadNullCheck[11]) wiresPauses = loadArray[11] === "true"?true:false
+    if(loadNullCheck[12]) data.counter = parseInt(loadArray[12])
+
 
     for(let n = 3; n <= messages.children.length - 4; n += 3) {
-        //console.log(messages.children[n].onclick)
         if(messages.children[n].attributes.onclick.value.includes("''")) {
-
-        
-
             for(m in Nodes[data.adventureLog[data.adventureLog.length - 1]][0]) {
-
                if (Nodes[data.adventureLog[data.adventureLog.length - 1]][0][m].split("|")[0] ===  messages.children[0].innerHTML) {
-
-
-               // console.log(Nodes[data.adventureLog[data.adventureLog.length - 1]][0][m].split("|").length)
-
-
-                    for(var i = 1; i < Nodes[data.adventureLog[data.adventureLog.length - 1]][0][m].split("|").length; i++) {
+                for(var i = 1; i < Nodes[data.adventureLog[data.adventureLog.length - 1]][0][m].split("|").length; i++) {
 
                         messages.children[n].attributes.onclick.value = `link("${Nodes[data.adventureLog[data.adventureLog.length - 1]][0][m].split("|")[i].split("~")[1]}",false);`
 
-                        //console.log(Nodes[data.adventureLog[data.adventureLog.length - 1]][0][m].split("|")[i].split("~"))
+                        messages.children[n].innerHTML = `${Nodes[data.adventureLog[data.adventureLog.length - 1]][0][m].split("|")[i].split("~")[0]}`
 
-                        messages.children[n].innerHTML = `"${Nodes[data.adventureLog[data.adventureLog.length - 1]][0][m].split("|")[i].split("~")[0]}"`
-
-                    }
-                
-                   
-                  // console.log(Nodes[data.adventureLog[data.adventureLog.length - 1]][0][n].split("|")[0])
-
+                   }
                }
-
-
             }
-
         } 
     }
-
-
-
-
-
-    for(n in loadArray[11]) {
-            data.upgrade[n][0] = parseInt(loadArray[11][n][0])
-            data.upgrade[n][1] = parseInt(loadArray[11][n][1])
-            data.upgrade[n][2] = parseInt(loadArray[11][n][2])
-    }
-
-    for(n in loadArray[12]) {
-        data.special[n][4] = loadArray[12][n][0] === "true"?true:false
-        data.special[n][5] = parseInt(loadArray[12][n][1])
-        data.special[n][6] = loadArray[12][n][2] === "true"?true:false
-       // specialPresets[n][4]()
-    }
-
-    //console.log(data.special[0][4])
 
     removeSpecials()
 
@@ -664,7 +646,7 @@ function LOAD() {
 
 
 
-    autosavetoggle = loadArray[7] === "true"?true:false
+    if(loadNullCheck[9]) autosavetoggle = loadArray[9] === "true"?true:false
 
     switch (autosavetoggle) {
         case true:
@@ -674,8 +656,6 @@ function LOAD() {
         autosave.innerHTML = "AUTOSAVE <span id='off'>OFF</span>"
         break;
     }
-
-
 
 } catch (error) {
      CLEAR()
@@ -740,7 +720,7 @@ function CLEAR() {
     for(n in upgradePresets) addUpgrade(upgradePresets[n])
 
     data.adventureLog = []
-    //messages.innerHTML = ""
+
     newmessages.innerHTML = ""
 
     autosavetoggle = false
