@@ -33,9 +33,7 @@ var exportedUpgrade = []
 var exportedSpecial = new Array()
 var intervals = []
 var decayIntervals = []
-var messagePresets = [
-
-]
+var messagePresets = [false]
 
 //cost, increase rate, number of, reference, description, tick, data position, decay rate
 var upgradePresets = [
@@ -48,15 +46,17 @@ var specialPresets = [
         d.getElementById("saving").style.display = "initial"
         autosavetoggle = true;
         autosave.innerHTML = "AUTOSAVE <span id='on'>ON</span>"
-        }, 20, "savingYEAH"],
+        }, 20, "HELLYEAHSAVING"],
 
-    [50, "Research Blood Valves", "", 1, ()=>{
+    [50, "Research Blood Valves", "All valves come equipped with a half-life of 5 seconds.", 1, ()=>{
         data.upgrade[0][5].style.display = ""
     }, 40, "bloodvalves"],
 
     [10, "Activate Viewport", "", 2, ()=>{
         d.getElementById("messages").style.display = "inline-block"
         d.getElementById("newmessages").style.display = "inline-block"
+        
+        messagePresets[0] =  checkMessage("Visual display non-responsive. Switching to text-based display.", messagePresets[0])
     }, 5, "viewportYEAH"],
 
     [100, "Upgrade Blood Valves", "Now twice as efficient!", 3, ()=> {
@@ -70,7 +70,11 @@ var specialPresets = [
             count(data.upgrade[0][0])
         }}, data.upgrade[0][10] * 1000)
 
-    }, 70, "bloodbetter1"]
+    }, 70, "bloodbetter1"],
+
+    [100, "Research Blood Pipes", "It ain't gonna pipe itself...", 4, ()=>{
+        data.upgrade[1][5].style.display = ""
+    }, 80, "bloodpipes"],
 
 ]
 
@@ -79,6 +83,7 @@ function removeSpecials() {
     d.getElementById("saving").style.display = "none"
     autosave.innerHTML = "AUTOSAVE <span id='off'>OFF</span>"
     data.upgrade[0][5].style.display = "none"
+    data.upgrade[1][5].style.display = "none"
     d.getElementById("messages").style.display = "none"
     d.getElementById("newmessages").style.display = "none"
     data.upgrade[0][10] = 1
@@ -204,10 +209,10 @@ function addUpgrade(preset) {
  node.id = reference + "Upgrade";
  node.classList.add("tile");
 
- node.innerHTML = '<div class="generalDesc"><p class="Name">'+ name 
+ node.innerHTML = '<div class="generalDesc upgradeDesc"><p class="Name">'+ name 
  +'</p><p class="Desc">'+ description
  +'</p><p class="Cost" id="'+ reference +'UpgradeCost">Cost:' + cost
- +'</p></div> <div class="generalNum"><p class="Num" id="'+ reference +'UpgradeNum">' + number + '</p></div>'
+ +'</p></div> <div class="generalNum upgradeNum"><p class="Num" id="'+ reference +'UpgradeNum">' + number + '</p></div>'
 
  leftPane.appendChild(node)
 
@@ -520,6 +525,7 @@ function SAVE(isClear) {
    // saveslot +=  btoa(unescape(encodeURIComponent(d.getElementById("saving").innerHTML))) + "|"
     saveslot += btoa(unescape(encodeURIComponent(JSON.stringify(data.adventureLog)))) + "|"
     saveslot += btoa(unescape(encodeURIComponent(JSON.stringify(data.messageLog)))) + "|"
+    saveslot += btoa(unescape(encodeURIComponent(JSON.stringify(messagePresets)))) + "|"
     saveslot += btoa(unescape(encodeURIComponent(newsCounter))) + "|"
     saveslot += btoa(unescape(encodeURIComponent(autosavetoggle))) + "|"
     saveslot += btoa(unescape(encodeURIComponent(wires[0]))) + "|"
@@ -586,21 +592,22 @@ function LOAD() {
    // d.getElementById("saving").innerHTML = loadArray[4]
     data.adventureLog = JSON.parse(loadArray[3])
     data.messageLog = JSON.parse(loadArray[4])
-    newsCounter = parseInt(loadArray[5])
-    wires[0] = parseInt(loadArray[7]) //skip 1
-    wiresPauses = loadArray[8] === "true"?true:false
-    data.counter = parseInt(loadArray[9])
-
-    for(n in loadArray[10]) {
-            data.upgrade[n][0] = parseInt(loadArray[10][n][0])
-            data.upgrade[n][1] = parseInt(loadArray[10][n][1])
-            data.upgrade[n][2] = parseInt(loadArray[10][n][2])
-    }
+    messagePresets = JSON.parse(loadArray[5])
+    newsCounter = parseInt(loadArray[6])
+    wires[0] = parseInt(loadArray[8]) //skip 1
+    wiresPauses = loadArray[9] === "true"?true:false
+    data.counter = parseInt(loadArray[10])
 
     for(n in loadArray[11]) {
-        data.special[n][4] = loadArray[11][n][0] === "true"?true:false
-        data.special[n][5] = parseInt(loadArray[11][n][1])
-        data.special[n][6] = loadArray[11][n][2] === "true"?true:false
+            data.upgrade[n][0] = parseInt(loadArray[11][n][0])
+            data.upgrade[n][1] = parseInt(loadArray[11][n][1])
+            data.upgrade[n][2] = parseInt(loadArray[11][n][2])
+    }
+
+    for(n in loadArray[12]) {
+        data.special[n][4] = loadArray[12][n][0] === "true"?true:false
+        data.special[n][5] = parseInt(loadArray[12][n][1])
+        data.special[n][6] = loadArray[12][n][2] === "true"?true:false
        // specialPresets[n][4]()
     }
 
@@ -662,6 +669,10 @@ function CLEAR() {
     rightChildren = 0;
     newsCounter = -1;
     wires[0] = 1
+
+    messagePresets = new Array(10)
+    messagePresets.fill(false)
+
 
     for(n in intervals) {
         clearInterval(intervals[n])
@@ -794,7 +805,7 @@ setInterval(()=>{
 
  if(autosavetoggle && !autosavedelay) SAVE(false)
 
-for(n in messagePresets) if(data.counter >= messagePresets[n][1]) data.messageChecker[n] = checkMessage(messagePresets[n][0], data.messageChecker[n]);
+//for(n in messagePresets) if(data.counter >= messagePresets[n][1]) data.messageChecker[n] = checkMessage(messagePresets[n][0], data.messageChecker[n]);
 
 for(n in specialPresets) {
 if(data.counter >= specialPresets[n][5] && !data.special[n][4]) {

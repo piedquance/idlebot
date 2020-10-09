@@ -167,6 +167,14 @@ a:visited {
 }
 
 .generalNum {
+  flex:30%
+}
+
+.generalDesc {
+  flex:70%;
+}
+
+.upgradeDesc {
   flex:50%
 }
 
@@ -185,12 +193,11 @@ a:visited {
   font-size: 13px;
   color:#fff;
   margin:0;
-  width:210px;
 }
 .Name {
   color:#fff;
   padding-left: 20px;
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 1000;
   padding-top:15px;
   margin:0;
@@ -201,7 +208,7 @@ a:visited {
 .Num {
   color:#fff;
   float:right;
-  padding-right:30px;
+  padding-right:20px;
   font-size: 50px;
   font-weight: 1000;
   margin-top: 50px;
