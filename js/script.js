@@ -664,7 +664,7 @@ function LOAD() {
 
 
 
-    autosavetoggle = loadArray[6] === "true"?true:false
+    autosavetoggle = loadArray[7] === "true"?true:false
 
     switch (autosavetoggle) {
         case true:
