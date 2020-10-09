@@ -39,7 +39,7 @@ var messagePresets = [
 
 //cost, increase rate, number of, reference, description, tick, data position, decay rate
 var upgradePresets = [
-    [10, 5, 0, "Blood Valve", "blood", "Pumps blood every 1 s<br>Decays every 10 s", 1, 0, 100],
+    [10, 5, 0, "Blood Valve", "blood", "Pumps blood every 1 s<br>Decays every 10 s", 1, 0, 10],
     [20, 7, 0, "Blood Pipe", "pipe", "Pipes blood every 0.5 s<br>Decays every 20 s", 0.5, 1, 20],
 ]
 
