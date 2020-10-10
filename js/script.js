@@ -507,15 +507,9 @@ function linkSplit(text, back) {
          }
 
      }
-
-     console.log(choiceNumberOf)
-     console.log(chosenNode)
      let constData = data.adventureLog.length
 
      for(let n = constData - 1; n > constData - 1 - choiceNumberOf; n--)  {
-     
-     console.log(n ,data.adventureLog[n])
-
      
      if(data.adventureLog[n] !== chosenNode) data.adventureLog.splice(n, 1) 
      }
@@ -864,8 +858,6 @@ function CLEAR() {
     SAVE(true)
     removeSpecials()
     autosavetoggle = false
-
-    console.log(messages.innerHTML)
 }
 
 //////
