@@ -35,10 +35,12 @@ var intervals = []
 var decayIntervals = []
 var messagePresets = [false]
 
-//cost, increase rate, number of, reference, description, tick, data position, decay rate
+//cost, increase rate, number of, name, reference, description, tick, data position, decay rate, type, message[optional]
 var upgradePresets = [
-    [10, 5, 0, "Blood Valve", "blood", "Pumps blood every 1 s<br>Decays every 10 s", 1, 0, 10],
-    [20, 7, 0, "Blood Pipe", "pipe", "Pipes blood every 0.5 s<br>Decays every 20 s", 0.5, 1, 20],
+    [10, 5, 0, "Blood Valve", "blood", "Pumps blood every 1 s<br>Decays every 10 s", 1, 0, 10, "basicCounter"],
+    [20, 7, 0, "Blood Pipe", "pipe", "Pipes blood every 0.5 s<br>Decays every 20 s", 0.5, 1, 20, "basicCounter"],
+
+    [10, 5, 0, "Logger", "logger", "Logs a message every second.<br>\"it's useless\" -the dev", 1, 2, 0, "Logger", "yo"]
 ]
 
 var specialPresets = [
@@ -202,7 +204,7 @@ function addUpgrade(preset) {
     let tick = preset[6]
     let dataPosition = preset[7]
     let decayRate = preset[8]
-
+    let type = preset[9]
    
 
  var node = d.createElement("DIV");
@@ -222,6 +224,9 @@ function addUpgrade(preset) {
     d.getElementById(reference + "Upgrade"),
     increaseRate, reference + "Upgrade", name, description, tick,
     reference+ "UpgradeCost", reference+ "UpgradeNum", false, decayRate, reference]
+
+
+    if(type === "basicCounter") {
 
     intervals[dataPosition] = setInterval(()=>{
         if(data.upgrade[preset[7]] !== null && data.upgrade[preset[7]] !== undefined && data.upgrade[preset[7]][2] > 0) {
@@ -260,8 +265,36 @@ function addUpgrade(preset) {
             }
         })
 
-    data.upgrade[dataPosition][13] = true
+   // data.upgrade[dataPosition][13] = true
     data.upgrade[dataPosition][5].style.display = "none"
+
+    }   else if(type === "Logger") {
+
+        let LoggerMessage = preset[10]
+
+        data.upgrade[dataPosition][5].addEventListener("click", ()=> {
+            if(data.counter >= data.upgrade[dataPosition][1]) {   
+                data.upgrade[dataPosition][2]++      
+                data.counter -= data.upgrade[dataPosition][1]
+                data.upgrade[dataPosition][1] += data.upgrade[dataPosition][6]
+
+            }})
+
+        intervals[dataPosition] = setInterval(()=>{
+            if(data.upgrade[preset[7]] !== null && data.upgrade[preset[7]] !== undefined && data.upgrade[preset[7]][2] > 0) {
+                
+                checkMessage("hey.", false)
+        
+            }}, data.upgrade[0][10] * 1000)
+
+            data.upgrade[dataPosition][5].style.display = "none"
+
+
+    } else console.log("welp")
+
+
+
+
 }
 
 for(n in upgradePresets) addUpgrade(upgradePresets[n])
@@ -425,8 +458,11 @@ function Node(title, text, options) {
     Nodes[title][1] = options;
 }
 
-heartCon = d.getElementById("heartCont")
-heartCon.addEventListener("click", ()=>{
+wireItems = d.getElementsByClassName("wiresItem")
+
+
+for(let n = 0; n <= 1; n++)
+wireItems[n].addEventListener("click", ()=>{
 
     switch (true) {
         case (wires[0] < 32):
@@ -501,6 +537,22 @@ link("home");
 Node("look_around", ["Fields as far as the eye can see.|Get up~get_up"], [])
 
 Node("get_up", ["You get up.|Look at yourself[MISSING]~", "You try to get up. You fail.<br>But maybe if you had more power..."], [10, 0])
+
+//Node("look_at_yourself", ["After everything, it's still you— wait, what?"], [])
+
+
+let EnergySwitch = d.getElementById("EnergySwitch")
+let EnergySwitchToggle = true;
+
+EnergySwitch.addEventListener("click", ()=>{
+    console.log("click!")
+    EnergySwitchToggle = !EnergySwitchToggle;
+
+    EnergySwitch.style.backgroundImage  = EnergySwitchToggle ? "url('css/images/energySwitch2.png')" : "url('css/images/energySwitch.png')"
+
+    console.log(EnergySwitch.style.backgroundImage)
+
+})
 
 
 
@@ -619,7 +671,7 @@ function LOAD() {
 
 
     for(let n = 3; n <= messages.children.length - 4; n += 3) {
-        if(messages.children[n].attributes.onclick.value.includes("''")) {
+        if(messages.children[n].attributes.onclick.value.includes("''") || messages.children[n].attributes.onclick.value.includes('""')) {
             for(m in Nodes[data.adventureLog[data.adventureLog.length - 1]][0]) {
                if (Nodes[data.adventureLog[data.adventureLog.length - 1]][0][m].split("|")[0] ===  messages.children[0].innerHTML) {
                 for(var i = 1; i < Nodes[data.adventureLog[data.adventureLog.length - 1]][0][m].split("|").length; i++) {

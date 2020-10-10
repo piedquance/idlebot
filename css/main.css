@@ -272,6 +272,39 @@ a:visited {
   margin:0;
 }
 
+#wiresCon {
+  z-index: 4;
+  width:250px;
+  position: absolute;
+  top:0;
+  left: 50%;
+
+}
+
+#wiresFlex{
+  position:relative;
+  left : -50%;
+  height:60px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.wiresItem{
+  width: 75px;
+}
+
+#EnergySwitch {
+  width:50px;
+  /* background-color: #0f0; */
+  opacity:1;
+   background-image: url(images/energySwitch.png); 
+  background-repeat: no-repeat;
+  background-position:center;
+  background-size: auto;
+}
+
+
+
 
 @keyframes scale {
   from { transform:scale(1);}
