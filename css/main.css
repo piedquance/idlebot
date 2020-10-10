@@ -181,6 +181,32 @@ a:visited {
   color:#000;
 }
 
+.donate {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 13px;
+  background-color: #000;
+  color: #fff;
+  text-decoration: none;
+  border:none;
+  padding: 0;
+  animation-name:messageLoad;
+  animation-duration:0.5s
+}
+
+.donate-form {
+  animation-name:messageLoad;
+  animation-duration:0.5s
+}
+
+.donate:hover {
+  background-color: #fff;
+  color:#000
+}
+
+#donate-wrapper:hover .donate {
+  background-color: #fff;
+  color:#000
+}
 
 .outer {
   display:flex;
