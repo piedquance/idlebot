@@ -21,6 +21,11 @@ var leftPane = d.getElementById("left")
 var rightPane = d.getElementById("right")
 var rightChildren = 0;
 var newsCounter = -1;
+let heartOffset = 0
+let EnergySwitch = d.getElementById("EnergySwitch")
+let EnergySwitchToggle = false;
+let autosavetoggle = false;
+let saveslot = "";
 var stopIt = new Audio('css/audio/AUDIO_FILE.mp3');
 
 var save = d.getElementById("save")
@@ -389,74 +394,146 @@ function checkSpecialCost() {
 
 //////
 
+let Nodes = {}
+
+function Node(node) {
+    Nodes[node["title"]] = {}
+
+   if(node["title"]) Nodes[node["title"]].title = node.title;
+   if(node["text"]) Nodes[node["title"]].text = node.text;
+   if(node["common"]) Nodes[node["title"]].common = node.common;
+   if(node.Value || node.Value == 0) Nodes[node["title"]].Value = node.Value;
+
+}
+//////
+
+
+//You wake up locked in a deserted jail cell, completely alone. There is nothing at all in your cell, useful or otherwise.
+Node({"title":"home", "text":"You are in a field. There is nothing around you, useful or otherwise.|D~Look around~look_around|S~Get up~get_up"})
+
+Node({"title":"look_around", "text":"Fields as far as the eye can see.|S~Get up~get_up"})
+
+Node({"common":"get_up", "title":"get_up0","text":"You try to get up. You fail.<br>But maybe if you had more power...", "Value":0})
+
+Node({"common":"get_up", "title":"get_up10", "text":"You get up.|Look at yourself[MISSING]~", "Value":10})
+
+
+
+link("home", false);
+//Node("look_at_yourself", ["After everything, it's still you— wait, what?"], [])
+
+//////
+
 function link(text, back) {
 
-    if(Nodes.hasOwnProperty(text)) {
+
+     if(Nodes[text]) {
 
         let choice = Nodes[text]
 
-        if(choice[0].length === 1) {
 
-        let array = choice[0][0].split("|")
+        let textarray = choice.text.split("|")
         let linkarray = []
-        for(let n = 1; n < array.length; n++) {
-            linkarray[n-1] = array[n].split("~")
+        for(let n = 1; n < textarray.length; n++) {
+            linkarray[n-1] = textarray[n].split("~")
         }
 
-        messages.innerHTML = "<p class='messageStrip line'>"+ array[0] +"</p>"
 
-        for(n in linkarray) {
-            messages.innerHTML += "<br> <span class='bracket'> ></span> <a class='link' onclick=link('"+ linkarray[n][1] +"',false)>"+ linkarray[n][0] +"</a>"
-        }
-
-        if(back) data.adventureLog.splice(data.adventureLog.length-1, 1)
-        else data.adventureLog[data.adventureLog.length] = text
+        messages.innerHTML = `<p class='messageStrip line'>${textarray[0]}</p>`
 
 
-        messages.innerHTML += "<br><br> <a id='back' class='link' onclick=link('"+ data.adventureLog[data.adventureLog.length-2] + "',true)>Go Back </a>"
-    
-    } else {
-        let out = false
-        for(n in choice[0]) {
-            if(!out) {
-                if(data.counter >= choice[1][n]) {
+        for(n in linkarray) { if(linkarray[n][0] == "D"){
 
-                    let array = choice[0][n].split("|")
-                    let linkarray = []
-                    for(let n = 1; n < array.length; n++) {
-                        linkarray[n-1] = array[n].split("~")
-                    }
+            messages.innerHTML += `<br> <span class='bracket'> > </span> 
             
-                    messages.innerHTML = "<p class='messageStrip line'>"+ array[0] +"</p>"
-            
-                    for(n in linkarray) {
-                        messages.innerHTML += "<br> <span class='bracket'> ></span> <a class='link' onclick=link('"+ linkarray[n][1] +"',false)>"+ linkarray[n][0] +"</a>"
-                    }
-            
-                    if(back) data.adventureLog.splice(data.adventureLog.length-1, 1)
-                    else data.adventureLog[data.adventureLog.length] = text
-            
-            
-                    messages.innerHTML += "<br><br> <a id='back' class='link' onclick=link('"+ data.adventureLog[data.adventureLog.length-2] + "',true)>Go Back </a>"
-                    data.counter -= choice[1][n]
-                    out = true
+            <a class='link' onclick="link('${linkarray[n][2]}'    , false  ) "  >      ${linkarray[n][1]} </a>`
+       
+        } else if(linkarray[n][0] == "S") {
 
-                    if(choice[1][n] == 0) checkMessage(choice[1][0] + " Energy Needed", false);
-                    else checkMessage(choice[1][n] + " Energy Used", false);
-                }
-            }
+            messages.innerHTML += `<br> <span class='bracket'> ></span> <a class='link' onclick="linkSplit('${linkarray[n][2]}', false)">${linkarray[n][1]}</a>`
+
         }
     }
 }
+        if(back && data.adventureLog.length !== 1) data.adventureLog.splice(data.adventureLog.length-1, 1)
+
+        else data.adventureLog[data.adventureLog.length] = text
+
+        if(data.adventureLog.length !== 1) messages.innerHTML += `<br><br> <a id='back' class='link' onclick="link('${data.adventureLog[data.adventureLog.length-2]}',true)">Go Back </a>`
+
 }
 
-let Nodes = {}
 
-function Node(title, text, options) {
-    Nodes[title] = []
-    Nodes[title][0] = text;
-    Nodes[title][1] = options;
-}
+function linkSplit(text, back) {
+
+    let choiceNumberOf = 0
+    let chosenNode = ""
+
+    for(n in Nodes) if(Nodes[n].common)  if(Nodes[n].common = text) {
+
+      
+       
+
+        if(data.counter >= Nodes[n].Value) {
+
+            let choice = Nodes[n]
+
+
+
+            let textarray = choice.text.split("|")
+            let linkarray = []
+            for(let n = 1; n < textarray.length; n++) {
+                linkarray[n-1] = textarray[n].split("~")
+            }
+    
+            messages.innerHTML = `<p class='messageStrip line'>${textarray[0]}</p>`
+    
+    
+            for(n in linkarray) { if(linkarray[n][0] == "D"){
+    
+                messages.innerHTML += `<br> <span class='bracket'> ></span> <a class='link' onclick="link('${linkarray[n][2]}', false)">${linkarray[n][1]}</a>`
+           
+            } else if(linkarray[n][0] == "S") {
+    
+                messages.innerHTML += `<br> <span class='bracket'> ></span> <a class='link' onclick="linkSplit('${linkarray[n][2]}', false")>${linkarray[n][1]}</a>`
+    
+            }
+        }
+        chosenNode = choice.title
+
+        data.adventureLog[data.adventureLog.length] = choice.title
+        choiceNumberOf++
+    
+         }
+
+     }
+
+     console.log(choiceNumberOf)
+     console.log(chosenNode)
+     let constData = data.adventureLog.length
+
+     for(let n = constData - 1; n > constData - 1 - choiceNumberOf; n--)  {
+     
+     console.log(n ,data.adventureLog[n])
+
+     
+     if(data.adventureLog[n] !== chosenNode) data.adventureLog.splice(n, 1) 
+     }
+
+     data.counter -= Nodes [ data.adventureLog[data.adventureLog.length - 1 ] ].Value
+
+
+     if(back) data.adventureLog.splice(data.adventureLog.length-1, 1)
+     
+     messages.innerHTML += `<br><br> <a id='back' class='link' onclick="link('${data.adventureLog[data.adventureLog.length-2]}',true)">Go Back </a>`
+
+ }
+
+
+
+
+//taken from https://stackoverflow.com/questions/456177/function-overloading-in-javascript-best-practices
+
 
 wireItems = d.getElementsByClassName("wiresItem")
 
@@ -529,40 +606,25 @@ wiresPauses = false
 checkMessage("<br>", false)
 d.getElementById("strip0").style = ""
 
-
-//You wake up locked in a deserted jail cell, completely alone. There is nothing at all in your cell, useful or otherwise.
-Node("home", ["You are in a field. There is nothing around you, useful or otherwise.|Look around~look_around|Get up~get_up"], [])
-link("home");
-
-Node("look_around", ["Fields as far as the eye can see.|Get up~get_up"], [])
-
-Node("get_up", ["You get up.|Look at yourself[MISSING]~", "You try to get up. You fail.<br>But maybe if you had more power..."], [10, 0])
-
-//Node("look_at_yourself", ["After everything, it's still you— wait, what?"], [])
-
-
-let EnergySwitch = d.getElementById("EnergySwitch")
-let EnergySwitchToggle = false;
-
 EnergySwitch.addEventListener("click", ()=>{
     EnergySwitchToggle = !EnergySwitchToggle;
     EnergySwitch.style.backgroundImage  = EnergySwitchToggle ? "url('css/images/energySwitch.png')" : "url('css/images/energySwitch2.png')"
 })
 
 
-let heartOffset = 0
+
 
 heart.addEventListener("click", ()=>{
-    heartOffset += 1
+    if (heartOffset <= 80) heartOffset += (1 * 80) / 100
     heart.style.setProperty("--heart-offset", heartOffset + "px");
-    if(heartOffset > 77) heartOffset = 0
+   // if(heartOffset > 77) heartOffset = 0
 
 })
 
 //////
 
 
-let saveslot = "";
+
 
 function SAVE(isClear) {
     if(!autosavetoggle && !isClear) checkMessage("STATE SAVED", false)
@@ -605,6 +667,7 @@ function SAVE(isClear) {
     saveslot += btoa(unescape(encodeURIComponent(wiresPauses))) + "|"
     saveslot += btoa(unescape(encodeURIComponent(data.counter))) + "|"
     saveslot += btoa(unescape(encodeURIComponent(EnergySwitchToggle))) + "|"
+    saveslot += btoa(unescape(encodeURIComponent(heartOffset)))
 
     // saveslot += btoa(unescape(encodeURIComponent(""))) + "|"
     //for new save data
@@ -639,7 +702,7 @@ function LOAD() {
         }
     }
 
-    for(let n = 2; n < loadArray.length - 1; n++) {
+    for(let n = 2; n < loadArray.length ; n++) {
         loadArray[n] = decodeURIComponent(escape(window.atob(loadArray[n])));
     }
 
@@ -673,23 +736,26 @@ function LOAD() {
     if(loadNullCheck[11]) wiresPauses = loadArray[11] === "true"?true:false
     if(loadNullCheck[12]) data.counter = parseInt(loadArray[12])
     if(loadNullCheck[13]) EnergySwitchToggle = loadArray[13] === "true"?true:false
+    if(loadNullCheck[14]) heartOffset = parseInt(loadArray[14]) 
+
+//    if(loadNullCheck[x]) var = loadArray[x] 
 
 
-    for(let n = 3; n <= messages.children.length - 4; n += 3) {
-        if(messages.children[n].attributes.onclick.value.includes("''") || messages.children[n].attributes.onclick.value.includes('""')) {
-            for(m in Nodes[data.adventureLog[data.adventureLog.length - 1]][0]) {
-               if (Nodes[data.adventureLog[data.adventureLog.length - 1]][0][m].split("|")[0] ===  messages.children[0].innerHTML) {
-                for(var i = 1; i < Nodes[data.adventureLog[data.adventureLog.length - 1]][0][m].split("|").length; i++) {
+    // for(let n = 3; n <= messages.children.length - 4; n += 3) {
+    //     if(messages.children[n].attributes.onclick.value.includes("''") || messages.children[n].attributes.onclick.value.includes('""')) {
+    //         for(m in Nodes[data.adventureLog[data.adventureLog.length - 1]][0]) {
+    //            if (Nodes[data.adventureLog[data.adventureLog.length - 1]][0][m].split("|")[0] ===  messages.children[0].innerHTML) {
+    //             for(var i = 1; i < Nodes[data.adventureLog[data.adventureLog.length - 1]][0][m].split("|").length; i++) {
 
-                        messages.children[n].attributes.onclick.value = `link("${Nodes[data.adventureLog[data.adventureLog.length - 1]][0][m].split("|")[i].split("~")[1]}",false);`
+    //                     messages.children[n].attributes.onclick.value = `link("${Nodes[data.adventureLog[data.adventureLog.length - 1]][0][m].split("|")[i].split("~")[1]}",false);`
 
-                        messages.children[n].innerHTML = `${Nodes[data.adventureLog[data.adventureLog.length - 1]][0][m].split("|")[i].split("~")[0]}`
+    //                     messages.children[n].innerHTML = `${Nodes[data.adventureLog[data.adventureLog.length - 1]][0][m].split("|")[i].split("~")[0]}`
 
-                   }
-               }
-            }
-        } 
-    }
+    //                }
+    //            }
+    //         }
+    //     } 
+    // }
 
     removeSpecials()
 
@@ -715,6 +781,9 @@ function LOAD() {
     }
 
     EnergySwitch.style.backgroundImage  = EnergySwitchToggle ? "url('css/images/energySwitch.png')" : "url('css/images/energySwitch2.png')"
+    heart.style.setProperty("--heart-offset", heartOffset + "px");
+
+
 
 } catch (error) {
      CLEAR()
@@ -726,15 +795,14 @@ function LOAD() {
 
 
 function CLEAR() {
-    var CLEARspookN = 45
-    var CLEARspook = setInterval(()=>{
+
+    var CLEARspookInterval = setInterval(()=>{
         d.getElementById("newmessages").style.display = "inline-block"
-        CLEARspookN += 5
         checkMessage("ERROR", false);
     },10)
 
     setTimeout(()=>{
-        clearInterval(CLEARspook)
+        clearInterval(CLEARspookInterval)
         d.getElementById("newmessages").style.display = "none"
         newmessages.innerHTML = ""
         data.messageLog = new Array()
@@ -746,6 +814,7 @@ function CLEAR() {
     rightChildren = 0;
     newsCounter = -1;
     wires[0] = 1
+    heartOffset = 0;
 
     messagePresets = new Array(10)
     messagePresets.fill(false)
@@ -782,21 +851,26 @@ function CLEAR() {
     data.adventureLog = []
 
     newmessages.innerHTML = ""
+   // messages.innerHTML = ""
 
     autosavetoggle = false
 
     data.messageChecker = new Array()
     data.messageChecker.fill(false);
     data.messageLog = new Array()
+    heart.style.setProperty("--heart-offset", heartOffset + "px");
+
+    link("home", false)
     SAVE(true)
     removeSpecials()
     autosavetoggle = false
-    link("home")
+
+    console.log(messages.innerHTML)
 }
 
 //////
 
-let autosavetoggle = false;
+
 
 autosave.addEventListener("click", ()=>{
     autosavetoggle = !autosavetoggle
@@ -848,7 +922,7 @@ importS.addEventListener("click", ()=>{
 let pipeCount = 0;
 heart.addEventListener("click", ()=> {
 
-    pipeCount++
+    if (heartOffset <= 80) pipeCount++
     // heart.style = "  animation-name: click;animation-duration: 0.1s;"
     // setTimeout(()=>{ heart.style="" },100)
  })
