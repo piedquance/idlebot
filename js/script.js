@@ -5,24 +5,24 @@
 
 var countNum = [];
 var StringCounter = "";
-var number = 1;
+
 var d = document;
 var heart = d.getElementById("heart");
 var counterText = d.getElementById("counter");
 var messages = d.getElementById("messages");
 var newmessages = d.getElementById("newmessages");
+var gameContainer = d.getElementById("gameContainer")
+var counterDiv = d.getElementById("counterDiv")
+var second = d.getElementById("second")
+var secondCounter = d.getElementById("secondCounter")
+var secondHeart = d.getElementById("SecondheartColor")
+var secondOffset = d.getElementById("secondOffset")
 var title = d.querySelector("title")
+second.style.display = "none";
+
 var leftPane = d.getElementById("left")
 var rightPane = d.getElementById("right")
-var rightChildren = 0;
-var newsCounter = -1;
-let heartOffset = 0;
-let pipeCount = 0;
 let EnergySwitch = d.getElementById("EnergySwitch")
-let EnergySwitchToggle = false;
-let autosavetoggle = false;
-let saveslot = "";
-var stopIt = new Audio('css/audio/AUDIO_FILE.mp3');
 
 var save = d.getElementById("save")
 var load = d.getElementById("load")
@@ -30,6 +30,19 @@ var reset = d.getElementById("reset")
 var autosave = d.getElementById("autosave")
 var importS = d.getElementById("import")
 var exportS = d.getElementById("export")
+
+var rightChildren = 0;
+var newsCounter = -1;
+let heartOffset = 0;
+let pipeCount = 0;
+
+let ExpandToggle = false;
+let EnergySwitchToggle = false;
+let autosavetoggle = false;
+let saveslot = "";
+var stopIt = new Audio('css/audio/AUDIO_FILE.mp3');
+
+
 var exportedUpgrade = []
 var exportedSpecial = new Array()
 var intervals = []
@@ -170,6 +183,7 @@ function count(number) {
 }
 
     counterText.innerHTML = StringCounter;
+    secondCounter.innerHTML = StringCounter
 }
 //////
 
@@ -474,13 +488,13 @@ document.addEventListener('keydown', (event) => {
   inputStream.push(key);
 //console.log(inputStream);
 
-if(inputStream[inputStream.length - 1] === ":") { inputStream = []; 
+if(inputStream[inputStream.length - 1] === ">") { inputStream = []; 
 
-inputStream.push(":")
+inputStream.push(">")
 writeCharacter("", "start")
 }
 
-if(inputStream[0] === ":" && key !== ":" && key !== "Backspace" && key !== "Shift" && key !== "Enter") writeCharacter(key, "open")
+if(inputStream[0] === ">" && key !== ">" && key !== "Backspace" && key !== "Shift" && key !== "Enter") writeCharacter(key, "open")
 
 
 if(inputStream[inputStream.length - 1] === "Backspace") { inputStream.pop(); inputStream.pop(); writeCharacter("", "erase");  }
@@ -520,11 +534,11 @@ if(inputStream[inputStream.length - 1] === "Enter") {
 
     switch(cmd[0]) {
 
-        case ":save":
+        case ">save":
         SAVE();
         break;
 
-        case ":autosave":
+        case ">autosave":
             autosavetoggle = !autosavetoggle
     
             switch (autosavetoggle) {
@@ -539,35 +553,50 @@ if(inputStream[inputStream.length - 1] === "Enter") {
             } break;
         
 
-        case ":load":
+        case ">load":
         LOAD();
         break;
 
-        case ":reset":
+        case ">reset":
         RESET();
         break;
 
-        case ":c":
+        case ">expand":
+            ExpandToggle = !ExpandToggle
+
+            if(ExpandToggle) {
+            gameContainer.style.display  = "none";
+            counterDiv.style.display = "none";
+            newmessages.style.maxHeight = "40vh";
+            second.style.display = "flex";
+            } else if(!ExpandToggle) {
+                gameContainer.style.display  = "";
+                counterDiv.style.display = "";
+                newmessages.style.maxHeight = "";
+                second.style.display = "none";
+            }
+
+        case ">c":
         if(cmd[1]) data.counter = parseInt(cmd[1]);
         break;
 
-        case ":h":
+        case ">h":
       //  console.log(cmdHistory);
         writeMessage(cmdHistory, false)
         break;
 
-        case ":v":
+        case ">v":
             specialPresets[2][4]();
             data.special[2][1].style.display = "none"
             data.special[2][4] = true
         break;
 
 
-        case ":alert":
+        case ">alert":
         if(cmd[1]) alert(cmd[1]); else alert("No message written");
         break;
 
-        case ":echo":
+        case ">echo":
         if(cmd[1]) { 
             if(cmd[cmd.length - 1][0] === "#") { msg = "<span style='color:" + cmd[cmd.length - 1] + "' >"
             for(let n = 1; n < cmd.length - 1; n++)  msg += cmd[n] + " "
@@ -582,8 +611,7 @@ if(inputStream[inputStream.length - 1] === "Enter") {
         }}
         break;
 
-        case ":wt":
-            
+        case ">wt":
 
             if(cmd[1] && cmd[2]){
                 
@@ -595,15 +623,15 @@ if(inputStream[inputStream.length - 1] === "Enter") {
             else if(!cmd[2]) writeMessage("No data given", false)
             break;
 
-        case ":clearview":
+        case ">clearview":
             for(let n = 0; n <= 10; n++) {
                 writeMessage("<br>", false)
             } break;
 
-        case ":click":
+        case ">click":
             pipeCount++; heartOffset++;  heart.style.setProperty("--heart-offset", heartOffset + "px"); break;
         
-        case ":r": 
+        case ">r": 
         window.location.href = window.location.pathname + window.location.search + window.location.hash;
         window.location.replace(window.location.pathname + window.location.search + window.location.hash);
             // does not create a history entry
@@ -614,7 +642,7 @@ if(inputStream[inputStream.length - 1] === "Enter") {
             //taken from https://stackoverflow.com/questions/3715047/how-to-reload-a-page-using-javascript
             break;
 
-        case ":":break;
+        case ">":break;
 
         default :
          msg = ""
@@ -873,14 +901,27 @@ EnergySwitch.addEventListener("click", ()=>{
 })
 
 
-
+let health = 0;
 
 heart.addEventListener("click", ()=>{
-    if (heartOffset <= 80) heartOffset += (1 * 80) / 100
+    if (heartOffset <= 80){ heartOffset += (1 * 80) / 100
+    health++
+    }
     heart.style.setProperty("--heart-offset", heartOffset + "px");
+    secondOffset.innerHTML = `[${health} / 100]`
     pipeCount++
    // if(heartOffset > 77) heartOffset = 0
 
+})
+
+
+secondHeart.addEventListener("click", ()=>{
+    if (heartOffset <= 80) { heartOffset += (1 * 80) / 100
+    health++
+    }
+    heart.style.setProperty("--heart-offset", heartOffset + "px");
+    secondOffset.innerHTML = `[${health} / 100]`
+    pipeCount++
 })
 
 ///////////////////////////////////////////////////////////////////////////////////
@@ -1103,6 +1144,11 @@ function RESET() {
    // messages.innerHTML = ""
 
     autosavetoggle = false
+
+    gameContainer.style.display  = "";
+    counterDiv.style.display = "";
+    newmessages.style.maxHeight = "";
+    second.style.display = "none;"
 
     data.messageChecker = new Array()
     data.messageChecker.fill(false);
