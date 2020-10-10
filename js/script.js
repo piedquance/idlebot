@@ -1,13 +1,8 @@
-// var canvas = document.querySelector("canvas");
 
-// canvas.width = window.innerWidth;
-// canvas.height = window.innerHeight;
+///////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////VARIABLES///////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////
 
-
-
-// var c = canvas.getContext("2d");
-
-// c.fillRect(0, 100, 100, 100);
 var countNum = [];
 var StringCounter = "";
 var number = 1;
@@ -21,7 +16,8 @@ var leftPane = d.getElementById("left")
 var rightPane = d.getElementById("right")
 var rightChildren = 0;
 var newsCounter = -1;
-let heartOffset = 0
+let heartOffset = 0;
+let pipeCount = 0;
 let EnergySwitch = d.getElementById("EnergySwitch")
 let EnergySwitchToggle = false;
 let autosavetoggle = false;
@@ -30,7 +26,7 @@ var stopIt = new Audio('css/audio/AUDIO_FILE.mp3');
 
 var save = d.getElementById("save")
 var load = d.getElementById("load")
-var clear = d.getElementById("clear")
+var reset = d.getElementById("reset")
 var autosave = d.getElementById("autosave")
 var importS = d.getElementById("import")
 var exportS = d.getElementById("export")
@@ -39,6 +35,12 @@ var exportedSpecial = new Array()
 var intervals = []
 var decayIntervals = []
 var messagePresets = [false]
+
+
+///////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////PRESETS/////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////
+
 
 //cost, increase rate, number of, name, reference, description, tick, data position, decay rate, type, message[optional]
 var upgradePresets = [
@@ -52,7 +54,7 @@ var specialPresets = [
     [30, "SAVING", "Allows you to save.", 0, ()=>{
         d.getElementById("saving").style.display = "flex"
         autosavetoggle = true;
-        autosave.innerHTML = "AUTOSAVE <span id='on'>ON</span>"
+        autosave.innerHTML = "<span id='on'>[ON]</span> AUTOSAVE"
         }, 20, "HELLYEAHSAVING"],
 
     [50, "Research Blood Valves", "All valves come equipped with a half-life of 5 seconds.", 1, ()=>{
@@ -88,7 +90,7 @@ var specialPresets = [
 function removeSpecials() {
 
     d.getElementById("saving").style.display = "none"
-    autosave.innerHTML = "AUTOSAVE <span id='off'>OFF</span>"
+    autosave.innerHTML = "<span id='off'>[OFF]</span> AUTOSAVE"
     data.upgrade[0][5].style.display = "none"
     data.upgrade[1][5].style.display = "none"
     d.getElementById("messages").style.display = "none"
@@ -130,7 +132,13 @@ let data = {
 
 data.messageChecker.fill(false);
 
-//////
+
+
+
+///////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////FUNCTIONS///////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////
+
 
 function count(number) {
     data.counter += number;
@@ -200,43 +208,30 @@ function writeCharacter(char, type) {
 if(type === "start") {
 
     newsCounter++
-
     newmessages.innerHTML += '<p class="messageStrip" id="strip'+ newsCounter 
         +'" >>'+ char + '<span id="blinky">_</span>';
 
     if(newsCounter > 0) {
-        for(let n = 0; n < newsCounter; n++) {
-
-            if (d.getElementById("strip" + n).children[d.getElementById("strip" + n).children.length - 1] == '<span id="blinky">_</span>')     d.getElementById("strip" + newsnounter).removeChild(d.getElementById("strip" + n).childNodes[1])
-
-        }
+        for(let number = 0; number < newsCounter; number++) {
+            let child = d.getElementById("strip" + number)
+            if (child.children[(child.children.length - 1)] !== undefined)  {
+            if (child.children[child.children.length - 1].innerHTML == '_')  { child.removeChild(child.childNodes[1]) }
+        }}
     }
 
-
 } else if(type === "open") {
-
 d.getElementById("strip" + newsCounter).removeChild(d.getElementById("strip" + newsCounter).childNodes[1])
-
 d.getElementById("strip" + newsCounter).innerHTML += char + '<span id="blinky">_</span>'
 
 } else if(type === "end") {
-
-
     d.getElementById("strip" + newsCounter).removeChild(d.getElementById("strip" + newsCounter).childNodes[1])
+    data.messageLog[newsCounter] =  d.getElementById("strip" + newsCounter).innerHTML
 
 } else if(type == "erase") {
-
     d.getElementById("strip" + newsCounter).removeChild(d.getElementById("strip" + newsCounter).childNodes[1])
-
     d.getElementById("strip" + newsCounter).innerHTML = d.getElementById("strip" + newsCounter).innerHTML.slice(0, this.length - 1)
-
     d.getElementById("strip" + newsCounter).innerHTML += '<span id="blinky">_</span>'
-
-}
-    
-
-}
-
+}}
 
 //////
 //Flash remover
@@ -350,8 +345,6 @@ function addUpgrade(preset) {
     } else console.log("welp")
 
 
-
-
 }
 
 for(n in upgradePresets) addUpgrade(upgradePresets[n])
@@ -446,34 +439,10 @@ function checkSpecialCost() {
 
 //////
 
-let Nodes = {}
 
-function Node(node) {
-    Nodes[node["title"]] = {}
-
-   if(node["title"]) Nodes[node["title"]].title = node.title;
-   if(node["text"]) Nodes[node["title"]].text = node.text;
-   if(node.common) Nodes[node["title"]].common = node.common;
-   if(node.Value || node.Value == 0) Nodes[node["title"]].Value = node.Value;
-}
-//taken from https://stackoverflow.com/questions/456177/function-overloading-in-javascript-best-practices
-
-
-//////
-
-
-//You wake up locked in a deserted jail cell, completely alone. There is nothing at all in your cell, useful or otherwise.
-Node({"title":"home", "text":"You are in a field. There is nothing around you, useful or otherwise.|D~Look around~look_around|S~Get up~get_up"})
-
-Node({"title":"look_around", "text":"Fields as far as the eye can see.|S~Get up~get_up"})
-
-Node({"common":"get_up", "title":"get_up0","text":"You try to get up. You fail.<br>But maybe if you had more power...", "Value":0})
-
-Node({"common":"get_up", "title":"get_up10", "text":"You get up.|S~Look at yourself[MISSING]~look_at_yourself", "Value":10})
-
-Node({"common":"look_at_yourself", "title":"look_at_yourself0", "text":   "fail" , "Value":  0})
-
-Node({"common":"look_at_yourself", "title":"look_at_yourself10", "text": "ok now what?"   , "Value":  10})
+///////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////COMMAND PROMPT//////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////
 
 
 window.document.addEventListener('keydown', e => {
@@ -542,10 +511,12 @@ if(inputStream[inputStream.length - 1] === "Enter") {
     for(n in cmd) {
         cmd[n] = cmd[n].replace('Shift', '');
         cmd[n] = cmd[n].replace("Shift", '');
-        console.log(cmd[n])
+      //  console.log(cmd[n])
     }
 
-    console.log(cmd)
+   // console.log(cmd)
+
+    let msg = ""
 
     switch(cmd[0]) {
 
@@ -557,8 +528,8 @@ if(inputStream[inputStream.length - 1] === "Enter") {
         LOAD();
         break;
 
-        case ":clear":
-        CLEAR();
+        case ":reset":
+        RESET();
         break;
 
         case ":c":
@@ -566,13 +537,14 @@ if(inputStream[inputStream.length - 1] === "Enter") {
         break;
 
         case ":h":
-        console.log(cmdHistory);
+      //  console.log(cmdHistory);
         writeMessage(cmdHistory, false)
         break;
 
         case ":v":
-        messages.style.display = "inline-block";
-        newmessages.style.display = "inline-block";
+            specialPresets[2][4]();
+            data.special[2][1].style.display = "none"
+            data.special[2][4] = true
         break;
 
 
@@ -582,13 +554,13 @@ if(inputStream[inputStream.length - 1] === "Enter") {
 
         case ":echo":
         if(cmd[1]) { 
-            if(cmd[cmd.length - 1][0] === "#") { let msg = "<span style='color:" + cmd[cmd.length - 1] + "' >"
+            if(cmd[cmd.length - 1][0] === "#") { msg = "<span style='color:" + cmd[cmd.length - 1] + "' >"
             for(let n = 1; n < cmd.length - 1; n++)  msg += cmd[n] + " "
             msg += "</span>"
             writeMessage(msg, false)
             writeMessage("<br>", false)
         }  else {
-            let msg = ""
+            msg = ""
             for(let n = 1; n < cmd.length; n++)  msg += cmd[n] + " "
             writeMessage(msg, false)
             writeMessage("<br>", false)
@@ -596,18 +568,41 @@ if(inputStream[inputStream.length - 1] === "Enter") {
         break;
 
         case ":wt":
-            if(cmd[1] && cmd[2]) download(cmd[2], cmd[1], "txt");
+            
+
+            if(cmd[1] && cmd[2]){
+                
+                for(let n = 2; n <cmd.length; n++) msg += cmd[n] + " "
+
+                download(msg, cmd[1], "txt");
+            }
             else if(!cmd[1]) writeMessage("No name given", false)
             else if(!cmd[2]) writeMessage("No data given", false)
             break;
 
+        case ":clearview":
+            for(let n = 0; n <= 10; n++) {
+                writeMessage("<br>", false)
+            } break;
 
-        case ":":
+        case ":click":
+            pipeCount++; heartOffset++;  heart.style.setProperty("--heart-offset", heartOffset + "px"); break;
+        
+        case ":r": 
+        window.location.href = window.location.pathname + window.location.search + window.location.hash;
+        window.location.replace(window.location.pathname + window.location.search + window.location.hash);
+            // does not create a history entry
+      //  window.location.reload(false); 
+            // If we needed to pull the document from
+            //  the web-server again (such as where the document contents
+            //  change dynamically) we would pass the argument as 'true'.
+            //taken from https://stackoverflow.com/questions/3715047/how-to-reload-a-page-using-javascript
+            break;
 
-        break;
+        case ":":break;
 
         default :
-        let msg = ""
+         msg = ""
 
         cmd[0] = cmd[0].slice(1)
 
@@ -615,7 +610,7 @@ if(inputStream[inputStream.length - 1] === "Enter") {
         msg += "is not a command. Try again."
         writeMessage(msg, false)
         writeMessage("<br>", false)
-        console.log("Unknown command");
+     //   console.log("Unknown command");
         break;
     }
     
@@ -645,6 +640,41 @@ function download(data, filename, type) {
 //taken from https://stackoverflow.com/questions/13405129/javascript-create-and-save-file
 
 
+
+///////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////TEXT ADVENTURE//////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////
+
+
+
+let Nodes = {}
+
+function Node(node) {
+    Nodes[node["title"]] = {}
+
+   if(node["title"]) Nodes[node["title"]].title = node.title;
+   if(node["text"]) Nodes[node["title"]].text = node.text;
+   if(node.common) Nodes[node["title"]].common = node.common;
+   if(node.Value || node.Value == 0) Nodes[node["title"]].Value = node.Value;
+}
+//taken from https://stackoverflow.com/questions/456177/function-overloading-in-javascript-best-practices
+
+
+//////
+
+
+//You wake up locked in a deserted jail cell, completely alone. There is nothing at all in your cell, useful or otherwise.
+Node({"title":"home", "text":"You are in a field. There is nothing around you, useful or otherwise.|D~Look around~look_around|S~Get up~get_up"})
+
+Node({"title":"look_around", "text":"Fields as far as the eye can see.|S~Get up~get_up"})
+
+Node({"common":"get_up", "title":"get_up0","text":"You try to get up. You fail.<br>But maybe if you had more power...", "Value":0})
+
+Node({"common":"get_up", "title":"get_up10", "text":"You get up.|S~Look at yourself[MISSING]~look_at_yourself", "Value":10})
+
+Node({"common":"look_at_yourself", "title":"look_at_yourself0", "text":   "fail" , "Value":  0})
+
+Node({"common":"look_at_yourself", "title":"look_at_yourself10", "text": "ok now what?"   , "Value":  10})
 
 
 link("home", false);
@@ -746,6 +776,11 @@ function linkSplit(text, back) {
  }
 
 
+////////////////
+//////WIRES/////
+///////////////
+
+
 wireItems = d.getElementsByClassName("wiresItem")
 
 
@@ -828,12 +863,14 @@ EnergySwitch.addEventListener("click", ()=>{
 heart.addEventListener("click", ()=>{
     if (heartOffset <= 80) heartOffset += (1 * 80) / 100
     heart.style.setProperty("--heart-offset", heartOffset + "px");
+    pipeCount++
    // if(heartOffset > 77) heartOffset = 0
 
 })
 
-//////
-
+///////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////SAVING/LOADING//////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////
 
 
 
@@ -969,10 +1006,10 @@ function LOAD() {
 
     switch (autosavetoggle) {
         case true:
-        autosave.innerHTML = "AUTOSAVE <span id='on'>ON</span>"
+        autosave.innerHTML = "<span id='on'>[ON]</span> AUTOSAVE"
         break;
         case false:
-        autosave.innerHTML = "AUTOSAVE <span id='off'>OFF</span>"
+        autosave.innerHTML = "<span id='off'>[OFF]</span> AUTOSAVE"
         break;
     }
 
@@ -982,15 +1019,15 @@ function LOAD() {
 
 
 } catch (error) {
-     CLEAR()
+     RESET()
      console.log(`There was an error in load: ${error}`)
      alert(`There was an error on load. Here's your data: ${localStorage.data}`)
-     CLEAR()
+     RESET()
 }
 }
 
 
-function CLEAR() {
+function RESET() {
 
     var CLEARspookInterval = setInterval(()=>{
         d.getElementById("newmessages").style.display = "inline-block"
@@ -1011,6 +1048,7 @@ function CLEAR() {
     newsCounter = -1;
     wires[0] = 1
     heartOffset = 0;
+    cmdHistory = ""
 
     messagePresets = new Array(10)
     messagePresets.fill(false)
@@ -1072,11 +1110,11 @@ autosave.addEventListener("click", ()=>{
     switch (autosavetoggle) {
         case true:
         writeMessage("AUTOSAVE ACTIVATED", false)
-        autosave.innerHTML = "AUTOSAVE <span id='on'>ON</span>"
+        autosave.innerHTML = "<span id='on'>[ON]</span> AUTOSAVE"
         break;
         case false:
         writeMessage("AUTOSAVE DEACTIVATED", false)
-        autosave.innerHTML = "AUTOSAVE <span id='off'>OFF</span>"
+        autosave.innerHTML = "<span id='off'>[OFF]</span> AUTOSAVE"
         break;
     }
 
@@ -1084,7 +1122,7 @@ autosave.addEventListener("click", ()=>{
 
 save.addEventListener("click", ()=>{ SAVE(false) })
 load.addEventListener("click", ()=>{ LOAD() ; })
-clear.addEventListener("click", ()=>{ CLEAR() })
+reset.addEventListener("click", ()=>{ RESET() })
 exportS.addEventListener("click", ()=>{ 
 
     let exportFile = SAVE(false)
@@ -1113,16 +1151,6 @@ importS.addEventListener("click", ()=>{
 
 //////
 
-let pipeCount = 0;
-heart.addEventListener("click", ()=> {
-
-    if (heartOffset <= 80) pipeCount++
-    // heart.style = "  animation-name: click;animation-duration: 0.1s;"
-    // setTimeout(()=>{ heart.style="" },100)
- })
-
-//////
-
 let decayTick = 800
 let tick = 10;
 let bloodTick = 500;
@@ -1139,7 +1167,7 @@ let bloodTick = 500;
      autosavedelay = false
  }, 50)
 
-// if(localStorage.firstSave !== "true") CLEAR()
+// if(localStorage.firstSave !== "true") RESET()
 
 var date = new Date(); let currentYear = date.getFullYear(); 
 
@@ -1149,6 +1177,8 @@ setInterval(()=>{
 
     count(pipeCount)
     pipeCount = 0
+
+if(data.counter >= 999999999) data.counter = 999999999
 
  if(autosavetoggle && !autosavedelay) SAVE(false)
 
