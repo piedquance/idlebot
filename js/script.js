@@ -549,7 +549,15 @@ EnergySwitch.addEventListener("click", ()=>{
     EnergySwitch.style.backgroundImage  = EnergySwitchToggle ? "url('css/images/energySwitch.png')" : "url('css/images/energySwitch2.png')"
 })
 
-heart.style.setProperty("--heart-offset", 20 + "px");
+
+let heartOffset = 0
+
+heart.addEventListener("click", ()=>{
+    heartOffset += 1
+    heart.style.setProperty("--heart-offset", heartOffset + "px");
+    if(heartOffset > 77) heartOffset = 0
+
+})
 
 //////
 
@@ -721,7 +729,6 @@ function CLEAR() {
     var CLEARspookN = 45
     var CLEARspook = setInterval(()=>{
         d.getElementById("newmessages").style.display = "inline-block"
-        d.getElementById("topPane").style.height = CLEARspookN + "vh"
         CLEARspookN += 5
         checkMessage("ERROR", false);
     },10)
@@ -729,11 +736,10 @@ function CLEAR() {
     setTimeout(()=>{
         clearInterval(CLEARspook)
         d.getElementById("newmessages").style.display = "none"
-        d.getElementById("topPane").style.height = "40vh"
         newmessages.innerHTML = ""
         data.messageLog = new Array()
         newsCounter = -1
-    }, 800)
+    }, 400)
 
     localStorage.data = ""
     data.counter = 0;
