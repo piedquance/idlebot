@@ -506,7 +506,12 @@ function linkSplit(text, back) {
     
          }
 
+
+         if(Nodes[n] !== undefined) if(data.counter <= Nodes[n].Value) checkMessage(`${Nodes[n].Value} Energy Needed`, false)
+
      }
+
+
      let constData = data.adventureLog.length
 
      for(let n = constData - 1; n > constData - 1 - choiceNumberOf; n--)  {
@@ -515,7 +520,7 @@ function linkSplit(text, back) {
      }
 
      data.counter -= Nodes [ data.adventureLog[data.adventureLog.length - 1 ] ].Value
-
+     checkMessage(`${ Nodes [ data.adventureLog[data.adventureLog.length - 1 ] ].Value} Energy Used`, false)
 
      if(back) data.adventureLog.splice(data.adventureLog.length-1, 1)
      
