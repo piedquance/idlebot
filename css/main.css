@@ -27,10 +27,9 @@ html, body {
 #topPane {
   display:flex;
   flex-direction: column;
- 
   position: relative;
   background-color: #000;
-  height:40vh;
+  flex:50%;
   border-width: 3px;
   border-bottom-width: 0px;
   border-color: #fff;
@@ -43,22 +42,13 @@ html, body {
   z-index: 1;
   text-align: left;
   margin:0;
-  padding:10px;
+  padding:10px 0 10px 0;
   margin-left:20px;
   overflow-y: hidden;
-  flex:50%;
+  flex:100%;
   color:#fff;
   font-family: 'Courier New', Courier, monospace;
   font-size: 13px;
-}
-
-#newmessages {
-  display:none;
-  z-index: 1;
-  margin:0;
-  margin-left:20px;
-  flex:50%;
-  overflow-y: hidden;
 }
 
 .messageStrip {
@@ -107,27 +97,61 @@ a:visited {
   animation-duration:0.5s;
 }
 
+#bottomPane {
+  display:flex;
+  flex-direction: column;
+  position: relative;
+  background-color: #000;
+  border-width: 3px;
+  border-top-width: 0px;
+  border-color: #fff;
+  border-style: double;
+  flex:50%
+}
+
+.bottomRow {
+  flex:50%;
+  background-color: #000;
+  color:#fff;
+  font-size: 13px;
+}
+
+#newmessages {
+  display:none;
+  z-index: 1;
+  margin:0;
+  margin-left:20px;
+  margin-top:10px;
+  flex:50%;
+  max-height:15vh;
+  overflow-y: hidden;
+}
+
+#bottomRow2 {
+  display:flex;
+  flex-direction: row;
+}
+
 .saveRow {
   z-index:4;
-  position: absolute;
   display:none;
-  bottom:0;
+  flex-direction: column-reverse;
+  padding-bottom: 10px;
+  flex:50%
 }
 
 .saveC {
   z-index:4;
-  margin-top: 2px;
-  margin-left:30px;
-  text-align: left;
+  text-align: right;
   position:relative;
-  bottom:0;
-  width:120px;
-  background-color: #fff;
+  margin-right: 20px;
+  animation-name:messageLoad;
+  animation-duration:0.5s
 }
 
 .saveC:hover {
-  background-color: #000;
-  color:#fff;
+  background-color: #fff;
+  color:#000;
 }
 
 .saveC:active {
@@ -137,6 +161,32 @@ a:visited {
 
 #on {color:#ff6e6e}
 #off {color: #000}
+
+#about {
+  flex:50%;
+  display:flex;
+  flex-direction: column-reverse;
+  padding-bottom: 10px;
+}
+
+.aboutC {
+  text-align: left;
+  margin-left: 20px;
+  animation-name:messageLoad;
+  animation-duration:0.5s
+}
+
+.aboutC:hover {
+  background-color: #fff;
+  color:#000;
+}
+
+
+.outer {
+  display:flex;
+  flex-direction: column;
+}
+
 
 .tile {
   height:100px;
@@ -227,10 +277,10 @@ a:visited {
 #gameContainer {
   position: relative;
   z-index:4;
+  height:300px
 }
 
 #heartCont, #heart {
-  z-index: 3;
   display:block;
   margin:auto;
 }
@@ -240,12 +290,50 @@ a:visited {
   position:relative;
   top:0;
   left:0;
+  z-index:3;
+}
+
+#heartWhite {
+  z-index:3;
+  width:156px;
+  height:156px;
+  background-image: url(images/heartDiv.png);
+  background-repeat: no-repeat;
+  background-position:center;
+  background-size: auto;
 }
 
 #heart {
+  z-index:4;
   position: relative;
   top:-231px;
-  left:-4px;
+  left:-2px;
+  width:156px;
+  height:156px;
+  background-image: url(images/heart.png);
+  background-repeat: no-repeat;
+  background-position:center;
+  background-position:50% calc(50% + var(--heart-offset));
+  background-size: auto;
+}
+
+:root {
+  --heart-offset : 10px;
+}
+
+#heartBottom {
+  z-index:5;
+  position: absolute;
+  top:195px;
+  left:108px;
+
+  width:131px;
+  height:32px;
+  background-image: url(images/heartBottom.png);
+  background-repeat: no-repeat;
+  background-position:center;
+  background-size: auto;
+
 }
 
 #heart:active {
@@ -297,7 +385,7 @@ a:visited {
   width:50px;
   /* background-color: #0f0; */
   opacity:1;
-   background-image: url(images/energySwitch.png); 
+  /* background-image: url(images/energySwitch.png);  */
   background-repeat: no-repeat;
   background-position:center;
   background-size: auto;

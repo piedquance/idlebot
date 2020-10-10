@@ -45,7 +45,7 @@ var upgradePresets = [
 
 var specialPresets = [
     [30, "SAVING", "Allows you to save.", 0, ()=>{
-        d.getElementById("saving").style.display = "initial"
+        d.getElementById("saving").style.display = "flex"
         autosavetoggle = true;
         autosave.innerHTML = "AUTOSAVE <span id='on'>ON</span>"
         }, 20, "HELLYEAHSAVING"],
@@ -463,7 +463,7 @@ wireItems = d.getElementsByClassName("wiresItem")
 
 for(let n = 0; n <= 1; n++)
 wireItems[n].addEventListener("click", ()=>{
-
+    if (messagePresets[0]) {
     switch (true) {
         case (wires[0] < 32):
             checkMessage(wires[wires[0]], false);
@@ -476,7 +476,7 @@ wireItems[n].addEventListener("click", ()=>{
             stopIt.play();
             break;
     }
-
+    }
 })
 
 function wireStop() {
@@ -542,19 +542,14 @@ Node("get_up", ["You get up.|Look at yourself[MISSING]~", "You try to get up. Yo
 
 
 let EnergySwitch = d.getElementById("EnergySwitch")
-let EnergySwitchToggle = true;
+let EnergySwitchToggle = false;
 
 EnergySwitch.addEventListener("click", ()=>{
-    console.log("click!")
     EnergySwitchToggle = !EnergySwitchToggle;
-
-    EnergySwitch.style.backgroundImage  = EnergySwitchToggle ? "url('css/images/energySwitch2.png')" : "url('css/images/energySwitch.png')"
-
-    console.log(EnergySwitch.style.backgroundImage)
-
+    EnergySwitch.style.backgroundImage  = EnergySwitchToggle ? "url('css/images/energySwitch.png')" : "url('css/images/energySwitch2.png')"
 })
 
-
+heart.style.setProperty("--heart-offset", 20 + "px");
 
 //////
 
@@ -601,6 +596,7 @@ function SAVE(isClear) {
     saveslot += btoa(unescape(encodeURIComponent(wires[0]))) + "|"
     saveslot += btoa(unescape(encodeURIComponent(wiresPauses))) + "|"
     saveslot += btoa(unescape(encodeURIComponent(data.counter))) + "|"
+    saveslot += btoa(unescape(encodeURIComponent(EnergySwitchToggle))) + "|"
 
     // saveslot += btoa(unescape(encodeURIComponent(""))) + "|"
     //for new save data
@@ -656,7 +652,7 @@ function LOAD() {
         data.special[n][6] = loadArray[1][n][2] === "true"?true:false
 }
 
-
+    
 
     if(loadNullCheck[2]) messages.innerHTML = loadArray[2]
     if(loadNullCheck[3]) newmessages.innerHTML = loadArray[3]
@@ -668,6 +664,7 @@ function LOAD() {
     if(loadNullCheck[10]) wires[0] = parseInt(loadArray[10]) //skip 1
     if(loadNullCheck[11]) wiresPauses = loadArray[11] === "true"?true:false
     if(loadNullCheck[12]) data.counter = parseInt(loadArray[12])
+    if(loadNullCheck[13]) EnergySwitchToggle = loadArray[13] === "true"?true:false
 
 
     for(let n = 3; n <= messages.children.length - 4; n += 3) {
@@ -709,10 +706,13 @@ function LOAD() {
         break;
     }
 
+    EnergySwitch.style.backgroundImage  = EnergySwitchToggle ? "url('css/images/energySwitch.png')" : "url('css/images/energySwitch2.png')"
+
 } catch (error) {
      CLEAR()
      console.log(`There was an error in load: ${error}`)
      alert(`There was an error on load. Here's your data: ${localStorage.data}`)
+     CLEAR()
 }
 }
 
@@ -750,6 +750,8 @@ function CLEAR() {
     }
 
     wiresPauses = false
+    EnergySwitchToggle = false
+    EnergySwitch.style.backgroundImage = "url('css/images/energySwitch2.png')"
 
     removeSpecials()
 
