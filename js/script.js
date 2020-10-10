@@ -403,10 +403,10 @@ function Node(node) {
    if(node["text"]) Nodes[node["title"]].text = node.text;
    if(node.common) Nodes[node["title"]].common = node.common;
    if(node.Value || node.Value == 0) Nodes[node["title"]].Value = node.Value;
-
-  // console.log(Nodes[node])
-
 }
+//taken from https://stackoverflow.com/questions/456177/function-overloading-in-javascript-best-practices
+
+
 //////
 
 
@@ -421,7 +421,102 @@ Node({"common":"get_up", "title":"get_up10", "text":"You get up.|S~Look at yours
 
 Node({"common":"look_at_yourself", "title":"look_at_yourself0", "text":   "fail" , "Value":  0})
 
-Node({"common":"look_at_yourself", "title":"look_at_yourself10", "text": "ok"   , "Value":  10})
+Node({"common":"look_at_yourself", "title":"look_at_yourself10", "text": "ok now what?"   , "Value":  10})
+
+
+window.document.addEventListener('keydown', e => {
+    if(e.key === "Backspace") {
+      e.preventDefault();
+      e.stopPropagation();
+      //Put some logic to simulate backspacke key in your input content here
+    }
+  })
+  //taken from https://stackoverflow.com/questions/49280847/firefox-switching-tab-on-backspace
+
+
+// this stops all browser key events
+//   document.onkeydown=function(d){
+      
+//     k=(d.key);
+
+//      d.preventDefault();
+//      d.stopPropagation();
+//   }; //taken from https://stackoverflow.com/questions/49280847/firefox-switching-tab-on-backspace
+
+
+let inputStream = [];
+let cmd = ""
+let cmdHistory = ""
+
+document.addEventListener('keydown', (event) => {
+  key = event.key;
+  inputStream.push(key);
+//console.log(inputStream);
+
+if(inputStream[inputStream.length - 1] === ":") { inputStream = []; 
+
+inputStream.push(":")
+
+
+}
+
+if(inputStream[inputStream.length - 1] === "Backspace") { inputStream.pop(); inputStream.pop()  }
+
+if(inputStream[inputStream.length - 1] === "Enter") { 
+    
+    cmd = ""
+
+    inputStream.pop()
+   // inputStream.shift()
+
+    //console.log(inputStream)
+
+    for(n in inputStream) cmd += inputStream[n]
+
+    inputStream = []
+
+    cmdHistory += `${cmd} \n`
+
+    cmd = cmd.split(" ")
+
+    console.log(cmd)
+
+    switch(cmd[0]) {
+
+        case ":save":
+        SAVE();
+        break;
+
+        case ":load":
+        LOAD();
+        break;
+
+        case ":clear":
+        CLEAR();
+        break;
+
+        case ":c":
+        if(cmd[1]) data.counter = parseInt(cmd[1]);
+        break;
+
+        case ":h":
+        console.log(cmdHistory);
+        checkMessage(cmdHistory, false)
+        break;
+
+        case ":v":
+        messages.style.display = "inline-block";
+        break;
+
+        default :
+        console.log("Unknown command");
+        break;
+    }
+    
+}
+
+});
+
 
 
 link("home", false);
@@ -449,42 +544,33 @@ function link(text, back) {
 
         for(n in linkarray) { if(linkarray[n][0] == "D"){
 
-            messages.innerHTML += `<br> <span class='bracket'> > </span> 
-            
-            <a class='link' onclick="link('${linkarray[n][2]}'    , false  ) "  >      ${linkarray[n][1]} </a>`
+            messages.innerHTML += `<br> <span class='bracket'> > </span> <a onclick="link('${linkarray[n][2]}',false)">${linkarray[n][1]} </a>`
        
         } else if(linkarray[n][0] == "S") {
 
-            messages.innerHTML += `<br> <span class='bracket'> ></span> <a class='link' onclick="linkSplit('${linkarray[n][2]}', false)">${linkarray[n][1]}</a>`
+            messages.innerHTML += `<br> <span class='bracket'> ></span> <a onclick="linkSplit('${linkarray[n][2]}', false)">${linkarray[n][1]}</a>`
 
         }
     }
 }
-        if(back && data.adventureLog.length !== 1) data.adventureLog.splice(data.adventureLog.length-1, 1)
+        if(back && data.adventureLog.length !== 1) data.adventureLog.pop()
 
         else data.adventureLog[data.adventureLog.length] = text
 
-        if(data.adventureLog.length !== 1) messages.innerHTML += `<br><br> <a id='back' class='link' onclick="link('${data.adventureLog[data.adventureLog.length-2]}',true)">Go Back </a>`
+        if(data.adventureLog.length !== 1) messages.innerHTML += `<br><br> <a id='back' onclick="link('${data.adventureLog[data.adventureLog.length-2]}',true)">Go Back </a>`
 
 }
 
 
 function linkSplit(text, back) {
-
     let choiceNumberOf = 0
     let chosenNode = ""
 
     for(n in Nodes) { if(Nodes[n].common) { if(Nodes[n].common === text) {
 
-      
-    
-
         if(data.counter >= Nodes[n].Value) {
 
             let choice = Nodes[n]
-
-
-
             let textarray = choice.text.split("|")
             let linkarray = []
             for(let n = 1; n < textarray.length; n++) {
@@ -496,11 +582,11 @@ function linkSplit(text, back) {
     
             for(n in linkarray) { if(linkarray[n][0] == "D"){
     
-                messages.innerHTML += `<br> <span class='bracket'> ></span> <a class='link' onclick="link('${linkarray[n][2]}', false)">${linkarray[n][1]}</a>`
+                messages.innerHTML += `<br> <span class='bracket'> ></span> <a onclick="link('${linkarray[n][2]}', false)">${linkarray[n][1]}</a>`
            
             } else if(linkarray[n][0] == "S") {
     
-                messages.innerHTML += `<br> <span class='bracket'> ></span> <a class='link' onclick="linkSplit('${linkarray[n][2]}', false)">${linkarray[n][1]}</a>`
+                messages.innerHTML += `<br> <span class='bracket'> ></span> <a  onclick="linkSplit('${linkarray[n][2]}', false)">${linkarray[n][1]}</a>`
     
             }
         }
@@ -510,8 +596,6 @@ function linkSplit(text, back) {
         choiceNumberOf++
     
          }
-
-
          if(Nodes[n] !== undefined) if(data.counter <= Nodes[n].Value) checkMessage(`${Nodes[n].Value} Energy Needed`, false)
 
      }}}
@@ -529,14 +613,9 @@ function linkSplit(text, back) {
 
      if(back) data.adventureLog.splice(data.adventureLog.length-1, 1)
      
-     messages.innerHTML += `<br><br> <a id='back' class='link' onclick="link('${data.adventureLog[data.adventureLog.length-2]}',true)">Go Back </a>`
+     messages.innerHTML += `<br><br> <a id='back' onclick="link('${data.adventureLog[data.adventureLog.length-2]}',true)">Go Back </a>`
 
  }
-
-
-
-
-//taken from https://stackoverflow.com/questions/456177/function-overloading-in-javascript-best-practices
 
 
 wireItems = d.getElementsByClassName("wiresItem")
@@ -587,7 +666,7 @@ let wires = [1,
     "Sending 1 (one) file to dumbass.",//17
     "Sending 1 (one) file to dumbass..",//18
     "Sending 1 (one) file to dumbass...",//19
-    "<a onclick='stopIt.play()'>AUDIO_FILE.MP3</a>",//20
+    "<span class='link' onclick='stopIt.play()'>AUDIO_FILE.MP3</span>",//20
     "...",//21
     "...",//22
     "...",//23
@@ -596,7 +675,7 @@ let wires = [1,
     "IF YOU DON'T STOP...",//26
     "I'LL BE FORCED TO USE MY <i>SECRET MOVE</i>",//27
     "LAST WARNING...",//28
-    "<a onclick=' data.counter = 0; if(wiresPauses === false){checkMessage(wires[32], false);wires[0]++;wiresPauses = true}'>eraseCounter.exe</a>",//29
+    "<span class='link' onclick=' data.counter = 0; if(wiresPauses === false){checkMessage(wires[32], false);wires[0]++;wiresPauses = true}'>eraseCounter.exe</span>",//29
     "...",//30
     "COULD YOU, UM, CLICK ON THE FILE?",//31
     "HAHAHAHAHA!",//32
@@ -742,26 +821,9 @@ function LOAD() {
     if(loadNullCheck[13]) EnergySwitchToggle = loadArray[13] === "true"?true:false
     if(loadNullCheck[14]) heartOffset = parseInt(loadArray[14]) 
 
-    link(data.adventureLog[data.adventureLog.length - 1], false)
-
-//    if(loadNullCheck[x]) var = loadArray[x] 
+    link(data.adventureLog.pop(), false)
 
 
-    // for(let n = 3; n <= messages.children.length - 4; n += 3) {
-    //     if(messages.children[n].attributes.onclick.value.includes("''") || messages.children[n].attributes.onclick.value.includes('""')) {
-    //         for(m in Nodes[data.adventureLog[data.adventureLog.length - 1]][0]) {
-    //            if (Nodes[data.adventureLog[data.adventureLog.length - 1]][0][m].split("|")[0] ===  messages.children[0].innerHTML) {
-    //             for(var i = 1; i < Nodes[data.adventureLog[data.adventureLog.length - 1]][0][m].split("|").length; i++) {
-
-    //                     messages.children[n].attributes.onclick.value = `link("${Nodes[data.adventureLog[data.adventureLog.length - 1]][0][m].split("|")[i].split("~")[1]}",false);`
-
-    //                     messages.children[n].innerHTML = `${Nodes[data.adventureLog[data.adventureLog.length - 1]][0][m].split("|")[i].split("~")[0]}`
-
-    //                }
-    //            }
-    //         }
-    //     } 
-    // }
 
     removeSpecials()
 

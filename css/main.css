@@ -68,6 +68,12 @@ html, body {
   100% {background-color: #000;}
 }
 
+.link:hover {
+
+  text-decoration: underline;
+
+}
+
 
 a {
   font-family: 'Courier New', Courier, monospace;
