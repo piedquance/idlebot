@@ -401,8 +401,10 @@ function Node(node) {
 
    if(node["title"]) Nodes[node["title"]].title = node.title;
    if(node["text"]) Nodes[node["title"]].text = node.text;
-   if(node["common"]) Nodes[node["title"]].common = node.common;
+   if(node.common) Nodes[node["title"]].common = node.common;
    if(node.Value || node.Value == 0) Nodes[node["title"]].Value = node.Value;
+
+  // console.log(Nodes[node])
 
 }
 //////
@@ -415,8 +417,11 @@ Node({"title":"look_around", "text":"Fields as far as the eye can see.|S~Get up~
 
 Node({"common":"get_up", "title":"get_up0","text":"You try to get up. You fail.<br>But maybe if you had more power...", "Value":0})
 
-Node({"common":"get_up", "title":"get_up10", "text":"You get up.|Look at yourself[MISSING]~", "Value":10})
+Node({"common":"get_up", "title":"get_up10", "text":"You get up.|S~Look at yourself[MISSING]~look_at_yourself", "Value":10})
 
+Node({"common":"look_at_yourself", "title":"look_at_yourself0", "text":   "fail" , "Value":  0})
+
+Node({"common":"look_at_yourself", "title":"look_at_yourself10", "text": "ok"   , "Value":  10})
 
 
 link("home", false);
@@ -469,10 +474,10 @@ function linkSplit(text, back) {
     let choiceNumberOf = 0
     let chosenNode = ""
 
-    for(n in Nodes) if(Nodes[n].common)  if(Nodes[n].common = text) {
+    for(n in Nodes) { if(Nodes[n].common) { if(Nodes[n].common === text) {
 
       
-       
+    
 
         if(data.counter >= Nodes[n].Value) {
 
@@ -495,7 +500,7 @@ function linkSplit(text, back) {
            
             } else if(linkarray[n][0] == "S") {
     
-                messages.innerHTML += `<br> <span class='bracket'> ></span> <a class='link' onclick="linkSplit('${linkarray[n][2]}', false")>${linkarray[n][1]}</a>`
+                messages.innerHTML += `<br> <span class='bracket'> ></span> <a class='link' onclick="linkSplit('${linkarray[n][2]}', false)">${linkarray[n][1]}</a>`
     
             }
         }
@@ -509,7 +514,7 @@ function linkSplit(text, back) {
 
          if(Nodes[n] !== undefined) if(data.counter <= Nodes[n].Value) checkMessage(`${Nodes[n].Value} Energy Needed`, false)
 
-     }
+     }}}
 
 
      let constData = data.adventureLog.length
@@ -736,6 +741,8 @@ function LOAD() {
     if(loadNullCheck[12]) data.counter = parseInt(loadArray[12])
     if(loadNullCheck[13]) EnergySwitchToggle = loadArray[13] === "true"?true:false
     if(loadNullCheck[14]) heartOffset = parseInt(loadArray[14]) 
+
+    link(data.adventureLog[data.adventureLog.length - 1], false)
 
 //    if(loadNullCheck[x]) var = loadArray[x] 
 
