@@ -524,6 +524,21 @@ if(inputStream[inputStream.length - 1] === "Enter") {
         SAVE();
         break;
 
+        case ":autosave":
+            autosavetoggle = !autosavetoggle
+    
+            switch (autosavetoggle) {
+                case true:
+                writeMessage("AUTOSAVE ACTIVATED", false)
+                autosave.innerHTML = "<span id='on'>[ON]</span> AUTOSAVE"
+                break;
+                case false:
+                writeMessage("AUTOSAVE DEACTIVATED", false)
+                autosave.innerHTML = "<span id='off'>[OFF]</span> AUTOSAVE"
+                break;
+            } break;
+        
+
         case ":load":
         LOAD();
         break;
