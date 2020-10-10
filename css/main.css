@@ -74,6 +74,21 @@ html, body {
 
 }
 
+#blinky {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 13px;
+  background-color: #000;
+  color: #fff;
+  animation: blink 0.7s steps(1, end) infinite;
+}
+
+
+@keyframes blink {
+50% {color:#000;}
+}
+/* taken from https://stackoverflow.com/questions/16344354/how-to-make-blinking-flashing-text-with-css-3 */
+
+
 
 a {
   font-family: 'Courier New', Courier, monospace;
