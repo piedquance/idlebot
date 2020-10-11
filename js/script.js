@@ -129,13 +129,7 @@ var specialPresets = {
 
         Game.upgrade["blood"].tick = 0.5
       //  if(d.querySelector("bloodDesc") !== undefined) d.querySelector("bloodDesc").innerHTML = "Pumps blood every 0.5s<br>Decays every 10s"
-        clearInterval(intervals.blood)
-
-        intervals.blood = setInterval(()=>{
-            if(Game.upgrade["blood"] !== null && Game.upgrade["blood"] !== undefined &&Game.upgrade["blood"].number > 0) {
-            count(Game.upgrade.blood.counter)
-        }}, Game.upgrade["blood"].tick * 1000)
-
+     
     }, 70, "bloodbetter1"],
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
    "bloodpipes": [100, "Research Blood Pipes", "It ain't gonna pipe itself...", 4, ()=>{
@@ -343,11 +337,13 @@ function addUpgrade(preset) {
     Game.upgrade[reference].number = preset[2]
     Game.upgrade[reference].costIncreaseRate = preset[1]
     Game.upgrade[reference].tick = preset[6]
+    Game.upgrade[reference].previoustick = preset[6]
     Game.upgrade[reference].type = preset[9]
     Game.upgrade[reference].name = preset[3]
     Game.upgrade[reference].description = preset[5]
     Game.upgrade[reference].type = preset[9]
     Game.upgrade[reference].decaytick = preset[8]
+    Game.upgrade[reference].previousdecaytick = preset[8]
 
  var node = d.createElement("DIV");
  node.id = reference + "Upgrade";
@@ -520,11 +516,19 @@ for(x in Game.special) {
     //for(n in messagePresets) if(Game.counter >= messagePresets[n][1]) Game.messageChecker[n] = writeMessage(messagePresets[n][0], Game.messageChecker[n], 0);
 }
 
-function updateTick(name) {
-    if(name === "all") {
+let frame = 0
 
-        for(n in Game.upgrade) updateTick(n)
-        
+function updateTick(name, type) {
+
+if(type === "tick") {
+    if(name === "all") {
+       
+        for(n in Game.upgrade) {
+            if(Game.upgrade[n].previoustick !== Game.upgrade[n].tick) {
+                updateTick(n)
+                Game.upgrade[n].previoustick =  Game.upgrade[n].tick
+            } } 
+
 } else {
 
     clearInterval(intervals[name])
@@ -552,17 +556,50 @@ function updateTick(name) {
     } else console.log("welp")
 
 
-}
-}
+    }}} else if (type === "decay") {
+
+        if(name === "all") {
+       
+            for(n in Game.upgrade) {
+                if(Game.upgrade[n].previousdecaytick !== Game.upgrade[n].decaytick) {
+                    updateTick(n, "decay")
+                    Game.upgrade[n].previousdecaytick =  Game.upgrade[n].decaytick
+                } } 
+    
+    } else {
+
+        clearInterval(decayIntervals[name])
+
+        if(Game.upgrade[name] !== undefined) {
+
+            if(Game.upgrade[name].type === "basicCounter") {
+
+          decayIntervals[name] = setInterval(()=>{
+
+            if( Game.upgrade[name].number > 0) {
+            Game.upgrade[name].number--
+            Game.upgrade[name].counter--
+            Game.upgrade[name].cost -= Game.upgrade[name].costIncreaseRate
+            }
+        }, Game.upgrade[name].decaytick * 1000)
+
+    }
+
+    }}} else if(type = "all") {
+
+        updateTick("all", "tick")
+        updateTick("all", "decay")
+
+
+    }
+
 }
 
 
 function updateEverything() {
 
     updateEverythingbutTick()
-
-  //  updateTick("all")
-
+    updateTick("all", "all")
 }
 
 
