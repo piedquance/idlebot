@@ -53,7 +53,7 @@ var exportedUpgrade = []
 var exportedSpecial = new Array()
 var intervals = []
 var decayIntervals = []
-var messagePresets = [false]
+var messagePresets = [false, false, false]
 
 
 ///////////////////////////////////////////////////////////////////////////////////
@@ -65,27 +65,27 @@ var messagePresets = [false]
 var upgradePresets = [
     [10, 5, 0, "Blood Valve", "blood", "Pumps blood every 1 s<br>Decays every 10 s", 1, 0, 10, "basicCounter"],
     [20, 7, 0, "Blood Pipe", "pipe", "Pipes blood every 0.5 s<br>Decays every 20 s", 0.5, 1, 20, "basicCounter"],
-
     [10, 5, 0, "Logger", "logger", "Logs a message every second.<br>\"it's useless\" -the dev", 1, 2, 0, "Logger", "yo"]
 ]
 
 var specialPresets = [
+////////////////////////////////////////////////////////////////////////////////////////////////////////
     [30, "SAVING", "Allows you to save.", 0, ()=>{
         d.getElementById("saving").style.display = "flex"
         autosavetoggle = true;
         autosave.innerHTML = "<span id='on'>[ON]</span> AUTOSAVE"
         }, 20, "HELLYEAHSAVING"],
-
+////////////////////////////////////////////////////////////////////////////////////////////////////////
     [50, "Research Blood Valves", "All valves come equipped with a half-life of 5 seconds.", 1, ()=>{
         data.upgrade[0][5].style.display = ""
     }, 40, "bloodvalves"],
-
+////////////////////////////////////////////////////////////////////////////////////////////////////////
     [20, "Activate Viewport", "", 2, ()=>{
         d.getElementById("messages").style.display = "inline-block"
         
-        messagePresets[0] =  writeMessage("Visual display non-responsive. Switching to text-based display.", messagePresets[0], 0)
+        if(!messagePresets[2]) messagePresets[0] =  writeMessage("Visual display non-responsive. Switching to text-based display.", messagePresets[0], 0)
     }, 11, "viewportYEAH"],
-
+////////////////////////////////////////////////////////////////////////////////////////////////////////
     [100, "Upgrade Blood Valves", "Now twice as efficient!", 3, ()=> {
 
         data.upgrade[0][10] = 0.5
@@ -98,31 +98,36 @@ var specialPresets = [
         }}, data.upgrade[0][10] * 1000)
 
     }, 70, "bloodbetter1"],
-
+////////////////////////////////////////////////////////////////////////////////////////////////////////
     [100, "Research Blood Pipes", "It ain't gonna pipe itself...", 4, ()=>{
         data.upgrade[1][5].style.display = ""
     }, 80, "bloodpipes"],
-
-    [0, "Open", "", 5, ()=>{
+////////////////////////////////////////////////////////////////////////////////////////////////////////
+    [10, "Activate Mechanical Cardiac Engine", "", 5, ()=>{
         for(n in close){  if(close[n].style !== undefined) {close[n].style.animation = "open-sesame 2s ease"; close[n].style.width = "0%"}}
 
-    }, 10, "opensesame"],
-
+    }, 10, "opensesame", true],
+////////////////////////////////////////////////////////////////////////////////////////////////////////
     [0, "Activate Console", "", 6, ()=>{
         d.getElementById("newmessages").style.display = "inline-block"
+
+        if(!messagePresets[1]) {
+
         disableCommands = true
-        setTimeout(()=>{disableCommands = false},13000)
-        writeMessage("CONSOLE ACTIVATED", false, 0)
-        writeMessage("...", false, 3000)
-        writeMessage("...WHO IS THIS?", false, 5000)
-        writeMessage("AH, RIGHT. YOU DON'T KNOW HOW TO TYPE", false, 7000)
-        writeMessage("TYPE > TO ACTIVATE THE CONSOLE PROMPT", false, 9000)
-        writeMessage("THEN WRITE name yourname", false, 11000)
-        writeMessage("IN THAT ORDER", false, 13000)
+        setTimeout(()=>{disableCommands = false},21000)
+        writeMessage("Console activated", false, 0)
+        writeMessage("<span class='valet'>...</span>", false, 4000)
+        writeMessage("<span class='valet'>......</span>", false, 7000)
+        writeMessage("<span class='valet'>...HELLO?</span>", false, 10000)
+        writeMessage("<span class='valet'>WHO IS THIS?</span>", false, 12000)
+        writeMessage("<span class='valet'>AH, RIGHT. YOU DON'T KNOW HOW TO TYPE</span>", false, 15000)
+        writeMessage("<span class='valet'>TYPE > TO ACTIVATE THE CONSOLE PROMPT</span>", false, 17000)
+        writeMessage("<span class='valet'>THEN WRITE name yourname</span>", false, 19000)
+        writeMessage("<span class='valet'>IN THAT ORDER</span>", false, 21000)
 
         var nameInterval = setInterval(()=>{
 
-            if(cmdHistory[cmdHistory.length - 1] !== undefined) { if(cmdHistory[cmdHistory.length - 1][0] == ">name") {
+            if(cmdHistory[cmdHistory.length - 1] !== undefined) { if(cmdHistory[cmdHistory.length - 1][0] == ">name"&& data.name !== "") {
 
                 console.log("yo")
                 clearInterval(nameInterval)
@@ -130,11 +135,14 @@ var specialPresets = [
 
             }}
 
+            messagePresets[1] = true
+
         }, 10)
+    } 
 
 
-
-    }, 0, "console"]
+    }, 0, "console"],
+////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 ]
 
@@ -179,6 +187,7 @@ let data = {
     messageChecker: new Array(1000),
     adventureLog: new Array(),
     messageLog : new Array(),
+    name: ""
 }
 
 
@@ -190,7 +199,6 @@ data.messageChecker.fill(false);
 ///////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////FUNCTIONS///////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////
-
 
 function count(number) {
     data.counter += number;
@@ -350,7 +358,7 @@ function addUpgrade(preset) {
         if(data.upgrade[preset[7]] !== null && data.upgrade[preset[7]] !== undefined && data.upgrade[preset[7]][2] > 0) {
         count(data.upgrade[preset[7]][0])
 
-    }}, data.upgrade[0][10] * 1000)
+    }}, data.upgrade[dataPosition][10] * 1000)
 
     decayIntervals[dataPosition] = setInterval(()=>{
         if(data.upgrade[preset[7]] !== null && data.upgrade[preset[7]] !== undefined) {
@@ -430,17 +438,17 @@ function addSpecial(preset) {
     var node = d.createElement("DIV");
     node.id = reference + "Special";
     node.classList.add("tile");
-   if(cost > 0) {
-    node.innerHTML = '<div class="generalDesc"><div class="Name">'+ name 
-    +'</div><div class="Desc">'+ description 
-    +'</div></div><div class=generalNum><div class="Num" id="'+ reference 
-    +'Cost">'+ cost +'</div></div>'
-   } else {
+   if(cost === 0 || preset[7]) {
     node.innerHTML = '<div class="generalDesc"><div class="Name">'+ name 
     +'</div><div class="Desc">'+ description 
     +'</div></div><div class=generalNum><div class="Num" id="'+ reference 
     +'Cost"></div></div>'
 
+   } else {
+    node.innerHTML = '<div class="generalDesc"><div class="Name">'+ name 
+    +'</div><div class="Desc">'+ description 
+    +'</div></div><div class=generalNum><div class="Num" id="'+ reference 
+    +'Cost">'+ cost +'</div></div>'
 
    }
     rightPane.appendChild(node)
@@ -623,23 +631,29 @@ if(inputStream[inputStream.length - 1] === "Enter") {
         case ">expand":
             ExpandToggle = !ExpandToggle
 
-            if(ExpandToggle) {
+            if(ExpandToggle) {   for(n in close) if(close[n].style !== undefined) close[n].style.animation = "close-sesame 0.5s"
+           setTimeout(()=>{
             gameContainer.style.display  = "none";
             counterDiv.style.display = "none";
             newmessages.style.maxHeight = "40vh";
             second.style.display = "flex";
-            } else if(!ExpandToggle) {
-                gameContainer.style.display  = "";
-                counterDiv.style.display = "";
-                newmessages.style.maxHeight = "";
-                second.style.display = "none";
-            }
+            openFullscreen();
+           }, 500)
+
+        } else if(!ExpandToggle) {  for(n in close) if(close[n].style !== undefined)  close[n].style.animation = "open-sesame 1s"
+            gameContainer.style.display  = "";
+            counterDiv.style.display = "";
+            newmessages.style.maxHeight = "";
+            second.style.display = "none";
+            closeFullscreen();
+            } 
+        break;
 
         case ">c":
         if(cmd[1]) data.counter = parseInt(cmd[1]);
         break;
 
-        case ">h":
+        case ">cmdh":
       //  console.log(cmdHistory);
         writeMessage(JSON.stringify(cmdHistory), false, 0)
         break;
@@ -648,6 +662,7 @@ if(inputStream[inputStream.length - 1] === "Enter") {
             specialPresets[2][4]();
             data.special[2][1].style.display = "none"
             data.special[2][4] = true
+            newmessages.style.display = "inline-block";
         break;
 
 
@@ -711,7 +726,19 @@ if(inputStream[inputStream.length - 1] === "Enter") {
 
         case ">pause": 
         if(cmd[1]) if(audio[cmd[1]]) audio[cmd[1]].pause(); break;
-        
+
+        case ">name":
+        if(cmd[1]) {
+            data.name = cmd[1];
+            writeMessage(`Name has been set to "${data.name}"`, false, 0)
+        } else writeMessage("No name given", false, 0)
+        break;
+
+        case ">hrt":
+            specialPresets[5][4]();
+            data.special[5][1].style.display = "none"
+            data.special[5][4] = true
+        break;
 
         case ">":break;
 
@@ -754,6 +781,31 @@ function download(data, filename, type) {
 //taken from https://stackoverflow.com/questions/13405129/javascript-create-and-save-file
 
 
+var elem = document.documentElement;
+function openFullscreen() {
+  if (elem.requestFullscreen) {
+    elem.requestFullscreen();
+  } else if (elem.mozRequestFullScreen) { /* Firefox */
+    elem.mozRequestFullScreen();
+  } else if (elem.webkitRequestFullscreen) { /* Chrome, Safari & Opera */
+    elem.webkitRequestFullscreen();
+  } else if (elem.msRequestFullscreen) { /* IE/Edge */
+    elem.msRequestFullscreen();
+  }
+}
+
+function closeFullscreen() {
+  if (document.exitFullscreen) {
+    document.exitFullscreen();
+  } else if (document.mozCancelFullScreen) {
+    document.mozCancelFullScreen();
+  } else if (document.webkitExitFullscreen) {
+    document.webkitExitFullscreen();
+  } else if (document.msExitFullscreen) {
+    document.msExitFullscreen();
+  }
+}
+//taken from https://www.w3schools.com/howto/howto_js_fullscreen.asp
 
 ///////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////TEXT ADVENTURE//////////////////////////////////////
@@ -788,7 +840,7 @@ Node({"common":"get_up", "title":"get_up10", "text":"You get up.|S~Look at yours
 
 Node({"common":"look_at_yourself", "title":"look_at_yourself0", "text":   "fail" , "Value":  0})
 
-Node({"common":"look_at_yourself", "title":"look_at_yourself10", "text": "ok now what?"   , "Value":  10})
+Node({"common":"look_at_yourself", "title":"look_at_yourself10", "text": "ok now what?","Value":  10})
 
 
 link("home", false);
@@ -972,24 +1024,25 @@ EnergySwitch.addEventListener("click", ()=>{
 let health = 0;
 
 heart.addEventListener("click", ()=>{
-    if (heartOffset <= 80){ heartOffset += (1 * 80) / 100
+    if (heartOffset < 80){ heartOffset = Math.ceil(( health * 80) / 100)
     health++
+    pipeCount++
     }
     heart.style.setProperty("--heart-offset", heartOffset + "px");
     secondOffset.innerHTML = `[${health} / 100]`
-    pipeCount++
+    
    // if(heartOffset > 77) heartOffset = 0
 
 })
 
-
 secondHeart.addEventListener("click", ()=>{
-    if (heartOffset <= 80) { heartOffset += (1 * 80) / 100
+    if (heartOffset < 80) { heartOffset = Math.ceil(( health * 80) / 100)
     health++
+    pipeCount++
     }
     heart.style.setProperty("--heart-offset", heartOffset + "px");
     secondOffset.innerHTML = `[${health} / 100]`
-    pipeCount++
+    
 })
 
 ///////////////////////////////////////////////////////////////////////////////////
@@ -1085,11 +1138,18 @@ function LOAD() {
 
     for(n in loadArray) if(loadArray[n] !== undefined && loadArray[n] !== null) loadNullCheck[n] = true
 
+    for(n in intervals)clearInterval(intervals[n])
+    for(n in  decayIntervals)clearInterval( decayIntervals[n])
+   
+    leftPane.innerHTML = ""
+    for(n in upgradePresets) addUpgrade(upgradePresets[n])
+
     if(loadNullCheck[0]) for(n in loadArray[0]) {
         data.upgrade[n][0] = parseInt(loadArray[0][n][0])
         data.upgrade[n][1] = parseInt(loadArray[0][n][1])
         data.upgrade[n][2] = parseInt(loadArray[0][n][2])
 }
+
 
     if(loadNullCheck[1]) for(n in loadArray[1]) {
         data.special[n][4] = loadArray[1][n][0] === "true"?true:false
@@ -1114,20 +1174,25 @@ function LOAD() {
     if(loadNullCheck[15]) ExpandToggle = loadArray[15] === "true"?true:false
     if(loadNullCheck[16]) health = parseInt(loadArray[16]) 
 
-
     link(data.adventureLog.pop(), false)
 
 
 
     removeSpecials()
 
-    for(n in data.special) if(data.special[n][4]) {
+    for(n in data.special){ if(data.special[n][4]) {
+        console.log(data.special[n][4])
+
         specialPresets[n][4]()
-        data.special[n][1].style.display = "none"
 
-         }  else if (data.special[n][6]) data.special[n][1].style.display = ""
+        console.log(data.special[n][1])
 
-            else data.special[n][1].style.display = "none"
+        if(data.special[n][1] !== undefined) data.special[n][1].style.display = "none"
+
+         }  else if (data.special[n][6]) if(data.special[n][1] !== undefined) data.special[n][1].style.display = ""
+
+            else if(data.special[n][1] !== undefined) data.special[n][1].style.display = "none"
+ }
 
 
 
@@ -1339,6 +1404,8 @@ setInterval(()=>{
     pipeCount = 0
 
 if(data.counter >= 999999999) data.counter = 999999999
+if(health > 100) health = 100
+if(heartOffset > 80) heartOffset = 81
 
  if(autosavetoggle && !autosavedelay) SAVE(false)
 
