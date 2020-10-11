@@ -40,7 +40,12 @@ let ExpandToggle = false;
 let EnergySwitchToggle = false;
 let autosavetoggle = false;
 let saveslot = "";
-var stopIt = new Audio('css/audio/AUDIO_FILE.mp3');
+var audio = {
+    "stopIt" : new Audio('css/audio/AUDIO_FILE.mp3'),
+    "AllStar":  new Audio('css/audio/AllStar.mp3'),
+    "turtles": new Audio('css/audio/HappyTogether.mp3')
+
+}
 
 
 var exportedUpgrade = []
@@ -183,7 +188,7 @@ function count(number) {
 }
 
     counterText.innerHTML = StringCounter;
-    secondCounter.innerHTML = StringCounter
+    secondCounter.innerHTML =`[${StringCounter.replace("  ", "  ")}]`
 }
 //////
 
@@ -623,8 +628,11 @@ if(inputStream[inputStream.length - 1] === "Enter") {
             else if(!cmd[2]) writeMessage("No data given", false)
             break;
 
-        case ">clearview":
-            for(let n = 0; n <= 10; n++) {
+        case ">clear":
+            let clearNum = 0
+            if(ExpandToggle) clearNum = 25
+             else clearNum = 10
+            for(let n = 0; n <= clearNum; n++) {
                 writeMessage("<br>", false)
             } break;
 
@@ -641,6 +649,15 @@ if(inputStream[inputStream.length - 1] === "Enter") {
             //  change dynamically) we would pass the argument as 'true'.
             //taken from https://stackoverflow.com/questions/3715047/how-to-reload-a-page-using-javascript
             break;
+
+        case ">play": 
+
+        if(cmd[1]) if(audio[cmd[1]]) audio[cmd[1]].play(); break;
+        
+
+        case ">pause": 
+        if(cmd[1]) if(audio[cmd[1]]) audio[cmd[1]].pause(); break;
+        
 
         case ">":break;
 
@@ -839,7 +856,7 @@ wireItems[n].addEventListener("click", ()=>{
             wireStop();
             break;
         case (wires[0] == 35):
-            stopIt.play();
+            audio.stopIt.play();
             break;
     }
     }
@@ -872,7 +889,7 @@ let wires = [1,
     "Sending 1 (one) file to dumbass.",//17
     "Sending 1 (one) file to dumbass..",//18
     "Sending 1 (one) file to dumbass...",//19
-    "<span class='link' onclick='stopIt.play()'>AUDIO_FILE.MP3</span>",//20
+    "<span class='link' onclick='audio.stopIt.play()'>AUDIO_FILE.MP3</span>",//20
     "...",//21
     "...",//22
     "...",//23
@@ -971,7 +988,9 @@ function SAVE(isClear) {
     saveslot += btoa(unescape(encodeURIComponent(wiresPauses))) + "|"
     saveslot += btoa(unescape(encodeURIComponent(data.counter))) + "|"
     saveslot += btoa(unescape(encodeURIComponent(EnergySwitchToggle))) + "|"
-    saveslot += btoa(unescape(encodeURIComponent(heartOffset)))
+    saveslot += btoa(unescape(encodeURIComponent(heartOffset))) + "|"
+    saveslot += btoa(unescape(encodeURIComponent(ExpandToggle))) + "|"
+    saveslot += btoa(unescape(encodeURIComponent(health))) 
 
     // saveslot += btoa(unescape(encodeURIComponent(""))) + "|"
     //for new save data
@@ -1041,6 +1060,9 @@ function LOAD() {
     if(loadNullCheck[12]) data.counter = parseInt(loadArray[12])
     if(loadNullCheck[13]) EnergySwitchToggle = loadArray[13] === "true"?true:false
     if(loadNullCheck[14]) heartOffset = parseInt(loadArray[14]) 
+    if(loadNullCheck[15]) ExpandToggle = loadArray[15] === "true"?true:false
+    if(loadNullCheck[16]) health = parseInt(loadArray[16]) 
+
 
     link(data.adventureLog.pop(), false)
 
@@ -1069,8 +1091,21 @@ function LOAD() {
         break;
     }
 
+    if(ExpandToggle) {
+        gameContainer.style.display  = "none";
+        counterDiv.style.display = "none";
+        newmessages.style.maxHeight = "40vh";
+        second.style.display = "flex";
+        } else if(!ExpandToggle) {
+            gameContainer.style.display  = "";
+            counterDiv.style.display = "";
+            newmessages.style.maxHeight = "";
+            second.style.display = "none";
+        }
+
     EnergySwitch.style.backgroundImage  = EnergySwitchToggle ? "url('css/images/energySwitch.png')" : "url('css/images/energySwitch2.png')"
     heart.style.setProperty("--heart-offset", heartOffset + "px");
+    secondOffset.innerHTML = `[${health} / 100]`
 
 
 
@@ -1079,8 +1114,7 @@ function LOAD() {
      console.log(`There was an error in load: ${error}`)
      alert(`There was an error on load. Here's your data: ${localStorage.data}`)
      RESET()
-}
-}
+}}
 
 
 function RESET() {
@@ -1104,6 +1138,7 @@ function RESET() {
     newsCounter = -1;
     wires[0] = 1
     heartOffset = 0;
+    health = 0;
     cmdHistory = ""
 
     messagePresets = new Array(10)
@@ -1116,6 +1151,9 @@ function RESET() {
 
     wiresPauses = false
     EnergySwitchToggle = false
+
+
+
     EnergySwitch.style.backgroundImage = "url('css/images/energySwitch2.png')"
 
     removeSpecials()
@@ -1148,17 +1186,23 @@ function RESET() {
     gameContainer.style.display  = "";
     counterDiv.style.display = "";
     newmessages.style.maxHeight = "";
-    second.style.display = "none;"
-
+    second.style.display = "none";
     data.messageChecker = new Array()
     data.messageChecker.fill(false);
     data.messageLog = new Array()
     heart.style.setProperty("--heart-offset", heartOffset + "px");
+    autosavetoggle = false
+    ExpandToggle = false
+    gameContainer.style.display  = "";
+    counterDiv.style.display = "";
+    newmessages.style.maxHeight = "";
+    second.style.display = "none";
 
     link("home", false)
     SAVE(true)
     removeSpecials()
-    autosavetoggle = false
+
+
 }
 
 //////
@@ -1180,10 +1224,14 @@ autosave.addEventListener("click", ()=>{
     }
 
 })
-
+let resetOnce = false
 save.addEventListener("click", ()=>{ SAVE(false) })
 load.addEventListener("click", ()=>{ LOAD() ; })
-reset.addEventListener("click", ()=>{ RESET() })
+reset.addEventListener("click", ()=>{ 
+    resetOnce= false
+    writeMessage("This will erase all of you data. Are you sure that you want to proceed? [<span class='link' onclick='if(!resetOnce) RESET() '>YES</span>][<span class='link' onclick='if(!resetOnce) {writeMessage(`All right.`, false); resetOnce = true}'>NO</span>]", false)
+
+})
 exportS.addEventListener("click", ()=>{ 
 
     let exportFile = SAVE(false)
