@@ -3,9 +3,6 @@
 ///////////////////////////////VARIABLES///////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////
 
-var countNum = [];
-var StringCounter = "";
-
 var d = document;
 var heart = d.getElementById("heart");
 var counterText = d.getElementById("counter");
@@ -28,14 +25,18 @@ var save = d.getElementById("save")
 var load = d.getElementById("load")
 var reset = d.getElementById("reset")
 var autosave = d.getElementById("autosave")
-var importS = d.getElementById("import")
-var exportS = d.getElementById("export")
+var importSave = d.getElementById("import")
+var exportSave = d.getElementById("export")
 var close = d.getElementsByClassName("close");
-var rightChildren = 0;
 var newsCounter = -1;
 let heartOffset = 0;
 let pipeCount = 0;
+let gameTick = 10;
 
+let loadDump = ""
+let loadArray = []
+
+let resetSaveguard = false
 let ExpandToggle = false;
 let EnergySwitchToggle = false;
 let autosavetoggle = false;
@@ -48,6 +49,9 @@ var audio = {
 
 }
 
+var countNum = [];
+var StringCounter = "";
+
 
 var exportedUpgrade = []
 var exportedSpecial = new Array()
@@ -55,60 +59,95 @@ var intervals = []
 var decayIntervals = []
 var messagePresets = [false, false, false]
 
+// Game formatting for upgrades: 
+//------------------------------
+//name[0]=counter
+//name[1]=cost 
+//name[2]=number
+//name[3]=cost reference
+//name[4]=number reference
+//name[5]=name reference 
+//name[6] = cost increase
+//name[7]=string id 
+//name[8]=string name
+//name[9]=string description 
+//name[10]=tick
+//name[11]=string cost 
+// name[12]=string number
+//name[13]=boolean 
+//name[14]=decay rate
+//name[15]=plain reference
+//
+//upgrade[0] = blood
+//
+
+let Game = {
+    counter:0,
+
+    upgrade: new Object(),
+    special: new Object(),
+
+    messageChecker: new Array(10),
+    adventureLog: new Array(),
+    messageLog : new Array(),
+    name: "",
+}
+
+Game.messageChecker.fill(false);
 
 ///////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////PRESETS/////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////
 
 
-//cost, increase rate, number of, name, reference, description, tick, data position, decay rate, type, message[optional]
+//cost, increase rate, number of, name, reference, description, tick, Game position, decay rate, type, message[optional]
 var upgradePresets = [
     [10, 5, 0, "Blood Valve", "blood", "Pumps blood every 1s<br>Decays every 10s", 1, 0, 10, "basicCounter"],
     [20, 7, 0, "Blood Pipe", "pipe", "Pipes blood every 0.5s<br>Decays every 20s", 0.5, 1, 20, "basicCounter"],
     [10, 5, 0, "Logger", "logger", "Logs a message every second.<br>\"it's useless\" -the dev", 1, 2, 0, "Logger", "yo"]
 ]
 
-var specialPresets = [
+var specialPresets = {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
-    [30, "SAVING", "Allows you to save.", 0, ()=>{
+   "HELLYEAHSAVING": [30, "SAVING", "Allows you to save.", 0, ()=>{
         d.getElementById("saving").style.display = "flex"
         autosavetoggle = true;
         autosave.innerHTML = "<span id='on'>[ON]</span> AUTOSAVE"
         }, 20, "HELLYEAHSAVING"],
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
-    [50, "Research Blood Valves", "All valves come equipped with a half-life of 5 seconds.", 1, ()=>{
-        data.upgrade[0][5].style.display = ""
+   "bloodvalves": [50, "Research Blood Valves", "All valves come equipped with a half-life of 5 seconds.", 1, ()=>{
+        Game.upgrade.blood.Element.style.display = ""
     }, 40, "bloodvalves"],
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
-    [20, "Activate Viewport", "", 2, ()=>{
+  "viewportYEAH":  [20, "Activate Viewport", "", 2, ()=>{
         d.getElementById("messages").style.display = "inline-block"
         
         if(!messagePresets[2]) messagePresets[0] =  writeMessage("Visual display non-responsive. Switching to text-based display.", messagePresets[0], 0)
     }, 11, "viewportYEAH"],
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
-    [100, "Upgrade Blood Valves", "Now twice as efficient!", 3, ()=> {
+   "bloodbetter1": [100, "Upgrade Blood Valves", "Now twice as efficient!", 3, ()=> {
 
-        data.upgrade[0][10] = 0.5
+        Game.upgrade["blood"].tick = 0.5
+      //  if(d.querySelector("bloodDesc") !== undefined) d.querySelector("bloodDesc").innerHTML = "Pumps blood every 0.5s<br>Decays every 10s"
+        clearInterval(intervals.blood)
 
-        clearInterval(intervals[0])
-
-        intervals[0] = setInterval(()=>{
-            if(data.upgrade[0] !== null && data.upgrade[0] !== undefined &&data.upgrade[0][2] > 0) {
-            count(data.upgrade[0][0])
-        }}, data.upgrade[0][10] * 1000)
+        intervals.blood = setInterval(()=>{
+            if(Game.upgrade["blood"] !== null && Game.upgrade["blood"] !== undefined &&Game.upgrade["blood"].number > 0) {
+            count(Game.upgrade[reference].counter)
+        }}, Game.upgrade["blood"].tick * 1000)
 
     }, 70, "bloodbetter1"],
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
-    [100, "Research Blood Pipes", "It ain't gonna pipe itself...", 4, ()=>{
-        data.upgrade[1][5].style.display = ""
+   "bloodpipes": [100, "Research Blood Pipes", "It ain't gonna pipe itself...", 4, ()=>{
+        Game.upgrade.pipe.Element.style.display = ""
     }, 80, "bloodpipes"],
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
-    [10, "Activate Mechanical Cardiac Engine", "", 5, ()=>{
+   "opensesame": [10, "Activate Mechanical Cardiac Engine", "", 5, ()=>{
         for(n in close){  if(close[n].style !== undefined) {close[n].style.animation = "open-sesame 2s ease"; close[n].style.width = "0%"}}
 
     }, 10, "opensesame", true],
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
-    [0, "Activate Console", "", 6, ()=>{
+   "console" : [0, "Activate Console", "", 6, ()=>{
         d.getElementById("newmessages").style.display = "inline-block"
 
         if(!messagePresets[1]) {
@@ -127,11 +166,11 @@ var specialPresets = [
 
         var nameInterval = setInterval(()=>{
 
-            if(cmdHistory[cmdHistory.length - 1] !== undefined) { if(cmdHistory[cmdHistory.length - 1][0] == ">name"&& data.name !== "") {
+            if(cmdHistory[cmdHistory.length - 1] !== undefined) { if(cmdHistory[cmdHistory.length - 1][0] == ">name"&& Game.name !== "") {
 
                 console.log("yo")
                 clearInterval(nameInterval)
-                data.counter = 10
+                Game.counter = 10
 
             }}
 
@@ -144,55 +183,27 @@ var specialPresets = [
     }, 0, "console"],
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-]
+}
 
 function removeSpecials() {
 
     d.getElementById("saving").style.display = "none"
     autosave.innerHTML = "<span id='off'>[OFF]</span> AUTOSAVE"
-    data.upgrade[0][5].style.display = "none"
-    data.upgrade[1][5].style.display = "none"
+    Game.upgrade["blood"].Element.style.display = "none"
+    Game.upgrade["pipe"].Element.style.display = "none"
     d.getElementById("messages").style.display = "none"
     d.getElementById("newmessages").style.display = "none"
-    data.upgrade[0][10] = 1
+    Game.upgrade["blood"].tick = 1
     for(n in close) { if(close[n].style !== undefined) { close[n].style.animation = ""; close[n].style.width = "50%"}}
 
     // intervals[0] = setInterval(()=>{
-    //     if(data.upgrade[0] !== null && data.upgrade[0] !== undefined) {
-    //     count(data.upgrade[0][0])
+    //     if(Game.upgrade["blood"] !== null && Game.upgrade["blood"] !== undefined) {
+    //     count(Game.upgrade[reference].counter)
     //     console.log("Annnnnnd it's gone.")
-    // }}, data.upgrade[0][10] * 1000)
+    // }}, Game.upgrade["blood"][10] * 1000)
 
     autosavetoggle = false;
 }
-
-// data formatting for upgrades: 
-//------------------------------
-//name[0]=counter | name[1]=cost | name[2]=number
-//name[3]=cost reference | name[4]=number reference
-//name[5]=name reference | name[6] = cost increase
-//name[7]=string id | name[8]=string name
-//name[9]=string description | name[10]=tick
-//name[11]=string cost | name[12]=string number
-//name[13]=boolean | name[14]=decay rate
-//name[15]=plain reference
-//
-//upgrade[0] = blood
-//
-
-let data = {
-    counter:0,
-    upgrade: new Array(),
-    special: new Array(),
-    messageChecker: new Array(1000),
-    adventureLog: new Array(),
-    messageLog : new Array(),
-    name: ""
-}
-
-
-data.messageChecker.fill(false);
-
 
 
 
@@ -201,12 +212,12 @@ data.messageChecker.fill(false);
 ///////////////////////////////////////////////////////////////////////////////////
 
 function count(number) {
-    data.counter += number;
+    Game.counter += number;
     StringCounter = ""
 
-    countNum[2] = Math.floor(data.counter/1000000);
-    countNum[1] = Math.floor((data.counter - countNum[2]*1000000)/1000);
-    countNum[0] = Math.floor((data.counter - countNum[2]*1000000 - countNum[1]*1000));
+    countNum[2] = Math.floor(Game.counter/1000000);
+    countNum[1] = Math.floor((Game.counter - countNum[2]*1000000)/1000);
+    countNum[0] = Math.floor((Game.counter - countNum[2]*1000000 - countNum[1]*1000));
     var space = " "
     var specialSpace = ""
     for(let x = 2; x >= 0; x--) {
@@ -214,7 +225,7 @@ function count(number) {
             space = " "
         } else space = " "
 
-        if(data.counter >= 10000 && x == 0) {
+        if(Game.counter >= 10000 && x == 0) {
             specialSpace=" "
         } else specialSpace= ""
 
@@ -258,7 +269,7 @@ function writeMessage(text, check, delay) {
            }}, 500)
              result =  true;
     
-           data.messageLog[newsCounter] = text
+           Game.messageLog[newsCounter] = text
         } else {setTimeout(()=>{
             
             newsCounter++
@@ -283,7 +294,7 @@ if(type === "start") {
 
     newsCounter++
     newmessages.innerHTML += '<p class="messageStrip" id="strip'+ newsCounter 
-        +'" >>'+ char + '<span id="blinky">_</span>';
+        +'">'+ char + '<span id="blinky">_</span>';
 
     if(newsCounter > 0) {
         for(let number = 0; number < newsCounter; number++) {
@@ -299,7 +310,7 @@ d.getElementById("strip" + newsCounter).innerHTML += char + '<span id="blinky">_
 
 } else if(type === "end") {
     d.getElementById("strip" + newsCounter).removeChild(d.getElementById("strip" + newsCounter).childNodes[1])
-    data.messageLog[newsCounter] =  d.getElementById("strip" + newsCounter).innerHTML
+    Game.messageLog[newsCounter] =  d.getElementById("strip" + newsCounter).innerHTML
 
 } else if(type == "erase") {
     d.getElementById("strip" + newsCounter).removeChild(d.getElementById("strip" + newsCounter).childNodes[1])
@@ -318,102 +329,129 @@ setInterval(()=>{
 }}}}, 400)
 
 //////
+//////
+
+// Game formatting for upgrades: 
+//------------------------------
+//name[0]=counter  //
+//name[1]=cost     //
+//name[2]=number   //
+//name[3]=cost reference //
+//name[4]=number reference //
+//name[5]=name reference  //
+//name[6] = cost increase //
+//name[7]=string id //
+//name[8]=string name //
+//name[9]=string description  //
+//name[10]=tick //
+//name[11]=string cost //
+// name[12]=string number//
+//name[13]=boolean //
+//name[14]=decay rate //
+//name[15]=plain reference
+//
+//upgrade[0] = blood
+//
 
 function addUpgrade(preset) {
 
-    let cost = preset[0]
-    let increaseRate = preset[1]
-    let number = preset[2]
-    let name = preset[3]
-    let reference = preset[4]
-    let description = preset[5]
-    let tick = preset[6]
-    let dataPosition = preset[7]
-    let decayRate = preset[8]
-    let type = preset[9]
-   
+    Game.upgrade[preset[4]] = {}
+    Game.upgrade[preset[4]].reference = preset[4]
+
+    let reference = Game.upgrade[preset[4]].reference
+
+    Game.upgrade[reference].counter = 0
+    Game.upgrade[reference].cost = preset[0]
+    Game.upgrade[reference].number = preset[2]
+    Game.upgrade[reference].costIncreaseRate = preset[1]
+    Game.upgrade[reference].tick = preset[6]
+    Game.upgrade[reference].type = preset[9]
+    Game.upgrade[reference].name = preset[3]
+    Game.upgrade[reference].description = preset[5]
+    Game.upgrade[reference].type = preset[9]
+    Game.upgrade[reference].decaytick = preset[8]
+
+    
 
  var node = d.createElement("DIV");
  node.id = reference + "Upgrade";
  node.classList.add("tile");
 
- node.innerHTML = '<div class="generalDesc upgradeDesc"><p class="Name">'+ name 
- +'</p><p class="Desc">'+ description
- +'</p><p class="Cost" id="'+ reference +'UpgradeCost">Cost:' + cost
- +'</p></div> <div class="generalNum upgradeNum"><p class="Num" id="'+ reference +'UpgradeNum">' + number + '</p></div>'
+ node.innerHTML = '<div class="generalDesc upgradeDesc"><p id="'+ reference +'Name" class="Name">'+ Game.upgrade[reference].name 
+ +'</p><p class="Description"  id="'+  reference +'Description">'+ Game.upgrade[reference].description
+ +'</p><p class="Cost" id="'+ reference +'UpgradeCost">Cost:' + Game.upgrade[reference].cost
+ +'</p></div> <div class="generalNum upgradeNum"><p class="Num" id="'+ reference +'UpgradeNum">' + Game.upgrade[reference].number + '</p></div>'
 
  leftPane.appendChild(node)
+ 
+Game.upgrade[reference].Element =  d.getElementById(reference + "Upgrade")
+Game.upgrade[reference].nameElement = d.getElementById(reference + "Name")
+Game.upgrade[reference].descriptionElement = d.getElementById(reference + "Description")
+Game.upgrade[reference].costElement = d.getElementById(reference + "UpgradeCost")
+Game.upgrade[reference].numberElement = d.getElementById(reference + "UpgradeNum")
+Game.upgrade[reference].descriptionElement = d.getElementById(reference + "Description")
 
- data.upgrade[dataPosition] =        [0, cost , number,
-    d.getElementById(reference + "UpgradeCost"),
-    d.getElementById(reference + "UpgradeNum"),
-    d.getElementById(reference + "Upgrade"),
-    increaseRate, reference + "Upgrade", name, description, tick,
-    reference+ "UpgradeCost", reference+ "UpgradeNum", false, decayRate, reference]
+    if(Game.upgrade[reference].type === "basicCounter") {
 
+    intervals[reference] = setInterval(()=>{
+        if(Game.upgrade[reference].number > 0) {
+        count(Game.upgrade[reference].counter)
 
-    if(type === "basicCounter") {
+    }}, Game.upgrade[reference].tick * 1000)
 
-    intervals[dataPosition] = setInterval(()=>{
-        if(data.upgrade[preset[7]] !== null && data.upgrade[preset[7]] !== undefined && data.upgrade[preset[7]][2] > 0) {
-        count(data.upgrade[preset[7]][0])
+    decayIntervals[reference] = setInterval(()=>{
 
-    }}, data.upgrade[dataPosition][10] * 1000)
-
-    decayIntervals[dataPosition] = setInterval(()=>{
-        if(data.upgrade[preset[7]] !== null && data.upgrade[preset[7]] !== undefined) {
-        if( data.upgrade[preset[7]][2] > 0) {
-        data.upgrade[dataPosition][2]--
-        data.upgrade[dataPosition][0]--
-        data.upgrade[dataPosition][1] -= data.upgrade[dataPosition][6]
+        if( Game.upgrade[reference].number > 0) {
+        Game.upgrade[reference].number--
+        Game.upgrade[reference].counter--
+        Game.upgrade[reference].cost -= Game.upgrade[reference].costIncreaseRate
         }
-    }}, decayRate * 1000)
+    }, Game.upgrade[reference].decaytick * 1000)
 
-        data.upgrade[dataPosition][5].addEventListener("click", ()=> {
-            if(data.counter >= data.upgrade[dataPosition][1]) {
+        Game.upgrade[reference].Element.addEventListener("click", ()=> {
+            if(Game.counter >= Game.upgrade[reference].cost) {
     
-                data.upgrade[dataPosition][2]++
-                data.upgrade[dataPosition][0]++
-                data.counter -= data.upgrade[dataPosition][1]
-                data.upgrade[dataPosition][1] += data.upgrade[dataPosition][6]
+                Game.upgrade[reference].number++
+                Game.upgrade[reference].counter++
+                Game.counter -= Game.upgrade[reference].cost
+                Game.upgrade[reference].cost += Game.upgrade[reference].costIncreaseRate
 
-                clearInterval(decayIntervals[dataPosition])
+                clearInterval(decayIntervals[reference])
 
-                decayIntervals[dataPosition] = setInterval(()=>{
-                    if(data.upgrade[preset[7]] !== null && data.upgrade[preset[7]] !== undefined) {
-                    if( data.upgrade[preset[7]][2] > 0) {
-                    data.upgrade[dataPosition][2]--
-                    data.upgrade[dataPosition][0]--
-                    data.upgrade[dataPosition][1] -= data.upgrade[dataPosition][6]
+                decayIntervals[reference] = setInterval(()=>{
+                  
+                    if( Game.upgrade[reference].number > 0) {
+                    Game.upgrade[reference].number--
+                    Game.upgrade[reference].counter--
+                    Game.upgrade[reference].cost -= Game.upgrade[reference].costIncreaseRate
                     }
-                }}, decayRate * 1000)
+                }, Game.upgrade[reference].decaytick * 1000)
                 
             }
         })
 
-   // data.upgrade[dataPosition][13] = true
-    data.upgrade[dataPosition][5].style.display = "none"
+    Game.upgrade[reference].Element.style.display = "none"
 
-    }   else if(type === "Logger") {
+    }   else if(Game.upgrade[reference].type === "Logger") {
 
         let LoggerMessage = preset[10]
 
-        data.upgrade[dataPosition][5].addEventListener("click", ()=> {
-            if(data.counter >= data.upgrade[dataPosition][1]) {   
-                data.upgrade[dataPosition][2]++      
-                data.counter -= data.upgrade[dataPosition][1]
-                data.upgrade[dataPosition][1] += data.upgrade[dataPosition][6]
+        Game.upgrade[reference].Element.addEventListener("click", ()=> {
+            if(Game.counter >= Game.upgrade[reference].cost) {   
+                Game.upgrade[reference].number++      
+                Game.counter -= Game.upgrade[reference].cost
+                Game.upgrade[reference].cost += Game.upgrade[reference].costIncreaseRate
 
             }})
 
-        intervals[dataPosition] = setInterval(()=>{
-            if(data.upgrade[preset[7]] !== null && data.upgrade[preset[7]] !== undefined && data.upgrade[preset[7]][2] > 0) {
+        intervals[reference] = setInterval(()=>{
+            if(Game.upgrade[reference].number > 0) {
                 
                 writeMessage("hey.", false, 0)
         
-            }}, data.upgrade[0][10] * 1000)
+            }}, Game.upgrade[reference].tick * 1000)
 
-            data.upgrade[dataPosition][5].style.display = "none"
+            Game.upgrade[reference].Element.style.display = "none"
 
 
     } else console.log("welp")
@@ -421,100 +459,98 @@ function addUpgrade(preset) {
 
 }
 
-for(n in upgradePresets) addUpgrade(upgradePresets[n])
-
-
-//data.upgrade[0][5].style.display = ""
+//Game.upgrade["blood"][5].style.display = ""
 //////
 
 function addSpecial(preset) {
- rightChildren++
- let cost = preset[0]
- let name = preset[1]
- let reference = preset[6]
- let description = preset[2]
- let position = preset[3]
+
+Game.special[preset[6]] = {}
+Game.special[preset[6]].reference = preset[6]
+ let reference = Game.special[preset[6]].reference
+
+ Game.special[reference].cost = preset[0]
+ Game.special[reference].name = preset[1]
+ Game.special[reference].description = preset[2]
+ Game.special[reference].do = function(){ specialPresets[reference][4]()}
+ Game.special[reference].hasCost = preset[7]
+ Game.special[reference].seen = false
+ Game.special[reference].bought = false
 
     var node = d.createElement("DIV");
     node.id = reference + "Special";
     node.classList.add("tile");
-   if(cost === 0 || preset[7]) {
-    node.innerHTML = '<div class="generalDesc"><div class="Name">'+ name 
-    +'</div><div class="Desc">'+ description 
-    +'</div></div><div class=generalNum><div class="Num" id="'+ reference 
-    +'Cost"></div></div>'
+   if( Game.special[reference].cost === 0 ||  Game.special[reference].hasCost) {
+    node.innerHTML = '<div class="generalDesc"><p id="'+ reference +'Name" class="Name">'+  Game.special[reference].name
+    +'</p><p class="Description"  id="'+  reference +'Description">'+  Game.special[reference].description
+    +'</p></div><div class=generalNum style="display:none;"><p class="Num" id="'+ reference 
+    +'Cost"></p></div>'
 
    } else {
-    node.innerHTML = '<div class="generalDesc"><div class="Name">'+ name 
-    +'</div><div class="Desc">'+ description 
-    +'</div></div><div class=generalNum><div class="Num" id="'+ reference 
-    +'Cost">'+ cost +'</div></div>'
 
+    node.innerHTML = '<div class="generalDesc"><p id="'+ reference +'Name" class="Name">'+  Game.special[reference].name
+    +'</p><p class="Description"  id="'+  reference +'Description">'+  Game.special[reference].description
+    +'</p><p class="Cost" id="'+ reference +'Cost">Cost:' +  Game.special[reference].cost
+    +'</p></div><div class=generalNum><p class="Num" id="'+ reference 
+    +'Cost"></p></div>'
    }
     rightPane.appendChild(node)
 
-    data.special[position] = []
-    data.special[position][0] = cost
-    data.special[position][1] = d.getElementById(reference + "Special")
-    data.special[position][2] = d.getElementById(reference + "Cost")
-    data.special[position][3] = position
-    data.special[position][4] = false;
-    data.special[position][5] = rightChildren - 1
-    data.special[position][6] = false;
-    data.special[position][1].style.display = "none"
 
-    data.special[position][1].addEventListener("click", ()=> {
+    Game.special[reference].Element = d.getElementById(reference + "Special")
+    Game.special[reference].costElement = d.getElementById(reference + "Cost")
 
-        if(data.counter >= data.special[position][0]) {
-            data.counter -= data.special[position][0]
-            data.special[position][1].style.display = "none"
-            data.special[position][4] = true
-        specialPresets[position][4]()
+
+    Game.special[reference].Element.style.display = "none"
+
+    Game.special[reference].Element.addEventListener("click", ()=> {
+
+        if(Game.counter >=  Game.special[reference].cost) {
+            Game.counter -=  Game.special[reference].cost
+            Game.special[reference].Element.style.display = "none"
+            Game.special[reference].bought = true
+             Game.special[reference].do()
         }
     })
 }
 
-for(n in specialPresets) addSpecial(specialPresets[n])
 
 //////
 
-function updateData() {
-    for(x in data.upgrade) {
-        if(data.upgrade[x] !== null) {
-        data.upgrade[x][3].innerHTML = "Cost: " + data.upgrade[x][1]
-        data.upgrade[x][4].innerHTML = data.upgrade[x][2]
-    }}
+function updateGame() {
+    for(x in Game.upgrade) {
+        Game.upgrade[x].costElement.innerHTML = "Cost: " + Game.upgrade[x].cost
+        Game.upgrade[x].numberElement.innerHTML = Game.upgrade[x].number
+    }
 }
 
 //////
 
 function checkUpgradeCost() {
-    for(x in data.upgrade) {
-        if(data.upgrade[x] !== null) {
-    if(data.counter>=data.upgrade[x][1]) {
-        data.upgrade[x][4].style.color=""
-        data.upgrade[x][5].style.borderColor = ""
-        data.upgrade[x][5].classList.add("active");
+    for(x in Game.upgrade) {
+    if(Game.counter>=Game.upgrade[x].cost) {
+        Game.upgrade[x].numberElement.style.color=""
+        Game.upgrade[x].Element.style.borderColor = ""
+        Game.upgrade[x].Element.classList.add("active");
     } else {
-        data.upgrade[x][4].style.color="#888"
-        data.upgrade[x][5].style.borderColor = "#888"
-        data.upgrade[x][5].classList.remove("active");
+        Game.upgrade[x].numberElement.style.color="#888"
+        Game.upgrade[x].Element.style.borderColor = "#888"
+        Game.upgrade[x].Element.classList.remove("active");
     }
-}}}
+}}
 
 //////
 
 function checkSpecialCost() {
-    for(x in data.special) {
-        if(data.special[x] !== null) {
-    if(data.counter>=data.special[x][0]) {
-        data.special[x][2].style.color=""
-        data.special[x][1].style.borderColor = ""
-        data.special[x][1].classList.add("active");
+    for(x in Game.special) {
+        if(Game.special[x] !== null) {
+    if(Game.counter>=Game.special[x].cost) {
+        Game.special[x].costElement.style.color=""
+        Game.special[x].Element.style.borderColor = ""
+        Game.special[x].Element.classList.add("active");
     } else {
-        data.special[x][2].style.color="#888"
-        data.special[x][1].style.borderColor = "#888"
-        data.special[x][1].classList.remove("active");
+        Game.special[x].costElement.style.color="#888"
+        Game.special[x].Element.style.borderColor = "#888"
+        Game.special[x].Element.classList.remove("active");
     }
 }}}
 
@@ -548,7 +584,8 @@ window.document.addEventListener('keydown', e => {
 
 let inputStream = [];
 let cmd = ""
-let cmdHistory = []
+let cmdHistory = [];
+let cmdlocation = "C:\\"
 
 document.addEventListener('keydown', (event) => {
   key = event.key;
@@ -558,7 +595,7 @@ document.addEventListener('keydown', (event) => {
 if(inputStream[inputStream.length - 1] === ">" && !disableCommands) { inputStream = []; 
 
 inputStream.push(">")
-writeCharacter("", "start")
+writeCharacter(cmdlocation + ">", "start")
 }
 
 if(inputStream[0] === ">" && !disableCommands && key !== ">" && key !== "Backspace" && key !== "Shift" && key !== "Enter") writeCharacter(key, "open")
@@ -652,7 +689,7 @@ if(inputStream[inputStream.length - 1] === "Enter") {
         break;
 
         case ">c":
-        if(cmd[1]) data.counter = parseInt(cmd[1]);
+        if(cmd[1]) Game.counter = parseInt(cmd[1]);
         break;
 
         case ">cmdh":
@@ -661,9 +698,9 @@ if(inputStream[inputStream.length - 1] === "Enter") {
         break;
 
         case ">v":
-            specialPresets[2][4]();
-            data.special[2][1].style.display = "none"
-            data.special[2][4] = true
+            Game.special.viewportYEAH.do();
+            Game.special[2][1].style.display = "none"
+            Game.special[2][4] = true
             newmessages.style.display = "inline-block";
         break;
 
@@ -696,7 +733,7 @@ if(inputStream[inputStream.length - 1] === "Enter") {
                 download(msg, cmd[1], "txt");
             }
             else if(!cmd[1]) writeMessage("No name given", false, 0)
-            else if(!cmd[2]) writeMessage("No data given", false, 0)
+            else if(!cmd[2]) writeMessage("No Game given", false, 0)
             break;
 
         case ">clear":
@@ -731,15 +768,15 @@ if(inputStream[inputStream.length - 1] === "Enter") {
 
         case ">name":
         if(cmd[1]) {
-            data.name = cmd[1];
-            writeMessage(`Name has been set to "${data.name}"`, false, 0)
+            Game.name = cmd[1];
+            writeMessage(`Name has been set to "${Game.name}"`, false, 0)
         } else writeMessage("No name given", false, 0)
         break;
 
         case ">hrt":
-            specialPresets[5][4]();
-            data.special[5][1].style.display = "none"
-            data.special[5][4] = true
+            Game.special.opensesame.do();
+            Game.special[5][1].style.display = "none"
+            Game.special[5][4] = true
         break;
 
         case ">":break;
@@ -763,8 +800,8 @@ if(inputStream[inputStream.length - 1] === "Enter") {
 
 
 
-function download(data, filename, type) {
-    var file = new Blob([data], {type: type});
+function download(Game, filename, type) {
+    var file = new Blob([Game], {type: type});
     if (window.navigator.msSaveOrOpenBlob) // IE10+
         window.navigator.msSaveOrOpenBlob(file, filename);
     else { // Others
@@ -852,38 +889,31 @@ link("home", false);
 
 function link(text, back) {
 
-
      if(Nodes[text]) {
 
         let choice = Nodes[text]
-
-
         let textarray = choice.text.split("|")
         let linkarray = []
         for(let n = 1; n < textarray.length; n++) {
             linkarray[n-1] = textarray[n].split("~")
         }
 
-
         messages.innerHTML = `<p class='messageStrip line'>${textarray[0]}</p>`
 
 
-        for(n in linkarray) { if(linkarray[n][0] == "D"){
-
+        for(n in linkarray) { 
+            if(linkarray[n][0] == "D"){
             messages.innerHTML += `<br> <span class='bracket'> > </span> <a onclick="link('${linkarray[n][2]}',false)">${linkarray[n][1]} </a>`
        
-        } else if(linkarray[n][0] == "S") {
-
+        }   else if(linkarray[n][0] == "S") {
             messages.innerHTML += `<br> <span class='bracket'> ></span> <a onclick="linkSplit('${linkarray[n][2]}', false)">${linkarray[n][1]}</a>`
 
         }
     }
 }
-        if(back && data.adventureLog.length !== 1) data.adventureLog.pop()
-
-        else data.adventureLog[data.adventureLog.length] = text
-
-        if(data.adventureLog.length !== 1) messages.innerHTML += `<br><br> <a id='back' onclick="link('${data.adventureLog[data.adventureLog.length-2]}',true)">Go Back </a>`
+        if(back && Game.adventureLog.length !== 1) Game.adventureLog.pop()
+        else Game.adventureLog[Game.adventureLog.length] = text
+        if(Game.adventureLog.length !== 1) messages.innerHTML += `<br><br> <a id='back' onclick="link('${Game.adventureLog[Game.adventureLog.length-2]}',true)">Go Back </a>`
 
 }
 
@@ -894,7 +924,7 @@ function linkSplit(text, back) {
 
     for(n in Nodes) { if(Nodes[n].common) { if(Nodes[n].common === text) {
 
-        if(data.counter >= Nodes[n].Value) {
+        if(Game.counter >= Nodes[n].Value) {
 
             let choice = Nodes[n]
             let textarray = choice.text.split("|")
@@ -907,40 +937,34 @@ function linkSplit(text, back) {
     
     
             for(n in linkarray) { if(linkarray[n][0] == "D"){
-    
                 messages.innerHTML += `<br> <span class='bracket'> ></span> <a onclick="link('${linkarray[n][2]}', false)">${linkarray[n][1]}</a>`
            
             } else if(linkarray[n][0] == "S") {
-    
                 messages.innerHTML += `<br> <span class='bracket'> ></span> <a  onclick="linkSplit('${linkarray[n][2]}', false)">${linkarray[n][1]}</a>`
-    
             }
         }
         chosenNode = choice.title
 
-        data.adventureLog[data.adventureLog.length] = choice.title
+        Game.adventureLog[Game.adventureLog.length] = choice.title
         choiceNumberOf++
     
          }
-         if(Nodes[n] !== undefined) if(data.counter <= Nodes[n].Value) writeMessage(`${Nodes[n].Value} Energy Needed`, false, 0)
+         if(Nodes[n] !== undefined) if(Game.counter <= Nodes[n].Value) writeMessage(`${Nodes[n].Value} Energy Needed`, false, 0)
 
      }}}
 
 
-     let constData = data.adventureLog.length
-
+     let constData = Game.adventureLog.length
      for(let n = constData - 1; n > constData - 1 - choiceNumberOf; n--)  {
-     
-     if(data.adventureLog[n] !== chosenNode) data.adventureLog.splice(n, 1) 
+     if(Game.adventureLog[n] !== chosenNode) Game.adventureLog.splice(n, 1) 
      }
 
-     data.counter -= Nodes [ data.adventureLog[data.adventureLog.length - 1 ] ].Value
-     writeMessage(`${ Nodes [ data.adventureLog[data.adventureLog.length - 1 ] ].Value} Energy Used`, false, 0)
+     Game.counter -= Nodes [ Game.adventureLog[Game.adventureLog.length - 1 ] ].Value
+     writeMessage(`${ Nodes [ Game.adventureLog[Game.adventureLog.length - 1 ] ].Value} Energy Used`, false, 0)
 
-     if(back) data.adventureLog.splice(data.adventureLog.length-1, 1)
-     
-     messages.innerHTML += `<br><br> <a id='back' onclick="link('${data.adventureLog[data.adventureLog.length-2]}',true)">Go Back </a>`
+     if(back) Game.adventureLog.splice(Game.adventureLog.length-1, 1)
 
+     messages.innerHTML += `<br><br> <a id='back' onclick="link('${Game.adventureLog[Game.adventureLog.length-2]}',true)">Go Back </a>`
  }
 
 
@@ -950,7 +974,6 @@ function linkSplit(text, back) {
 
 
 wireItems = d.getElementsByClassName("wiresItem")
-
 
 for(let n = 0; n <= 3; n++)
 wireItems[n].addEventListener("click", ()=>{
@@ -966,9 +989,7 @@ wireItems[n].addEventListener("click", ()=>{
         case (wires[0] == 35):
             audio.stopIt.play();
             break;
-    }
-    }
-})
+    }}})
 
 function wireStop() {
     if(wiresPauses) {
@@ -1006,7 +1027,7 @@ let wires = [1,
     "IF YOU DON'T STOP...",//26
     "I'LL BE FORCED TO USE MY <i>SECRET MOVE</i>",//27
     "LAST WARNING...",//28
-    "<span class='link' onclick=' data.counter = 0; if(wiresPauses === false){writeMessage(wires[32], false, 0);wires[0]++;wiresPauses = true}'>eraseCounter.exe</span>",//29
+    "<span class='link' onclick=' Game.counter = 0; if(wiresPauses === false){writeMessage(wires[32], false, 0);wires[0]++;wiresPauses = true}'>eraseCounter.exe</span>",//29
     "...",//30
     "COULD YOU, UM, CLICK ON THE FILE?",//31
     "HAHAHAHAHA!",//32
@@ -1053,281 +1074,309 @@ secondHeart.addEventListener("click", ()=>{
 
 
 
-function SAVE(isClear) {
-    if(!autosavetoggle && !isClear) writeMessage("STATE SAVED", false, 0)
+// function SAVE(isClear) {
+//     if(!autosavetoggle && !isClear) writeMessage("STATE SAVED", false, 0)
 
-    //btoa(unescape(encodeURIComponent(str)))
-    //localStorage.firstSave = "true"
+//     //btoa(unescape(encodeURIComponent(str)))
+//     //localStorage.firstSave = "true"
 
-    localStorage.data = ""
-    saveslot = ""
+//     localStorage.Game = ""
+//     saveslot = ""
 
-    for(n in data.upgrade) {
+//     for(n in Game.upgrade) {
 
-        saveslot +=  btoa(unescape(encodeURIComponent(data.upgrade[n][0]))) + "~"
-        saveslot +=  btoa(unescape(encodeURIComponent(data.upgrade[n][1]))) + "~"
-        saveslot +=  btoa(unescape(encodeURIComponent(data.upgrade[n][2]))) 
-        if(n != data.upgrade.length - 1) saveslot += "?"
-    }
+//         saveslot +=  btoa(unescape(encodeURIComponent(Game.upgrade[n][0]))) + "~"
+//         saveslot +=  btoa(unescape(encodeURIComponent(Game.upgrade[n][1]))) + "~"
+//         saveslot +=  btoa(unescape(encodeURIComponent(Game.upgrade[n][2]))) 
+//         if(n != Game.upgrade.length - 1) saveslot += "?"
+//     }
 
-    saveslot += "|"
+//     saveslot += "|"
 
-    for(n in data.special) {
+//     for(n in Game.special) {
 
-        saveslot +=  btoa(unescape(encodeURIComponent(data.special[n][4]))) + "~"
-        saveslot +=  btoa(unescape(encodeURIComponent(data.special[n][5]))) + "~"
-        saveslot +=  btoa(unescape(encodeURIComponent(data.special[n][6]))) 
-        if(n != data.special.length - 1) saveslot += "?"
-    }
+//         saveslot +=  btoa(unescape(encodeURIComponent(Game.special[n][4]))) + "~"
+//         saveslot +=  btoa(unescape(encodeURIComponent(Game.special[n][5]))) + "~"
+//         saveslot +=  btoa(unescape(encodeURIComponent(Game.special[n][6]))) 
+//         if(n != Game.special.length - 1) saveslot += "?"
+//     }
 
-    saveslot += "|"
+//     saveslot += "|"
 
-    saveslot += btoa(unescape(encodeURIComponent(messages.innerHTML))) + "|"
-    saveslot += btoa(unescape(encodeURIComponent(newmessages.innerHTML))) + "|"
-    saveslot += btoa(unescape(encodeURIComponent(counterText.innerHTML))) + "|"
-    saveslot += btoa(unescape(encodeURIComponent(JSON.stringify(data.adventureLog)))) + "|"
-    saveslot += btoa(unescape(encodeURIComponent(JSON.stringify(data.messageLog)))) + "|"
-    saveslot += btoa(unescape(encodeURIComponent(JSON.stringify(messagePresets)))) + "|"
-    saveslot += btoa(unescape(encodeURIComponent(newsCounter))) + "|"
-    saveslot += btoa(unescape(encodeURIComponent(autosavetoggle))) + "|"
-    saveslot += btoa(unescape(encodeURIComponent(wires[0]))) + "|"
-    saveslot += btoa(unescape(encodeURIComponent(wiresPauses))) + "|"
-    saveslot += btoa(unescape(encodeURIComponent(data.counter))) + "|"
-    saveslot += btoa(unescape(encodeURIComponent(EnergySwitchToggle))) + "|"
-    saveslot += btoa(unescape(encodeURIComponent(heartOffset))) + "|"
-    saveslot += btoa(unescape(encodeURIComponent(ExpandToggle))) + "|"
-    saveslot += btoa(unescape(encodeURIComponent(health))) 
+//     saveslot += btoa(unescape(encodeURIComponent(messages.innerHTML))) + "|"
+//     saveslot += btoa(unescape(encodeURIComponent(newmessages.innerHTML))) + "|"
+//     saveslot += btoa(unescape(encodeURIComponent(counterText.innerHTML))) + "|"
+//     saveslot += btoa(unescape(encodeURIComponent(JSON.stringify(Game.adventureLog)))) + "|"
+//     saveslot += btoa(unescape(encodeURIComponent(JSON.stringify(Game.messageLog)))) + "|"
+//     saveslot += btoa(unescape(encodeURIComponent(JSON.stringify(messagePresets)))) + "|"
+//     saveslot += btoa(unescape(encodeURIComponent(newsCounter))) + "|"
+//     saveslot += btoa(unescape(encodeURIComponent(autosavetoggle))) + "|"
+//     saveslot += btoa(unescape(encodeURIComponent(wires[0]))) + "|"
+//     saveslot += btoa(unescape(encodeURIComponent(wiresPauses))) + "|"
+//     saveslot += btoa(unescape(encodeURIComponent(Game.counter))) + "|"
+//     saveslot += btoa(unescape(encodeURIComponent(EnergySwitchToggle))) + "|"
+//     saveslot += btoa(unescape(encodeURIComponent(heartOffset))) + "|"
+//     saveslot += btoa(unescape(encodeURIComponent(ExpandToggle))) + "|"
+//     saveslot += btoa(unescape(encodeURIComponent(health))) 
 
-    // saveslot += btoa(unescape(encodeURIComponent(""))) + "|"
-    //for new save data
+//     // saveslot += btoa(unescape(encodeURIComponent(""))) + "|"
+//     //for new save Game
 
-    localStorage.data = btoa(unescape(encodeURIComponent(saveslot)))
+//     localStorage.Game = btoa(unescape(encodeURIComponent(saveslot)))
 
-    return localStorage.data
-}
+//     return localStorage.Game
+// }
 
-//////
+// //////
 
-let loadDump = ""
-let loadArray = []
 
-let test = ""
-
-function LOAD() {
- try {
+// function LOAD() {
+//  try {
      
 
-    loadDump = decodeURIComponent(escape(window.atob(localStorage.data)))
+//     loadDump = decodeURIComponent(escape(window.atob(localStorage.Game)))
 
-    loadArray = loadDump.split("|")
+//     loadArray = loadDump.split("|")
 
-    for(let n = 0; n <= 1; n++) {
-        loadArray[n] = loadArray[n].split("?")
-        for(m in loadArray[n]) {
-            loadArray[n][m] = loadArray[n][m].split("~")
-            for(o in loadArray[n][m]) {
-                loadArray[n][m][o] = decodeURIComponent(escape(window.atob(loadArray[n][m][o])));
-            }
-        }
-    }
+//     for(let n = 0; n <= 1; n++) {
+//         loadArray[n] = loadArray[n].split("?")
+//         for(m in loadArray[n]) {
+//             loadArray[n][m] = loadArray[n][m].split("~")
+//             for(o in loadArray[n][m]) {
+//                 loadArray[n][m][o] = decodeURIComponent(escape(window.atob(loadArray[n][m][o])));
+//             }
+//         }
+//     }
 
-    for(let n = 2; n < loadArray.length ; n++) {
-        loadArray[n] = decodeURIComponent(escape(window.atob(loadArray[n])));
-    }
+//     for(let n = 2; n < loadArray.length ; n++) {
+//         loadArray[n] = decodeURIComponent(escape(window.atob(loadArray[n])));
+//     }
 
-    let loadNullCheck = new Array()
+//     let loadNullCheck = new Array()
 
 
-    for(n in loadArray) if(loadArray[n] !== undefined && loadArray[n] !== null) loadNullCheck[n] = true
+//     for(n in loadArray) if(loadArray[n] !== undefined && loadArray[n] !== null) loadNullCheck[n] = true
 
-    for(n in intervals)clearInterval(intervals[n])
-    for(n in  decayIntervals)clearInterval( decayIntervals[n])
+//     for(n in intervals)clearInterval(intervals[n])
+//     for(n in  decayIntervals)clearInterval( decayIntervals[n])
    
-    leftPane.innerHTML = ""
-    for(n in upgradePresets) addUpgrade(upgradePresets[n])
+//     leftPane.innerHTML = ""
+//     for(n in upgradePresets) addUpgrade(upgradePresets[n])
 
-    if(loadNullCheck[0]) for(n in loadArray[0]) {
-        data.upgrade[n][0] = parseInt(loadArray[0][n][0])
-        data.upgrade[n][1] = parseInt(loadArray[0][n][1])
-        data.upgrade[n][2] = parseInt(loadArray[0][n][2])
-}
+//     if(loadNullCheck[0]) for(n in loadArray[0]) {
+//         Game.upgrade[n][0] = parseInt(loadArray[0][n][0])
+//         Game.upgrade[n][1] = parseInt(loadArray[0][n][1])
+//         Game.upgrade[n][2] = parseInt(loadArray[0][n][2])
+// }
 
 
-    if(loadNullCheck[1]) for(n in loadArray[1]) {
-        data.special[n][4] = loadArray[1][n][0] === "true"?true:false
-        data.special[n][5] = parseInt(loadArray[1][n][1])
-        data.special[n][6] = loadArray[1][n][2] === "true"?true:false
-}
+//     if(loadNullCheck[1]) for(n in loadArray[1]) {
+//         Game.special[n][4] = loadArray[1][n][0] === "true"?true:false
+//         Game.special[n][5] = parseInt(loadArray[1][n][1])
+//         Game.special[n][6] = loadArray[1][n][2] === "true"?true:false
+// }
 
     
 
-    if(loadNullCheck[2]) messages.innerHTML = loadArray[2]
-    if(loadNullCheck[3]) newmessages.innerHTML = loadArray[3]
-    if(loadNullCheck[4]) counterText.innerHTML = loadArray[4]
-    if(loadNullCheck[5]) data.adventureLog = JSON.parse(loadArray[5])
-    if(loadNullCheck[6]) data.messageLog = JSON.parse(loadArray[6])
-    if(loadNullCheck[7]) messagePresets = JSON.parse(loadArray[7])
-    if(loadNullCheck[8]) newsCounter = parseInt(loadArray[8])
-    if(loadNullCheck[10]) wires[0] = parseInt(loadArray[10]) //skip 1
-    if(loadNullCheck[11]) wiresPauses = loadArray[11] === "true"?true:false
-    if(loadNullCheck[12]) data.counter = parseInt(loadArray[12])
-    if(loadNullCheck[13]) EnergySwitchToggle = loadArray[13] === "true"?true:false
-    if(loadNullCheck[14]) heartOffset = parseInt(loadArray[14]) 
-    if(loadNullCheck[15]) ExpandToggle = loadArray[15] === "true"?true:false
-    if(loadNullCheck[16]) health = parseInt(loadArray[16]) 
+//     if(loadNullCheck[2]) messages.innerHTML = loadArray[2]
+//     if(loadNullCheck[3]) newmessages.innerHTML = loadArray[3]
+//     if(loadNullCheck[4]) counterText.innerHTML = loadArray[4]
+//     if(loadNullCheck[5]) Game.adventureLog = JSON.parse(loadArray[5])
+//     if(loadNullCheck[6]) Game.messageLog = JSON.parse(loadArray[6])
+//     if(loadNullCheck[7]) messagePresets = JSON.parse(loadArray[7])
+//     if(loadNullCheck[8]) newsCounter = parseInt(loadArray[8])
+//     if(loadNullCheck[10]) wires[0] = parseInt(loadArray[10]) //skip 1
+//     if(loadNullCheck[11]) wiresPauses = loadArray[11] === "true"?true:false
+//     if(loadNullCheck[12]) Game.counter = parseInt(loadArray[12])
+//     if(loadNullCheck[13]) EnergySwitchToggle = loadArray[13] === "true"?true:false
+//     if(loadNullCheck[14]) heartOffset = parseInt(loadArray[14]) 
+//     if(loadNullCheck[15]) ExpandToggle = loadArray[15] === "true"?true:false
+//     if(loadNullCheck[16]) health = parseInt(loadArray[16]) 
 
-    link(data.adventureLog.pop(), false)
-
-
-
-    removeSpecials()
-
-    for(n in data.special){ if(data.special[n][4]) {
-        console.log(data.special[n][4])
-
-        specialPresets[n][4]()
-
-        console.log(data.special[n][1])
-
-        if(data.special[n][1] !== undefined) data.special[n][1].style.display = "none"
-
-         }  else if (data.special[n][6]) if(data.special[n][1] !== undefined) data.special[n][1].style.display = ""
-
-            else if(data.special[n][1] !== undefined) data.special[n][1].style.display = "none"
- }
+//     link(Game.adventureLog.pop(), false)
 
 
 
-    if(loadNullCheck[9]) autosavetoggle = loadArray[9] === "true"?true:false
+//     removeSpecials()
 
-    switch (autosavetoggle) {
-        case true:
-        autosave.innerHTML = "<span id='on'>[ON]</span> AUTOSAVE"
-        break;
-        case false:
-        autosave.innerHTML = "<span id='off'>[OFF]</span> AUTOSAVE"
-        break;
-    }
+//     for(n in Game.special){ if(Game.special[n][4]) {
+//         console.log(Game.special[n][4])
 
-    if(ExpandToggle) {
-        gameContainer.style.display  = "none";
-        counterDiv.style.display = "none";
-        newmessages.style.maxHeight = "40vh";
-        second.style.display = "flex";
-        } else if(!ExpandToggle) {
-            gameContainer.style.display  = "";
-            counterDiv.style.display = "";
-            newmessages.style.maxHeight = "";
-            second.style.display = "none";
-        }
+//          Game.special[n].do()
 
-    EnergySwitch.style.backgroundImage  = EnergySwitchToggle ? "url('css/images/energySwitch.png')" : "url('css/images/energySwitch2.png')"
-    heart.style.setProperty("--heart-offset", heartOffset + "px");
-    secondOffset.innerHTML = `[${health} / 100]`
+//         console.log(Game.special[n][1])
 
-    if(ExpandToggle) d.querySelector(".outer").style = "min-width: 200px;"
-    else d.querySelector(".outer").style = "min-width: 410px;"
+//         if(Game.special[n][1] !== undefined) Game.special[n][1].style.display = "none"
 
+//          }  else if (Game.special[n][6]) if(Game.special[n][1] !== undefined) Game.special[n][1].style.display = ""
 
-} catch (error) {
-     RESET()
-     console.log(`There was an error in load: ${error}`)
-     alert(`There was an error on load. Here's your data: ${localStorage.data}`)
-     RESET()
-}}
-
-
-function RESET() {
-
-    var CLEARspookInterval = setInterval(()=>{
-        d.getElementById("newmessages").style.display = "inline-block"
-        writeMessage("ERROR", false, 0);
-    },10)
-
-    setTimeout(()=>{
-        clearInterval(CLEARspookInterval)
-        d.getElementById("newmessages").style.display = "none"
-        newmessages.innerHTML = ""
-        data.messageLog = new Array()
-        newsCounter = -1
-    }, 400)
-
-    localStorage.data = ""
-    data.counter = 0;
-    rightChildren = 0;
-    newsCounter = -1;
-    wires[0] = 1
-    heartOffset = 0;
-    health = 0;
-    cmdHistory = []
-
-    messagePresets = new Array(10)
-    messagePresets.fill(false)
-
-
-    for(n in intervals) {
-        clearInterval(intervals[n])
-    }
-
-    wiresPauses = false
-    EnergySwitchToggle = false
+//             else if(Game.special[n][1] !== undefined) Game.special[n][1].style.display = "none"
+//  }
 
 
 
-    EnergySwitch.style.backgroundImage = "url('css/images/energySwitch2.png')"
+//     if(loadNullCheck[9]) autosavetoggle = loadArray[9] === "true"?true:false
 
-    removeSpecials()
+//     switch (autosavetoggle) {
+//         case true:
+//         autosave.innerHTML = "<span id='on'>[ON]</span> AUTOSAVE"
+//         break;
+//         case false:
+//         autosave.innerHTML = "<span id='off'>[OFF]</span> AUTOSAVE"
+//         break;
+//     }
 
-    leftPane.innerHTML  = ""
+//     if(ExpandToggle) {
+//         gameContainer.style.display  = "none";
+//         counterDiv.style.display = "none";
+//         newmessages.style.maxHeight = "40vh";
+//         second.style.display = "flex";
+//         } else if(!ExpandToggle) {
+//             gameContainer.style.display  = "";
+//             counterDiv.style.display = "";
+//             newmessages.style.maxHeight = "";
+//             second.style.display = "none";
+//         }
 
-    for(n in data.upgrade) {
+//     EnergySwitch.style.backgroundImage  = EnergySwitchToggle ? "url('css/images/energySwitch.png')" : "url('css/images/energySwitch2.png')"
+//     heart.style.setProperty("--heart-offset", heartOffset + "px");
+//     secondOffset.innerHTML = `[${health} / 100]`
+
+//     if(ExpandToggle) d.querySelector(".outer").style = "min-width: 200px;"
+//     else d.querySelector(".outer").style = "min-width: 410px;"
+
+
+// } catch (error) {
+//      RESET()
+//      console.log(`There was an error in load: ${error}`)
+//      alert(`There was an error on load. Here's your Game: ${localStorage.Game}`)
+//      RESET()
+// }}
+
+// //////
+
+// function RESET() {
+
+//     var CLEARspookInterval = setInterval(()=>{
+//         d.getElementById("newmessages").style.display = "inline-block"
+//         writeMessage("ERROR", false, 0);
+//     },10)
+
+//     setTimeout(()=>{
+//         clearInterval(CLEARspookInterval)
+//         d.getElementById("newmessages").style.display = "none"
+//         newmessages.innerHTML = ""
+//         Game.messageLog = new Array()
+//         newsCounter = -1
+//     }, 400)
+
+//     localStorage.Game = ""
+//     Game.counter = 0;
+//     newsCounter = -1;
+//     wires[0] = 1
+//     heartOffset = 0;
+//     health = 0;
+//     cmdHistory = []
+
+//     messagePresets = new Array(10)
+//     messagePresets.fill(false)
+
+
+//     for(n in intervals) {
+//         clearInterval(intervals[n])
+//     }
+
+//     wiresPauses = false
+//     EnergySwitchToggle = false
+
+
+
+//     EnergySwitch.style.backgroundImage = "url('css/images/energySwitch2.png')"
+
+//     removeSpecials()
+
+//     leftPane.innerHTML  = ""
+
+//     for(n in Game.upgrade) {
         
-        data.upgrade[n][5].style.display = "none"
-        data.upgrade[n][0] = 0
-        data.upgrade[n][1] = upgradePresets[n][0]
-        data.upgrade[n][2] = 0
-    }
+//         Game.upgrade[n][5].style.display = "none"
+//         Game.upgrade[n][0] = 0
+//         Game.upgrade[n][1] = upgradePresets[n][0]
+//         Game.upgrade[n][2] = 0
+//     }
 
-    for(n in data.special) {
-        data.special[n][1].style.display = "none"
-        data.special[n][4] = false;
-        data.special[n][6] = false;
-        data.special[n][5] = 0;
-    }
-    for(n in upgradePresets) addUpgrade(upgradePresets[n])
+//     for(n in Game.special) {
+//         Game.special[n][1].style.display = "none"
+//         Game.special[n][4] = false;
+//         Game.special[n][6] = false;
+//         Game.special[n][5] = 0;
+//     }
+//     for(n in upgradePresets) addUpgrade(upgradePresets[n])
 
-    data.adventureLog = []
+//     Game.adventureLog = []
 
-    newmessages.innerHTML = ""
-   // messages.innerHTML = ""
+//     newmessages.innerHTML = ""
 
-    autosavetoggle = false
+//     autosavetoggle = false
 
-    gameContainer.style.display  = "";
-    counterDiv.style.display = "";
-    newmessages.style.maxHeight = "";
-    second.style.display = "none";
-    data.messageChecker = new Array()
-    data.messageChecker.fill(false);
-    data.messageLog = new Array()
-    heart.style.setProperty("--heart-offset", heartOffset + "px");
-    autosavetoggle = false
-    ExpandToggle = false
-    gameContainer.style.display  = "";
-    counterDiv.style.display = "";
-    newmessages.style.maxHeight = "";
-    second.style.display = "none";
+//     gameContainer.style.display  = "";
+//     counterDiv.style.display = "";
+//     newmessages.style.maxHeight = "";
+//     second.style.display = "none";
+//     Game.messageChecker = new Array(10)
+//     Game.messageChecker.fill(false);
+//     Game.messageLog = new Array()
+//     heart.style.setProperty("--heart-offset", heartOffset + "px");
+//     autosavetoggle = false
+//     ExpandToggle = false
+//     gameContainer.style.display  = "";
+//     counterDiv.style.display = "";
+//     newmessages.style.maxHeight = "";
+//     second.style.display = "none";
 
-    link("home", false)
-    SAVE(true)
-    removeSpecials()
+//     link("home", false)
+//     SAVE(true)
+//     removeSpecials()
 
 
-}
+// }
 
 //////
 
 
+function startGame() {
+var date = new Date(); let currentYear = date.getFullYear(); 
+console.log(`IdleBot ~~ An incremental game\nCopyright © ${currentYear} https://shutterstacks.net`)
+autosavedelay = true;
+
+//saving
+save.addEventListener("click", ()=>{ SAVE(false) })
+load.addEventListener("click", ()=>{ LOAD() })
+
+reset.addEventListener("click", ()=>{ 
+    resetSaveguard= false
+    writeMessage("This will erase all of you Game. Are you sure that you want to proceed? [<span class='link' onclick='if(!resetSaveguard) RESET() '>YES</span>][<span class='link' onclick='if(!resetSaveguard) {writeMessage(`All right.`, false, 0); resetSaveguard = true}'>NO</span>]", false, 0)
+})
+
+exportSave.addEventListener("click", ()=>{ 
+    let exportFile = SAVE(false)
+
+    const text = exportFile
+    try {
+       navigator.clipboard.writeText('"' +text + '"')
+       writeMessage("DATA COPIED TO CLIPBOARD", false, 0)
+    } catch (err) {
+        writeMessage("DATA FAILED TO EXPORT", false, 0)
+    }})
+
+importSave.addEventListener("click", ()=>{ 
+    try {
+        localStorage.Game = prompt("Please paste your save Game here:\n")
+        LOAD()
+    } catch (error) {
+        alert("There was an error in importing your Game. Please try again.")
+        console.log(`There was an error in importing: ${error}`)
+    }})
 
 autosave.addEventListener("click", ()=>{
     autosavetoggle = !autosavetoggle
@@ -1342,89 +1391,55 @@ autosave.addEventListener("click", ()=>{
         autosave.innerHTML = "<span id='off'>[OFF]</span> AUTOSAVE"
         break;
     }
-
-})
-let resetOnce = false
-save.addEventListener("click", ()=>{ SAVE(false) })
-load.addEventListener("click", ()=>{ LOAD() ; })
-reset.addEventListener("click", ()=>{ 
-    resetOnce= false
-    writeMessage("This will erase all of you data. Are you sure that you want to proceed? [<span class='link' onclick='if(!resetOnce) RESET() '>YES</span>][<span class='link' onclick='if(!resetOnce) {writeMessage(`All right.`, false, 0); resetOnce = true}'>NO</span>]", false, 0)
-
-})
-exportS.addEventListener("click", ()=>{ 
-
-    let exportFile = SAVE(false)
-
-    const text = exportFile
-    try {
-       navigator.clipboard.writeText('"' +text + '"')
-       writeMessage("DATA COPIED TO CLIPBOARD", false, 0)
-    } catch (err) {
-        writeMessage("DATA FAILED TO EXPORT", false, 0)
-    }
-
 })
 
-importS.addEventListener("click", ()=>{ 
+//generating the content
 
-    try {
-        localStorage.data = prompt("Please paste your save data here:\n")
-        LOAD()
-    } catch (error) {
-        alert("There was an error in importing your data. Please try again.")
-        console.log(`There was an error in importing: ${error}`)
-    }
+for(n in upgradePresets) addUpgrade(upgradePresets[n])
+for(n in specialPresets) addSpecial(specialPresets[n])
 
- })
 
-//////
 
-let decayTick = 800
-let tick = 10;
-let bloodTick = 500;
 
-// setInterval(()=>{
-// if(data.counter > 0) count(0)
-// }, decayTick)
 
- autosavedelay = true;
 
- setTimeout(()=>{
+// LOAD()
+autosavedelay = false
+loopGame()
+}
 
-     LOAD(); 
-     autosavedelay = false
- }, 50)
-
-// if(localStorage.firstSave !== "true") RESET()
-
-var date = new Date(); let currentYear = date.getFullYear(); 
-
-console.log(`IdleBot ~~ An incremental game\nCopyright © ${currentYear} https://shutterstacks.net`)
+function loopGame() {
 
 setInterval(()=>{
 
     count(pipeCount)
     pipeCount = 0
 
-if(data.counter >= 999999999) data.counter = 999999999
+if(Game.counter >= 999999999) Game.counter = 999999999
 if(health > 100) health = 100
 if(heartOffset > 80) heartOffset = 81
 
- if(autosavetoggle && !autosavedelay) SAVE(false)
+ //if(autosavetoggle && !autosavedelay) SAVE(false)
 
-//for(n in messagePresets) if(data.counter >= messagePresets[n][1]) data.messageChecker[n] = writeMessage(messagePresets[n][0], data.messageChecker[n], 0);
+//for(n in messagePresets) if(Game.counter >= messagePresets[n][1]) Game.messageChecker[n] = writeMessage(messagePresets[n][0], Game.messageChecker[n], 0);
 
-for(n in specialPresets) {
-if(data.counter >= specialPresets[n][5] && !data.special[n][4]) {
-      data.special[n][1].style.display = ""
-      data.special[n][6] = true;
+for(const [key, value] of Object.entries(Game.special)) {
+if(Game.counter >= specialPresets[key][5] && !Game.special[key].bought) {
+      Game.special[key].Element.style.display = ""
+      Game.special[key].seen = true;
 }}
+
 checkUpgradeCost();
 checkSpecialCost();
 
 newmessages.scrollTop = newmessages.scrollHeight;
-title.innerHTML = Math.floor(data.counter) + " - IdleBot"
+title.innerHTML = Math.floor(Game.counter) + " - IdleBot"
 
-updateData();
-}, tick)
+updateGame();
+
+}, gameTick)
+
+}
+
+
+startGame(); //let's go

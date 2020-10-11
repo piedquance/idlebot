@@ -343,7 +343,7 @@ a:visited {
   animation-duration:0.1s;
 }
 
-.Desc, .Cost {
+.Description, .Cost {
   padding-left: 25px;
   font-weight: 1000;
   font-size: 13px;
