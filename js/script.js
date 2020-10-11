@@ -55,8 +55,8 @@ var StringCounter = "";
 
 var exportedUpgrade = []
 var exportedSpecial = new Array()
-var intervals = []
-var decayIntervals = []
+var intervals = {}
+var decayIntervals = {}
 var messagePresets = [false, false, false]
 
 // Game formatting for upgrades: 
@@ -133,7 +133,7 @@ var specialPresets = {
 
         intervals.blood = setInterval(()=>{
             if(Game.upgrade["blood"] !== null && Game.upgrade["blood"] !== undefined &&Game.upgrade["blood"].number > 0) {
-            count(Game.upgrade[reference].counter)
+            count(Game.upgrade.blood.counter)
         }}, Game.upgrade["blood"].tick * 1000)
 
     }, 70, "bloodbetter1"],
@@ -331,28 +331,6 @@ setInterval(()=>{
 //////
 //////
 
-// Game formatting for upgrades: 
-//------------------------------
-//name[0]=counter  //
-//name[1]=cost     //
-//name[2]=number   //
-//name[3]=cost reference //
-//name[4]=number reference //
-//name[5]=name reference  //
-//name[6] = cost increase //
-//name[7]=string id //
-//name[8]=string name //
-//name[9]=string description  //
-//name[10]=tick //
-//name[11]=string cost //
-// name[12]=string number//
-//name[13]=boolean //
-//name[14]=decay rate //
-//name[15]=plain reference
-//
-//upgrade[0] = blood
-//
-
 function addUpgrade(preset) {
 
     Game.upgrade[preset[4]] = {}
@@ -370,8 +348,6 @@ function addUpgrade(preset) {
     Game.upgrade[reference].description = preset[5]
     Game.upgrade[reference].type = preset[9]
     Game.upgrade[reference].decaytick = preset[8]
-
-    
 
  var node = d.createElement("DIV");
  node.id = reference + "Upgrade";
@@ -459,7 +435,6 @@ Game.upgrade[reference].descriptionElement = d.getElementById(reference + "Descr
 
 }
 
-//Game.upgrade["blood"][5].style.display = ""
 //////
 
 function addSpecial(preset) {
@@ -497,6 +472,8 @@ Game.special[preset[6]].reference = preset[6]
 
 
     Game.special[reference].Element = d.getElementById(reference + "Special")
+    Game.special[reference].nameElement = d.getElementById(reference + "Name")
+    Game.special[reference].descriptionElement = d.getElementById(reference + "Description")
     Game.special[reference].costElement = d.getElementById(reference + "Cost")
 
 
@@ -513,15 +490,82 @@ Game.special[preset[6]].reference = preset[6]
     })
 }
 
-
 //////
 
-function updateGame() {
-    for(x in Game.upgrade) {
-        Game.upgrade[x].costElement.innerHTML = "Cost: " + Game.upgrade[x].cost
-        Game.upgrade[x].numberElement.innerHTML = Game.upgrade[x].number
-    }
+function updateEverythingbutTick() {
+
+for(const [key, value] of Object.entries(Game.special)) {
+    if(Game.counter >= specialPresets[key][5] && !Game.special[key].bought) {
+        Game.special[key].Element.style.display = ""
+        Game.special[key].seen = true;
+        }}
+
+
+checkUpgradeCost()
+checkSpecialCost()
+
+for(x in Game.upgrade) {
+    Game.upgrade[x].costElement.innerHTML = "Cost: " + Game.upgrade[x].cost
+    Game.upgrade[x].numberElement.innerHTML = Game.upgrade[x].number
+    Game.upgrade[x].descriptionElement.innerHTML = Game.upgrade[x].description
+    Game.upgrade[x].nameElement.innerHTML = Game.upgrade[x].name
 }
+
+
+for(x in Game.special) {
+    Game.special[x].nameElement.innerHTML = Game.special[x].name
+    Game.special[x].descriptionElement.innerHTML = Game.special[x].description
+
+}
+    //for(n in messagePresets) if(Game.counter >= messagePresets[n][1]) Game.messageChecker[n] = writeMessage(messagePresets[n][0], Game.messageChecker[n], 0);
+}
+
+function updateTick(name) {
+    if(name === "all") {
+
+        for(n in Game.upgrade) updateTick(n)
+        
+} else {
+
+    clearInterval(intervals[name])
+    
+    if(Game.upgrade[name] !== undefined) {
+
+    if(Game.upgrade[name].type === "basicCounter") {
+
+        intervals[name] = setInterval(()=>{
+            if(Game.upgrade[name].number > 0) {
+            count(Game.upgrade[name].counter)
+    
+        }}, Game.upgrade[name].tick * 1000)
+
+    } else if(Game.upgrade[name].type === "Logger") {
+
+
+        intervals[name] = setInterval(()=>{
+            if(Game.upgrade[name].number > 0) {
+                
+                writeMessage("hey.", false, 0)
+        
+            }}, Game.upgrade[name].tick * 1000)
+    
+    } else console.log("welp")
+
+
+}
+}
+}
+
+
+function updateEverything() {
+
+    updateEverythingbutTick()
+
+  //  updateTick("all")
+
+}
+
+
 
 //////
 
@@ -699,8 +743,8 @@ if(inputStream[inputStream.length - 1] === "Enter") {
 
         case ">v":
             Game.special.viewportYEAH.do();
-            Game.special[2][1].style.display = "none"
-            Game.special[2][4] = true
+            Game.special.viewportYEAH.Element.style.display = "none"
+            Game.special.viewportYEAH.bought = true
             newmessages.style.display = "inline-block";
         break;
 
@@ -775,8 +819,8 @@ if(inputStream[inputStream.length - 1] === "Enter") {
 
         case ">hrt":
             Game.special.opensesame.do();
-            Game.special[5][1].style.display = "none"
-            Game.special[5][4] = true
+            Game.special.opensesame.Element.style.display = "none"
+            Game.special.opensesame.bought = true
         break;
 
         case ">":break;
@@ -1419,23 +1463,15 @@ if(Game.counter >= 999999999) Game.counter = 999999999
 if(health > 100) health = 100
 if(heartOffset > 80) heartOffset = 81
 
+
+
  //if(autosavetoggle && !autosavedelay) SAVE(false)
 
-//for(n in messagePresets) if(Game.counter >= messagePresets[n][1]) Game.messageChecker[n] = writeMessage(messagePresets[n][0], Game.messageChecker[n], 0);
-
-for(const [key, value] of Object.entries(Game.special)) {
-if(Game.counter >= specialPresets[key][5] && !Game.special[key].bought) {
-      Game.special[key].Element.style.display = ""
-      Game.special[key].seen = true;
-}}
-
-checkUpgradeCost();
-checkSpecialCost();
 
 newmessages.scrollTop = newmessages.scrollHeight;
 title.innerHTML = Math.floor(Game.counter) + " - IdleBot"
 
-updateGame();
+updateEverything();
 
 }, gameTick)
 
