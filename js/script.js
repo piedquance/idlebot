@@ -83,7 +83,7 @@ var specialPresets = [
         d.getElementById("messages").style.display = "inline-block"
         d.getElementById("newmessages").style.display = "inline-block"
         
-        messagePresets[0] =  writeMessage("Visual display non-responsive. Switching to text-based display.", messagePresets[0])
+        messagePresets[0] =  writeMessage("Visual display non-responsive. Switching to text-based display.", messagePresets[0], 0)
     }, 5, "viewportYEAH"],
 
     [100, "Upgrade Blood Valves", "Now twice as efficient!", 3, ()=> {
@@ -192,7 +192,7 @@ function count(number) {
 }
 //////
 
-function writeMessage(text, check) {
+function writeMessage(text, check, delay) {
 
     for(let n = 0; n < newsCounter;n++) {
         if(d.getElementById("strip" + n) != null) {
@@ -205,20 +205,35 @@ function writeMessage(text, check) {
 
     else if(check === false) {
 
-        newsCounter++
+        if(delay === 0) {
+            newsCounter++
 
-        newmessages.innerHTML += '<p class="messageStrip" id="strip'+ newsCounter 
-        +'" style="animation-name:messageLoad;animation-duration:0.5s">'+ text + '</p>';
-       setTimeout(()=>{
-           if(d.getElementById("strip" + newsCounter != null)) {
-        d.getElementById("strip" + newsCounter).style = "";
-       }}, 500)
-         result =  true;
-
-       data.messageLog[newsCounter] = text
-    }
+            newmessages.innerHTML += '<p class="messageStrip" id="strip'+ newsCounter 
+            +'" style="animation-name:messageLoad;animation-duration:0.5s">'+ text + '</p>';
+           setTimeout(()=>{
+               if(d.getElementById("strip" + newsCounter != null)) {
+            d.getElementById("strip" + newsCounter).style = "";
+           }}, 500)
+             result =  true;
     
-    return result;
+           data.messageLog[newsCounter] = text
+        } else setTimeout(()=>{
+
+            newsCounter++
+
+            newmessages.innerHTML += '<p class="messageStrip" id="strip'+ newsCounter 
+            +'" style="animation-name:messageLoad;animation-duration:0.5s">'+ text + '</p>';
+           setTimeout(()=>{
+               if(d.getElementById("strip" + newsCounter != null)) {
+            d.getElementById("strip" + newsCounter).style = "";
+           }}, 500)
+             result =  true;
+    
+    
+
+}, delay)
+    }
+return result;
 }
 
 
@@ -354,7 +369,7 @@ function addUpgrade(preset) {
         intervals[dataPosition] = setInterval(()=>{
             if(data.upgrade[preset[7]] !== null && data.upgrade[preset[7]] !== undefined && data.upgrade[preset[7]][2] > 0) {
                 
-                writeMessage("hey.", false)
+                writeMessage("hey.", false, 0)
         
             }}, data.upgrade[0][10] * 1000)
 
@@ -548,11 +563,11 @@ if(inputStream[inputStream.length - 1] === "Enter") {
     
             switch (autosavetoggle) {
                 case true:
-                writeMessage("AUTOSAVE ACTIVATED", false)
+                writeMessage("AUTOSAVE ACTIVATED", false, 0)
                 autosave.innerHTML = "<span id='on'>[ON]</span> AUTOSAVE"
                 break;
                 case false:
-                writeMessage("AUTOSAVE DEACTIVATED", false)
+                writeMessage("AUTOSAVE DEACTIVATED", false, 0)
                 autosave.innerHTML = "<span id='off'>[OFF]</span> AUTOSAVE"
                 break;
             } break;
@@ -587,7 +602,7 @@ if(inputStream[inputStream.length - 1] === "Enter") {
 
         case ">h":
       //  console.log(cmdHistory);
-        writeMessage(cmdHistory, false)
+        writeMessage(cmdHistory, false, 0)
         break;
 
         case ">v":
@@ -606,13 +621,13 @@ if(inputStream[inputStream.length - 1] === "Enter") {
             if(cmd[cmd.length - 1][0] === "#") { msg = "<span style='color:" + cmd[cmd.length - 1] + "' >"
             for(let n = 1; n < cmd.length - 1; n++)  msg += cmd[n] + " "
             msg += "</span>"
-            writeMessage(msg, false)
-            writeMessage("<br>", false)
+            writeMessage(msg, false, 0)
+            writeMessage("<br>", false, 0)
         }  else {
             msg = ""
             for(let n = 1; n < cmd.length; n++)  msg += cmd[n] + " "
-            writeMessage(msg, false)
-            writeMessage("<br>", false)
+            writeMessage(msg, false, 0)
+            writeMessage("<br>", false, 0)
         }}
         break;
 
@@ -624,8 +639,8 @@ if(inputStream[inputStream.length - 1] === "Enter") {
 
                 download(msg, cmd[1], "txt");
             }
-            else if(!cmd[1]) writeMessage("No name given", false)
-            else if(!cmd[2]) writeMessage("No data given", false)
+            else if(!cmd[1]) writeMessage("No name given", false, 0)
+            else if(!cmd[2]) writeMessage("No data given", false, 0)
             break;
 
         case ">clear":
@@ -633,7 +648,7 @@ if(inputStream[inputStream.length - 1] === "Enter") {
             if(ExpandToggle) clearNum = 25
              else clearNum = 10
             for(let n = 0; n <= clearNum; n++) {
-                writeMessage("<br>", false)
+                writeMessage("<br>", false, 0)
             } break;
 
         case ">click":
@@ -668,8 +683,8 @@ if(inputStream[inputStream.length - 1] === "Enter") {
 
         for(n in cmd) msg += cmd[n] + " "
         msg += "is not a command. Try again."
-        writeMessage(msg, false)
-        writeMessage("<br>", false)
+        writeMessage(msg, false, 0)
+        writeMessage("<br>", false, 0)
      //   console.log("Unknown command");
         break;
     }
@@ -814,7 +829,7 @@ function linkSplit(text, back) {
         choiceNumberOf++
     
          }
-         if(Nodes[n] !== undefined) if(data.counter <= Nodes[n].Value) writeMessage(`${Nodes[n].Value} Energy Needed`, false)
+         if(Nodes[n] !== undefined) if(data.counter <= Nodes[n].Value) writeMessage(`${Nodes[n].Value} Energy Needed`, false, 0)
 
      }}}
 
@@ -827,7 +842,7 @@ function linkSplit(text, back) {
      }
 
      data.counter -= Nodes [ data.adventureLog[data.adventureLog.length - 1 ] ].Value
-     writeMessage(`${ Nodes [ data.adventureLog[data.adventureLog.length - 1 ] ].Value} Energy Used`, false)
+     writeMessage(`${ Nodes [ data.adventureLog[data.adventureLog.length - 1 ] ].Value} Energy Used`, false, 0)
 
      if(back) data.adventureLog.splice(data.adventureLog.length-1, 1)
      
@@ -844,12 +859,12 @@ function linkSplit(text, back) {
 wireItems = d.getElementsByClassName("wiresItem")
 
 
-for(let n = 0; n <= 1; n++)
+for(let n = 0; n <= 3; n++)
 wireItems[n].addEventListener("click", ()=>{
     if (messagePresets[0]) {
     switch (true) {
         case (wires[0] < 32):
-            writeMessage(wires[wires[0]], false);
+            writeMessage(wires[wires[0]], false, 0);
             wires[0]++;
             break;
         case (wires[0] >= 32 && wires[0] < 35):
@@ -864,7 +879,7 @@ wireItems[n].addEventListener("click", ()=>{
 
 function wireStop() {
     if(wiresPauses) {
-        writeMessage(wires[wires[0]], false)
+        writeMessage(wires[wires[0]], false, 0)
         wires[0]++
 
     }}
@@ -898,7 +913,7 @@ let wires = [1,
     "IF YOU DON'T STOP...",//26
     "I'LL BE FORCED TO USE MY <i>SECRET MOVE</i>",//27
     "LAST WARNING...",//28
-    "<span class='link' onclick=' data.counter = 0; if(wiresPauses === false){writeMessage(wires[32], false);wires[0]++;wiresPauses = true}'>eraseCounter.exe</span>",//29
+    "<span class='link' onclick=' data.counter = 0; if(wiresPauses === false){writeMessage(wires[32], false, 0);wires[0]++;wiresPauses = true}'>eraseCounter.exe</span>",//29
     "...",//30
     "COULD YOU, UM, CLICK ON THE FILE?",//31
     "HAHAHAHAHA!",//32
@@ -908,9 +923,6 @@ let wires = [1,
 wiresPauses = false
 
 //Math.floor((Math.random() * wires.length))
-
-writeMessage("<br>", false)
-d.getElementById("strip0").style = ""
 
 EnergySwitch.addEventListener("click", ()=>{
     EnergySwitchToggle = !EnergySwitchToggle;
@@ -948,7 +960,7 @@ secondHeart.addEventListener("click", ()=>{
 
 
 function SAVE(isClear) {
-    if(!autosavetoggle && !isClear) writeMessage("STATE SAVED", false)
+    if(!autosavetoggle && !isClear) writeMessage("STATE SAVED", false, 0)
 
     //btoa(unescape(encodeURIComponent(str)))
     //localStorage.firstSave = "true"
@@ -1121,7 +1133,7 @@ function RESET() {
 
     var CLEARspookInterval = setInterval(()=>{
         d.getElementById("newmessages").style.display = "inline-block"
-        writeMessage("ERROR", false);
+        writeMessage("ERROR", false, 0);
     },10)
 
     setTimeout(()=>{
@@ -1214,11 +1226,11 @@ autosave.addEventListener("click", ()=>{
     
     switch (autosavetoggle) {
         case true:
-        writeMessage("AUTOSAVE ACTIVATED", false)
+        writeMessage("AUTOSAVE ACTIVATED", false, 0)
         autosave.innerHTML = "<span id='on'>[ON]</span> AUTOSAVE"
         break;
         case false:
-        writeMessage("AUTOSAVE DEACTIVATED", false)
+        writeMessage("AUTOSAVE DEACTIVATED", false, 0)
         autosave.innerHTML = "<span id='off'>[OFF]</span> AUTOSAVE"
         break;
     }
@@ -1229,7 +1241,7 @@ save.addEventListener("click", ()=>{ SAVE(false) })
 load.addEventListener("click", ()=>{ LOAD() ; })
 reset.addEventListener("click", ()=>{ 
     resetOnce= false
-    writeMessage("This will erase all of you data. Are you sure that you want to proceed? [<span class='link' onclick='if(!resetOnce) RESET() '>YES</span>][<span class='link' onclick='if(!resetOnce) {writeMessage(`All right.`, false); resetOnce = true}'>NO</span>]", false)
+    writeMessage("This will erase all of you data. Are you sure that you want to proceed? [<span class='link' onclick='if(!resetOnce) RESET() '>YES</span>][<span class='link' onclick='if(!resetOnce) {writeMessage(`All right.`, false, 0); resetOnce = true}'>NO</span>]", false, 0)
 
 })
 exportS.addEventListener("click", ()=>{ 
@@ -1239,9 +1251,9 @@ exportS.addEventListener("click", ()=>{
     const text = exportFile
     try {
        navigator.clipboard.writeText('"' +text + '"')
-       writeMessage("DATA COPIED TO CLIPBOARD", false)
+       writeMessage("DATA COPIED TO CLIPBOARD", false, 0)
     } catch (err) {
-        writeMessage("DATA FAILED TO EXPORT", false)
+        writeMessage("DATA FAILED TO EXPORT", false, 0)
     }
 
 })
@@ -1291,7 +1303,7 @@ if(data.counter >= 999999999) data.counter = 999999999
 
  if(autosavetoggle && !autosavedelay) SAVE(false)
 
-//for(n in messagePresets) if(data.counter >= messagePresets[n][1]) data.messageChecker[n] = writeMessage(messagePresets[n][0], data.messageChecker[n]);
+//for(n in messagePresets) if(data.counter >= messagePresets[n][1]) data.messageChecker[n] = writeMessage(messagePresets[n][0], data.messageChecker[n], 0);
 
 for(n in specialPresets) {
 if(data.counter >= specialPresets[n][5] && !data.special[n][4]) {
