@@ -486,7 +486,26 @@ a:visited {
   background-size: auto;
 }
 
+.close {
+  z-index:10;
+  position: absolute;
+  width: 50%;
+  height:100%;
+  background-color: #000;
+}
 
+#closeLeft {
+  left:0px;
+}
+
+#closeRight {
+  right:0;
+}
+
+@keyframes open-sesame {
+  from {width:50%}
+  to {width:0%}
+}
 
 
 @keyframes scale {

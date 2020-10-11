@@ -30,7 +30,7 @@ var reset = d.getElementById("reset")
 var autosave = d.getElementById("autosave")
 var importS = d.getElementById("import")
 var exportS = d.getElementById("export")
-
+var close = d.getElementsByClassName("close");
 var rightChildren = 0;
 var newsCounter = -1;
 let heartOffset = 0;
@@ -39,6 +39,7 @@ let pipeCount = 0;
 let ExpandToggle = false;
 let EnergySwitchToggle = false;
 let autosavetoggle = false;
+let disableCommands = false;
 let saveslot = "";
 var audio = {
     "stopIt" : new Audio('css/audio/AUDIO_FILE.mp3'),
@@ -81,7 +82,6 @@ var specialPresets = [
 
     [10, "Activate Viewport", "", 2, ()=>{
         d.getElementById("messages").style.display = "inline-block"
-        d.getElementById("newmessages").style.display = "inline-block"
         
         messagePresets[0] =  writeMessage("Visual display non-responsive. Switching to text-based display.", messagePresets[0], 0)
     }, 5, "viewportYEAH"],
@@ -103,6 +103,38 @@ var specialPresets = [
         data.upgrade[1][5].style.display = ""
     }, 80, "bloodpipes"],
 
+    [0, "Open", "", 5, ()=>{
+        for(n in close){  if(close[n].style !== undefined) {close[n].style.animation = "open-sesame 2s ease"; close[n].style.width = "0%"}}
+
+    }, 10, "opensesame"],
+
+    [0, "Activate Console", "", 6, ()=>{
+        d.getElementById("newmessages").style.display = "inline-block"
+        disableCommands = true
+        setTimeout(()=>{disableCommands = false},13000)
+        writeMessage("CONSOLE ACTIVATED", false, 0)
+        writeMessage("...", false, 3000)
+        writeMessage("...WHO IS THIS?", false, 5000)
+        writeMessage("AH, RIGHT. YOU DON'T KNOW HOW TO TYPE", false, 7000)
+        writeMessage("TYPE > TO ACTIVATE THE CONSOLE PROMPT", false, 9000)
+        writeMessage("THEN WRITE name yourname", false, 11000)
+        writeMessage("IN THAT ORDER", false, 13000)
+
+        var nameInterval = setInterval(()=>{
+
+            if(cmdHistory[cmdHistory.length - 1] !== undefined) { if(cmdHistory[cmdHistory.length - 1][0] == ">name") {
+
+                console.log("yo")
+                clearInterval(nameInterval)
+
+            }}
+
+        }, 10)
+
+
+
+    }, 0, "console"]
+
 ]
 
 function removeSpecials() {
@@ -114,6 +146,7 @@ function removeSpecials() {
     d.getElementById("messages").style.display = "none"
     d.getElementById("newmessages").style.display = "none"
     data.upgrade[0][10] = 1
+    for(n in close) { if(close[n].style !== undefined) { close[n].style.animation = ""; close[n].style.width = "50%"}}
 
     // intervals[0] = setInterval(()=>{
     //     if(data.upgrade[0] !== null && data.upgrade[0] !== undefined) {
@@ -217,8 +250,8 @@ function writeMessage(text, check, delay) {
              result =  true;
     
            data.messageLog[newsCounter] = text
-        } else setTimeout(()=>{
-
+        } else {setTimeout(()=>{
+            
             newsCounter++
 
             newmessages.innerHTML += '<p class="messageStrip" id="strip'+ newsCounter 
@@ -228,13 +261,11 @@ function writeMessage(text, check, delay) {
             d.getElementById("strip" + newsCounter).style = "";
            }}, 500)
              result =  true;
-    
-    
-
 }, delay)
-    }
+
+    } 
 return result;
-}
+}}
 
 
 function writeCharacter(char, type) {
@@ -501,20 +532,20 @@ window.document.addEventListener('keydown', e => {
 
 let inputStream = [];
 let cmd = ""
-let cmdHistory = ""
+let cmdHistory = []
 
 document.addEventListener('keydown', (event) => {
   key = event.key;
   inputStream.push(key);
 //console.log(inputStream);
 
-if(inputStream[inputStream.length - 1] === ">") { inputStream = []; 
+if(inputStream[inputStream.length - 1] === ">" && !disableCommands) { inputStream = []; 
 
 inputStream.push(">")
 writeCharacter("", "start")
 }
 
-if(inputStream[0] === ">" && key !== ">" && key !== "Backspace" && key !== "Shift" && key !== "Enter") writeCharacter(key, "open")
+if(inputStream[0] === ">" && !disableCommands && key !== ">" && key !== "Backspace" && key !== "Shift" && key !== "Enter") writeCharacter(key, "open")
 
 
 if(inputStream[inputStream.length - 1] === "Backspace") { inputStream.pop(); inputStream.pop(); writeCharacter("", "erase");  }
@@ -536,7 +567,7 @@ if(inputStream[inputStream.length - 1] === "Enter") {
 
     inputStream = []
 
-    cmdHistory += `${cmd} <br>`
+    cmdHistory.push(cmd.split(" "))
 
     cmd = cmd.split(" ")
 
@@ -602,7 +633,7 @@ if(inputStream[inputStream.length - 1] === "Enter") {
 
         case ">h":
       //  console.log(cmdHistory);
-        writeMessage(cmdHistory, false, 0)
+        writeMessage(JSON.stringify(cmdHistory), false, 0)
         break;
 
         case ">v":
@@ -1151,7 +1182,7 @@ function RESET() {
     wires[0] = 1
     heartOffset = 0;
     health = 0;
-    cmdHistory = ""
+    cmdHistory = []
 
     messagePresets = new Array(10)
     messagePresets.fill(false)
