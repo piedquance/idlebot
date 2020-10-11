@@ -80,11 +80,11 @@ var specialPresets = [
         data.upgrade[0][5].style.display = ""
     }, 40, "bloodvalves"],
 
-    [10, "Activate Viewport", "", 2, ()=>{
+    [20, "Activate Viewport", "", 2, ()=>{
         d.getElementById("messages").style.display = "inline-block"
         
         messagePresets[0] =  writeMessage("Visual display non-responsive. Switching to text-based display.", messagePresets[0], 0)
-    }, 5, "viewportYEAH"],
+    }, 11, "viewportYEAH"],
 
     [100, "Upgrade Blood Valves", "Now twice as efficient!", 3, ()=> {
 
@@ -126,6 +126,7 @@ var specialPresets = [
 
                 console.log("yo")
                 clearInterval(nameInterval)
+                data.counter = 10
 
             }}
 
@@ -429,12 +430,19 @@ function addSpecial(preset) {
     var node = d.createElement("DIV");
     node.id = reference + "Special";
     node.classList.add("tile");
-   
+   if(cost > 0) {
     node.innerHTML = '<div class="generalDesc"><div class="Name">'+ name 
     +'</div><div class="Desc">'+ description 
     +'</div></div><div class=generalNum><div class="Num" id="'+ reference 
     +'Cost">'+ cost +'</div></div>'
+   } else {
+    node.innerHTML = '<div class="generalDesc"><div class="Name">'+ name 
+    +'</div><div class="Desc">'+ description 
+    +'</div></div><div class=generalNum><div class="Num" id="'+ reference 
+    +'Cost"></div></div>'
 
+
+   }
     rightPane.appendChild(node)
 
     data.special[position] = []
