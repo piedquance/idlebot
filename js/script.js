@@ -63,8 +63,8 @@ var messagePresets = [false, false, false]
 
 //cost, increase rate, number of, name, reference, description, tick, data position, decay rate, type, message[optional]
 var upgradePresets = [
-    [10, 5, 0, "Blood Valve", "blood", "Pumps blood every 1 s<br>Decays every 10 s", 1, 0, 10, "basicCounter"],
-    [20, 7, 0, "Blood Pipe", "pipe", "Pipes blood every 0.5 s<br>Decays every 20 s", 0.5, 1, 20, "basicCounter"],
+    [10, 5, 0, "Blood Valve", "blood", "Pumps blood every 1s<br>Decays every 10s", 1, 0, 10, "basicCounter"],
+    [20, 7, 0, "Blood Pipe", "pipe", "Pipes blood every 0.5s<br>Decays every 20s", 0.5, 1, 20, "basicCounter"],
     [10, 5, 0, "Logger", "logger", "Logs a message every second.<br>\"it's useless\" -the dev", 1, 2, 0, "Logger", "yo"]
 ]
 
@@ -637,6 +637,7 @@ if(inputStream[inputStream.length - 1] === "Enter") {
             counterDiv.style.display = "none";
             newmessages.style.maxHeight = "40vh";
             second.style.display = "flex";
+            d.querySelector(".outer").style = "min-width: 200px;"
             openFullscreen();
            }, 500)
 
@@ -645,6 +646,7 @@ if(inputStream[inputStream.length - 1] === "Enter") {
             counterDiv.style.display = "";
             newmessages.style.maxHeight = "";
             second.style.display = "none";
+            d.querySelector(".outer").style = "min-width: 410px;"
             closeFullscreen();
             } 
         break;
@@ -1223,6 +1225,8 @@ function LOAD() {
     heart.style.setProperty("--heart-offset", heartOffset + "px");
     secondOffset.innerHTML = `[${health} / 100]`
 
+    if(ExpandToggle) d.querySelector(".outer").style = "min-width: 200px;"
+    else d.querySelector(".outer").style = "min-width: 410px;"
 
 
 } catch (error) {
