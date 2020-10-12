@@ -214,11 +214,7 @@ function count(number) {
 
 function writeMessage(text, check, delay) {
 
-    for(let n = 0; n < newsCounter;n++) {
-        if(d.getElementById("strip" + n) != null) {
-        if(d.getElementById("strip" + n).style != "") {
-            d.getElementById("strip" + n).style = ""
-    }}}
+
 
     let result = false
     if(check == true) return true;
@@ -229,7 +225,8 @@ function writeMessage(text, check, delay) {
             newsCounter++
 
             bottomScreen.innerHTML += '<p class="messageStrip" id="strip'+ newsCounter 
-            +'" style="animation-name:messageLoad;animation-duration:0.5s">'+ text + '</p>';
+            +'" >'+ text + '</p>';
+            d.getElementById("strip" + newsCounter).style.animation = "messageLoad 0.3s"
            setTimeout(()=>{
                if(d.getElementById("strip" + newsCounter != null)) {
             d.getElementById("strip" + newsCounter).style = "";
@@ -242,24 +239,40 @@ function writeMessage(text, check, delay) {
             newsCounter++
 
             bottomScreen.innerHTML += '<p class="messageStrip" id="strip'+ newsCounter 
-            +'" style="animation-name:messageLoad;animation-duration:0.5s">'+ text + '</p>';
+            +'" >'+ text + '</p>';
+            d.getElementById("strip" + newsCounter).style.animation = "messageLoad 0.3s"
            setTimeout(()=>{
+
+            
                if(d.getElementById("strip" + newsCounter != null)) {
             d.getElementById("strip" + newsCounter).style = "";
            }}, 500)
              result =  true;
+
+             console.log(newsCounter)
+
+             for(let n = 0; n < newsCounter;n++) {
+                 d.getElementById("strip" + n).style.animation = ""
+                 console.log(n, d.getElementById("strip" + n).style.animation)
+             }
+             
     }, delay)
 
     } 
 return result;
 }}
 
-
 function writeCharacter(char, type) {
 
 if(type === "start") {
 
     newsCounter++
+
+    for(let n = 0; n < newsCounter;n++) {
+        d.getElementById("strip" + n).style.animation = ""
+        console.log(n, d.getElementById("strip" + n).style.animation)
+    }
+
     bottomScreen.innerHTML += '<p class="messageStrip" id="strip'+ newsCounter 
         +'">'+ char + '<span id="blinky">_</span>';
 
@@ -285,17 +298,6 @@ d.getElementById("strip" + newsCounter).innerHTML += char + '<span id="blinky">_
     d.getElementById("strip" + newsCounter).innerHTML += '<span id="blinky">_</span>'
 }}
 
-//////
-//Flash remover
-
-setInterval(()=>{
-    for(let n = 0; n < newsCounter;n++) {
-    if(d.getElementById("strip" + n) != null) {
-    if(d.getElementById("strip" + n).style != "") {
-        d.getElementById("strip" + n).style = ""
-}}}}, 400)
-
-//////
 //////
 
 
