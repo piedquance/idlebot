@@ -231,41 +231,33 @@ function writeMessage(text, check, delay) {
         for(n in textArray) text += textArray[n] + " "
 
         if(delay === 0) {
-            newsCounter++
-
-            bottomScreen.innerHTML += '<p class="messageStrip" id="strip'+ newsCounter 
-            +'" >'+ text + '</p>';
-            d.getElementById("strip" + newsCounter).style.animation = "messageLoad 0.3s"
-           setTimeout(()=>{
-               if(d.getElementById("strip" + newsCounter != null)) {
-            d.getElementById("strip" + newsCounter).style = "";
-           }}, 500)
-             result =  true;
-    
-           Game.messageLog[newsCounter] = text
+            result =  basicWriter(text)
         } else {setTimeout(()=>{
             
-            newsCounter++
-
-            bottomScreen.innerHTML += '<p class="messageStrip" id="strip'+ newsCounter 
-            +'" >'+ text + '</p>';
-            d.getElementById("strip" + newsCounter).style.animation = "messageLoad 0.3s"
-           setTimeout(()=>{
-
-            
-               if(d.getElementById("strip" + newsCounter != null)) {
-            d.getElementById("strip" + newsCounter).style = "";
-           }}, 500)
-             result =  true;
-
-             for(let n = 0; n < newsCounter;n++) d.getElementById("strip" + n).style.animation = ""
-             
-             
+            result =  basicWriter(text)
     }, delay)
 
     } 
 return result;
 }}
+
+function basicWriter(text) {
+    newsCounter++
+
+    bottomScreen.innerHTML += '<p class="messageStrip" id="strip'+ newsCounter 
+    +'" >'+ text + '</p>';
+    d.getElementById("strip" + newsCounter).style.animation = "messageLoad 0.3s"
+   setTimeout(()=>{
+
+    
+       if(d.getElementById("strip" + newsCounter != null)) {
+    d.getElementById("strip" + newsCounter).style = "";
+   }}, 500)
+     for(let n = 0; n < newsCounter;n++) d.getElementById("strip" + n).style.animation = ""
+     Game.messageLog[newsCounter] = text
+     return true
+}
+
 
 function writeCharacter(char, type) {
 
@@ -698,11 +690,13 @@ if(inputStream[inputStream.length - 1] === "Enter" && inputStream[0] === ">") {
     switch(cmd[0]) {
 
         case ">" + n:
-        if(cmds[n][0]) cmds[n][1]()
-        break;
+        if(cmds[n][0]) { cmds[n][1]();  break;}
+      
 
         default :
-        if(!(cmd[0].replace(">", "") in cmds)) {
+        if(!(cmd[0].replace(">", "") in cmds) || !cmds[cmd[0].replace(">", "")][0]) {
+
+            console.log(cmd)
         msg = ""
 
          cmd = cmd.slice(" ")
@@ -725,7 +719,7 @@ cmds = {
     }],
     "save" : [false, ()=>{ SAVE()}],
     "load": [false, ()=>{LOAD()}],
-    "reset": [false, ()=>{RESET()}],
+    "reset": [true, ()=>{RESET()}],
     "autosave":[true, ()=>{autosaveclick()}],
     "play":[false, ()=>{if(cmd[1]) if(audio[cmd[1]]) audio[cmd[1]].play();}],
     "pause":[false, ()=>{if(cmd[1]) if(audio[cmd[1]]) audio[cmd[1]].pause();}],
@@ -1280,7 +1274,7 @@ function LOAD() {
 // //////
 
 function RESET() {
-
+    removeSpecials()
     localStorage.Game = "howdy"
 
     window.location.href = window.location.pathname + window.location.search + window.location.hash;
@@ -1337,11 +1331,12 @@ autosave.addEventListener("click", autosaveclick())
 
 //////
 let autosavedelay = true
-
+autosavetoggle = false;
 
 
 function startGame() {
 autosavedelay = true
+autosavetoggle = false
 
 var date = new Date(); let currentYear = date.getFullYear(); 
 console.log(`IdleBot ~~ An incremental game\nCopyright © ${currentYear} https://shutterstacks.net`)
