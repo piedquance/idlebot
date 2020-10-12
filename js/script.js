@@ -64,34 +64,10 @@ var intervals = {}
 var decayIntervals = {}
 var messagePresets = [false, false, false]
 
-// Game formatting for upgrades: 
-//------------------------------
-//name[0]=counter
-//name[1]=cost 
-//name[2]=number
-//name[3]=cost reference
-//name[4]=number reference
-//name[5]=name reference 
-//name[6] = cost increase
-//name[7]=string id 
-//name[8]=string name
-//name[9]=string description 
-//name[10]=tick
-//name[11]=string cost 
-// name[12]=string number
-//name[13]=boolean 
-//name[14]=decay rate
-//name[15]=plain reference
-//
-//upgrade[0] = blood
-//
-
 let Game = {
     counter:0,
-
     upgrade: new Object(),
     special: new Object(),
-
     messageChecker: new Array(10),
     adventureLog: new Array(),
     messageLog : new Array(),
@@ -104,95 +80,87 @@ Game.messageChecker.fill(false);
 ///////////////////////////////PRESETS/////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////
 
+///  save position, reference, name, description, type, cost, cost increase rate, tick, decay tick, message[o]
 
-//cost, increase rate, number of, name, reference, description, tick, Game position, decay rate, type, message[optional]
-var upgradePresets = [
-    [10, 5, 0, "Blood Valve", "blood", "Pumps blood every 1s<br>Decays every 10s", 1, 0, 10, "basicCounter"],
-    [20, 7, 0, "Blood Pipe", "pipe", "Pipes blood every 0.5s<br>Decays every 20s", 0.5, 1, 20, "basicCounter"],
-    [10, 5, 0, "Logger", "logger", "Logs a message every second.<br>\"it's useless\" -the dev", 1, 2, 0, "Logger", "yo"]
-]
-
-var specialPresets = {
-////////////////////////////////////////////////////////////////////////////////////////////////////////
-   "HELLYEAHSAVING": [30, "SAVING", "Allows you to save.", 0, ()=>{
-        d.getElementById("saving").style.display = "flex"
-        autosavetoggle = true;
-        autosave.innerHTML = "<span id='on'>[ON]</span> AUTOSAVE"
-        }, 20, "HELLYEAHSAVING"],
-////////////////////////////////////////////////////////////////////////////////////////////////////////
-   "bloodvalves": [50, "Research Blood Valves", "All valves come equipped with a half-life of 5 seconds.", 1, ()=>{
-        Game.upgrade.blood.Element.style.display = ""
-    }, 40, "bloodvalves"],
-////////////////////////////////////////////////////////////////////////////////////////////////////////
-  "viewportYEAH":  [20, "Activate Viewport", "", 2, ()=>{
-        topScreen.style.display = "inline-block"
-        
-        if(!messagePresets[2]) messagePresets[0] =  writeMessage("Visual display non-responsive. Switching to text-based display.", messagePresets[0], 0)
-    }, 11, "viewportYEAH"],
-////////////////////////////////////////////////////////////////////////////////////////////////////////
-   "bloodbetter1": [100, "Upgrade Blood Valves", "Now twice as efficient!", 3, ()=> {
-
-        Game.upgrade["blood"].tick = 0.5
-      //  if(d.querySelector("bloodDesc") !== undefined) d.querySelector("bloodDesc").innerHTML = "Pumps blood every 0.5s<br>Decays every 10s"
-     
-    }, 70, "bloodbetter1"],
-////////////////////////////////////////////////////////////////////////////////////////////////////////
-   "bloodpipes": [100, "Research Blood Pipes", "It ain't gonna pipe itself...", 4, ()=>{
-        Game.upgrade.pipe.Element.style.display = ""
-    }, 80, "bloodpipes"],
-////////////////////////////////////////////////////////////////////////////////////////////////////////
-   "opensesame": [10, "Activate Mechanical Cardiac Engine", "", 5, ()=>{
-        for(n in close){  if(close[n].style !== undefined) {close[n].style.animation = "open-sesame 2s ease"; close[n].style.width = "0%"}}
-
-    }, 10, "opensesame", true],
-////////////////////////////////////////////////////////////////////////////////////////////////////////
-   "console" : [0, "Activate Console", "", 6, ()=>{
-        d.getElementById("bottomScreen").style.display = "inline-block"
-
-        if(!messagePresets[1]) {
-
-        disableCommands = true
-        setTimeout(()=>{disableCommands = false},21000)
-        writeMessage("Console activated", false, 0)
-        writeMessage("<span class='valet'>...</span>", false, 4000)
-        writeMessage("<span class='valet'>......</span>", false, 7000)
-        writeMessage("<span class='valet'>...HELLO?</span>", false, 10000)
-        writeMessage("<span class='valet'>WHO IS THIS?</span>", false, 12000)
-        writeMessage("<span class='valet'>AH, RIGHT. YOU DON'T KNOW HOW TO TYPE</span>", false, 15000)
-        writeMessage("<span class='valet'>TYPE > TO ACTIVATE THE CONSOLE PROMPT</span>", false, 17000)
-        writeMessage("<span class='valet'>THEN WRITE name yourname</span>", false, 19000)
-        writeMessage("<span class='valet'>IN THAT ORDER</span>", false, 21000)
-
-        var nameInterval = setInterval(()=>{
-
-            if(cmdHistory[cmdHistory.length - 1] !== undefined) { if(cmdHistory[cmdHistory.length - 1][0] == ">name"&& Game.name !== "") {
-
-                console.log("yo")
-                clearInterval(nameInterval)
-                Game.counter = 10
-
-            }}
-
-            messagePresets[1] = true
-
-        }, 10)
-    } 
+addUpgrade([0, "bloodvalve", "Blood Valve", "Pumps blood every 1s<br>Decays every 10s", "basicCounter", 10, 5, 1, 10])
+addUpgrade([1, "bloodpipe", "Blood Pipe", "Pipes blood every 0.5s<br>Decays every 20s", "basicCounter", ])
 
 
-    }, 0, "console"],
-////////////////////////////////////////////////////////////////////////////////////////////////////////
+/// savePosition, reference, name, description, cost, hasCost, appearAt, function
+addSpecial([0, "saving", "SAVING", "Allows you to save.", 30, true, 20, ()=>{
+    d.getElementById("saving").style.display = "flex"
+    autosavetoggle = true;
+    autosave.innerHTML = "<span id='on'>[ON]</span> AUTOSAVE"
+}])
 
-}
+addSpecial([1, "bloodvalvesappear", "Research Blood Valves", "All valves come equipped with a half-life of 5 seconds.", 50, true, 40, ()=>{
+    Game.upgrade.bloodvalve.Element.style.display = ""
+}])
+
+addSpecial([2, "opentopscreen", "Activate Viewport", "", 20, true, 11, ()=>{
+    topScreen.style.display = "inline-block"
+    if(!messagePresets[2]) messagePresets[0] =  writeMessage("Visual display non-responsive. Switching to text-based display.", messagePresets[0], 0)
+}])
+
+addSpecial([3, "bloodvalveupgrade1", "Upgrade Blood Valves", "Now twice as efficient!", 100, true, 70, ()=>{
+    Game.upgrade.bloodvalve.tick = 0.5
+    Game.upgrade.bloodvalve.descriptionElement.innerHTML = "Pumps blood every 0.5s<br>Decays every 10s"
+}])
+
+addSpecial([4, "bloodpipesappear", "Research blood pipes", "It ain't gonna pipe itself...", 100, true, 80, ()=>{
+    Game.upgrade.pipe.Element.style.display = ""
+}])
+
+addSpecial([5, "opensesame", "Activate Mechanical Cardiac Engine", "", 10, false, 10, ()=>{
+    for(n in close){  if(close[n].style !== undefined) {close[n].style.animation = "open-sesame 2s ease"; close[n].style.width = "0%"}}
+}])
+
+
+addSpecial([6, "openconsole", "Activate Console", "", 0, false, 0, ()=>{
+    bottomScreen.style.display = "inline-block"
+
+    if(!messagePresets[1]) {
+
+    disableCommands = true
+    setTimeout(()=>{disableCommands = false},21000)
+    writeMessage("Console activated", false, 0)
+    writeMessage("<span class='valet'>...</span>", false, 4000)
+    writeMessage("<span class='valet'>......</span>", false, 7000)
+    writeMessage("<span class='valet'>...HELLO?</span>", false, 10000)
+    writeMessage("<span class='valet'>WHO IS THIS?</span>", false, 12000)
+    writeMessage("<span class='valet'>AH, RIGHT. YOU DON'T KNOW HOW TO TYPE</span>", false, 15000)
+    writeMessage("<span class='valet'>TYPE > TO ACTIVATE THE CONSOLE PROMPT</span>", false, 17000)
+    writeMessage("<span class='valet'>THEN WRITE name yourname</span>", false, 19000)
+    writeMessage("<span class='valet'>IN THAT ORDER</span>", false, 21000)
+
+    var nameInterval = setInterval(()=>{
+
+        if(cmdHistory[cmdHistory.length - 1] !== undefined) { if(cmdHistory[cmdHistory.length - 1][0] == ">name"&& Game.name !== "") {
+
+            console.log("yo")
+            clearInterval(nameInterval)
+            Game.counter = 10
+
+        }}
+
+        messagePresets[1] = true
+
+    }, 10)
+} 
+
+}])
+
+
 
 function removeSpecials() {
 
     d.getElementById("saving").style.display = "none"
     autosave.innerHTML = "<span id='off'>[OFF]</span> AUTOSAVE"
-    Game.upgrade["blood"].Element.style.display = "none"
-    Game.upgrade["pipe"].Element.style.display = "none"
+    Game.upgrade["bloodvalve"].Element.style.display = "none"
+    Game.upgrade["bloodpipe"].Element.style.display = "none"
     topScreen.style.display = "none"
-    d.getElementById("bottomScreen").style.display = "none"
-    Game.upgrade["blood"].tick = 1
+    bottomScreen.style.display = "none"
+    Game.upgrade["bloodvalve"].tick = 1
     for(n in close) { if(close[n].style !== undefined) { close[n].style.animation = ""; close[n].style.width = "50%"}}
 
     // intervals[0] = setInterval(()=>{
@@ -330,26 +298,27 @@ setInterval(()=>{
 //////
 //////
 
+
 function addUpgrade(preset) {
 
-    Game.upgrade[preset[4]] = {}
-    Game.upgrade[preset[4]].reference = preset[4]
+    Game.upgrade[preset[1]] = {}
+    Game.upgrade[preset[1]].reference = preset[1]
 
-    let reference = Game.upgrade[preset[4]].reference
+    let reference = Game.upgrade[preset[1]].reference
 
     Game.upgrade[reference].counter = 0
-    Game.upgrade[reference].cost = preset[0]
-    Game.upgrade[reference].number = preset[2]
-    Game.upgrade[reference].costIncreaseRate = preset[1]
-    Game.upgrade[reference].tick = preset[6]
-    Game.upgrade[reference].previoustick = preset[6]
-    Game.upgrade[reference].type = preset[9]
-    Game.upgrade[reference].name = preset[3]
-    Game.upgrade[reference].description = preset[5]
-    Game.upgrade[reference].type = preset[9]
+    Game.upgrade[reference].number = 0
+    Game.upgrade[reference].savePosition = preset[0]
+    Game.upgrade[reference].name = preset[2]
+    Game.upgrade[reference].description = preset[3]
+    Game.upgrade[reference].type = preset[4]
+    Game.upgrade[reference].cost = preset[5]
+    Game.upgrade[reference].costIncreaseRate = preset[6]
+    Game.upgrade[reference].tick = preset[7]
+    Game.upgrade[reference].previoustick = preset[7]
     Game.upgrade[reference].decaytick = preset[8]
     Game.upgrade[reference].previousdecaytick = preset[8]
-    Game.upgrade[reference].savePosition = preset[7]
+
 
  var node = d.createElement("DIV");
  node.id = reference + "Upgrade";
@@ -412,7 +381,7 @@ Game.upgrade[reference].descriptionElement = d.getElementById(reference + "Descr
 
     }   else if(Game.upgrade[reference].type === "Logger") {
 
-        let LoggerMessage = preset[10]
+        let LoggerMessage = preset[9]
 
         Game.upgrade[reference].Element.addEventListener("click", ()=> {
             if(Game.counter >= Game.upgrade[reference].cost) {   
@@ -425,7 +394,7 @@ Game.upgrade[reference].descriptionElement = d.getElementById(reference + "Descr
         intervals[reference] = setInterval(()=>{
             if(Game.upgrade[reference].number > 0) {
                 
-                writeMessage("hey.", false, 0)
+                writeMessage(LoggerMessage, false, 0)
         
             }}, Game.upgrade[reference].tick * 1000)
 
@@ -437,27 +406,28 @@ Game.upgrade[reference].descriptionElement = d.getElementById(reference + "Descr
 
 }
 
-//////
+function addSpecial(set) {
 
-function addSpecial(preset) {
+Game.special[set[1]] = {}
+Game.special[set[1]].reference = set[1]
+ let reference = Game.special[set[1]].reference
 
-Game.special[preset[6]] = {}
-Game.special[preset[6]].reference = preset[6]
- let reference = Game.special[preset[6]].reference
-
- Game.special[reference].cost = preset[0]
- Game.special[reference].name = preset[1]
- Game.special[reference].description = preset[2]
- Game.special[reference].do = function(){ specialPresets[reference][4]()}
- Game.special[reference].hasCost = preset[7]
- Game.special[reference].seen = false
+ Game.special[reference].savePosition = set[0]
+ Game.special[reference].name = set[2]
+ Game.special[reference].description = set[3]
+ Game.special[reference].cost = set[4]
+ Game.special[reference].hasCost = set[5]
+ Game.special[reference].appearAt = set[6]
+ Game.special[reference].do = function(){set[7]()}
  Game.special[reference].bought = false
- Game.special[reference].savePosition = preset[3]
+ Game.special[reference].seen = false
+
+
 
     var node = d.createElement("DIV");
     node.id = reference + "Special";
     node.classList.add("tile");
-   if( Game.special[reference].cost === 0 ||  Game.special[reference].hasCost) {
+   if( Game.special[reference].cost === 0 ||  !Game.special[reference].hasCost) {
     node.innerHTML = '<div class="generalDesc"><p id="'+ reference +'Name" class="Name">'+  Game.special[reference].name
     +'</p><p class="Description"  id="'+  reference +'Description">'+  Game.special[reference].description
     +'</p></div><div class=generalNum style="display:none;"><p class="Num" id="'+ reference 
@@ -498,7 +468,7 @@ Game.special[preset[6]].reference = preset[6]
 function updateEverythingbutTick() {
 
 for(const [key, value] of Object.entries(Game.special)) {
-    if(Game.counter >= specialPresets[key][5] && !Game.special[key].bought) {
+    if(Game.counter >=  Game.special[key].appearAt && !Game.special[key].bought) {
         Game.special[key].Element.style.display = ""
         Game.special[key].seen = true;
         }}
@@ -1266,7 +1236,6 @@ function LOAD() {
 
     for(n in Game.special){ 
         if(Game.special[n] !== undefined) {
-            console.log(n)
         if(Game.special[n].bought) {
         
 
@@ -1316,19 +1285,6 @@ function LOAD() {
 // //////
 
 function RESET() {
-
-    var CLEARspookInterval = setInterval(()=>{
-        d.getElementById("bottomScreen").style.display = "inline-block"
-        writeMessage("ERROR", false, 0);
-    },10)
-
-    setTimeout(()=>{
-        clearInterval(CLEARspookInterval)
-        d.getElementById("bottomScreen").style.display = "none"
-        bottomScreen.innerHTML = ""
-        Game.messageLog = new Array()
-        newsCounter = -1
-    }, 400)
 
     localStorage.Game = "howdy"
 
@@ -1387,7 +1343,6 @@ let autosavedelay = true
 
 
 function startGame() {
- console.log(localStorage.Game)
 autosavedelay = true
 
 var date = new Date(); let currentYear = date.getFullYear(); 
@@ -1395,19 +1350,15 @@ console.log(`IdleBot ~~ An incremental game\nCopyright © ${currentYear} https:/
 
 //generating the content
 
-for(n in upgradePresets) addUpgrade(upgradePresets[n])
-for(n in specialPresets) addSpecial(specialPresets[n])
-
 link("home", false);
 
 
 if(localStorage.Game !== "howdy"){
 console.log("welcome back!")
-console.log(loadArray)
  LOAD()
-    console.log(loadArray)
 
-} else console.log("welcome!");
+
+} else {}
 
 autosavedelay = false
 
