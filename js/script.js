@@ -6,8 +6,8 @@
 var d = document;
 var heart = d.getElementById("heart");
 var counterText = d.getElementById("counter");
-var messages = d.getElementById("messages");
-var newmessages = d.getElementById("newmessages");
+var topScreen = d.getElementById("topScreen");
+var bottomScreen = d.getElementById("bottomScreen");
 var gameContainer = d.getElementById("gameContainer")
 var counterDiv = d.getElementById("counterDiv")
 var second = d.getElementById("second")
@@ -32,6 +32,11 @@ var newsCounter = -1;
 let heartOffset = 0;
 let pipeCount = 0;
 let gameTick = 10;
+
+let inputStream = [];
+let cmd = ""
+let cmdHistory = [];
+let cmdlocation = "C:\\"
 
 let loadDump = ""
 let loadArray = []
@@ -120,7 +125,7 @@ var specialPresets = {
     }, 40, "bloodvalves"],
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
   "viewportYEAH":  [20, "Activate Viewport", "", 2, ()=>{
-        d.getElementById("messages").style.display = "inline-block"
+        topScreen.style.display = "inline-block"
         
         if(!messagePresets[2]) messagePresets[0] =  writeMessage("Visual display non-responsive. Switching to text-based display.", messagePresets[0], 0)
     }, 11, "viewportYEAH"],
@@ -142,7 +147,7 @@ var specialPresets = {
     }, 10, "opensesame", true],
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
    "console" : [0, "Activate Console", "", 6, ()=>{
-        d.getElementById("newmessages").style.display = "inline-block"
+        d.getElementById("bottomScreen").style.display = "inline-block"
 
         if(!messagePresets[1]) {
 
@@ -185,8 +190,8 @@ function removeSpecials() {
     autosave.innerHTML = "<span id='off'>[OFF]</span> AUTOSAVE"
     Game.upgrade["blood"].Element.style.display = "none"
     Game.upgrade["pipe"].Element.style.display = "none"
-    d.getElementById("messages").style.display = "none"
-    d.getElementById("newmessages").style.display = "none"
+    topScreen.style.display = "none"
+    d.getElementById("bottomScreen").style.display = "none"
     Game.upgrade["blood"].tick = 1
     for(n in close) { if(close[n].style !== undefined) { close[n].style.animation = ""; close[n].style.width = "50%"}}
 
@@ -255,7 +260,7 @@ function writeMessage(text, check, delay) {
         if(delay === 0) {
             newsCounter++
 
-            newmessages.innerHTML += '<p class="messageStrip" id="strip'+ newsCounter 
+            bottomScreen.innerHTML += '<p class="messageStrip" id="strip'+ newsCounter 
             +'" style="animation-name:messageLoad;animation-duration:0.5s">'+ text + '</p>';
            setTimeout(()=>{
                if(d.getElementById("strip" + newsCounter != null)) {
@@ -268,14 +273,14 @@ function writeMessage(text, check, delay) {
             
             newsCounter++
 
-            newmessages.innerHTML += '<p class="messageStrip" id="strip'+ newsCounter 
+            bottomScreen.innerHTML += '<p class="messageStrip" id="strip'+ newsCounter 
             +'" style="animation-name:messageLoad;animation-duration:0.5s">'+ text + '</p>';
            setTimeout(()=>{
                if(d.getElementById("strip" + newsCounter != null)) {
             d.getElementById("strip" + newsCounter).style = "";
            }}, 500)
              result =  true;
-}, delay)
+    }, delay)
 
     } 
 return result;
@@ -287,7 +292,7 @@ function writeCharacter(char, type) {
 if(type === "start") {
 
     newsCounter++
-    newmessages.innerHTML += '<p class="messageStrip" id="strip'+ newsCounter 
+    bottomScreen.innerHTML += '<p class="messageStrip" id="strip'+ newsCounter 
         +'">'+ char + '<span id="blinky">_</span>';
 
     if(newsCounter > 0) {
@@ -344,6 +349,7 @@ function addUpgrade(preset) {
     Game.upgrade[reference].type = preset[9]
     Game.upgrade[reference].decaytick = preset[8]
     Game.upgrade[reference].previousdecaytick = preset[8]
+    Game.upgrade[reference].savePosition = preset[7]
 
  var node = d.createElement("DIV");
  node.id = reference + "Upgrade";
@@ -446,6 +452,7 @@ Game.special[preset[6]].reference = preset[6]
  Game.special[reference].hasCost = preset[7]
  Game.special[reference].seen = false
  Game.special[reference].bought = false
+ Game.special[reference].savePosition = preset[3]
 
     var node = d.createElement("DIV");
     node.id = reference + "Special";
@@ -516,16 +523,16 @@ for(x in Game.special) {
     //for(n in messagePresets) if(Game.counter >= messagePresets[n][1]) Game.messageChecker[n] = writeMessage(messagePresets[n][0], Game.messageChecker[n], 0);
 }
 
-let frame = 0
+
 
 function updateTick(name, type) {
 
-if(type === "tick") {
+if(type == "tick") {
     if(name === "all") {
        
         for(n in Game.upgrade) {
             if(Game.upgrade[n].previoustick !== Game.upgrade[n].tick) {
-                updateTick(n)
+                updateTick(n, "tick")
                 Game.upgrade[n].previoustick =  Game.upgrade[n].tick
             } } 
 
@@ -555,7 +562,6 @@ if(type === "tick") {
     
     } else console.log("welp")
 
-
     }}} else if (type === "decay") {
 
         if(name === "all") {
@@ -567,7 +573,6 @@ if(type === "tick") {
                 } } 
     
     } else {
-
         clearInterval(decayIntervals[name])
 
         if(Game.upgrade[name] !== undefined) {
@@ -583,17 +588,10 @@ if(type === "tick") {
             }
         }, Game.upgrade[name].decaytick * 1000)
 
-    }
-
-    }}} else if(type = "all") {
-
+    }}}} else if(type = "all") {
         updateTick("all", "tick")
         updateTick("all", "decay")
-
-
-    }
-
-}
+    }}
 
 
 function updateEverything() {
@@ -662,11 +660,6 @@ window.document.addEventListener('keydown', e => {
 //      d.stopPropagation();
 //   }; //taken from https://stackoverflow.com/questions/49280847/firefox-switching-tab-on-backspace
 
-
-let inputStream = [];
-let cmd = ""
-let cmdHistory = [];
-let cmdlocation = "C:\\"
 
 document.addEventListener('keydown', (event) => {
   key = event.key;
@@ -753,7 +746,7 @@ if(inputStream[inputStream.length - 1] === "Enter") {
            setTimeout(()=>{
             gameContainer.style.display  = "none";
             counterDiv.style.display = "none";
-            newmessages.style.maxHeight = "40vh";
+            bottomScreen.style.maxHeight = "40vh";
             second.style.display = "flex";
             d.querySelector(".outer").style = "min-width: 200px;"
             openFullscreen();
@@ -762,7 +755,7 @@ if(inputStream[inputStream.length - 1] === "Enter") {
         } else if(!ExpandToggle) {  for(n in close) if(close[n].style !== undefined)  close[n].style.animation = "open-sesame 1s"
             gameContainer.style.display  = "";
             counterDiv.style.display = "";
-            newmessages.style.maxHeight = "";
+            bottomScreen.style.maxHeight = "";
             second.style.display = "none";
             d.querySelector(".outer").style = "min-width: 410px;"
             closeFullscreen();
@@ -782,7 +775,7 @@ if(inputStream[inputStream.length - 1] === "Enter") {
             Game.special.viewportYEAH.do();
             Game.special.viewportYEAH.Element.style.display = "none"
             Game.special.viewportYEAH.bought = true
-            newmessages.style.display = "inline-block";
+            bottomScreen.style.display = "inline-block";
         break;
 
 
@@ -962,8 +955,6 @@ Node({"common":"look_at_yourself", "title":"look_at_yourself0", "text":   "fail"
 
 Node({"common":"look_at_yourself", "title":"look_at_yourself10", "text": "ok now what?","Value":  10})
 
-
-link("home", false);
 //Node("look_at_yourself", ["After everything, it's still you— wait, what?"], [])
 
 //////
@@ -979,22 +970,22 @@ function link(text, back) {
             linkarray[n-1] = textarray[n].split("~")
         }
 
-        messages.innerHTML = `<p class='messageStrip line'>${textarray[0]}</p>`
+        topScreen.innerHTML = `<p class='messageStrip line'>${textarray[0]}</p>`
 
 
         for(n in linkarray) { 
             if(linkarray[n][0] == "D"){
-            messages.innerHTML += `<br> <span class='bracket'> > </span> <a onclick="link('${linkarray[n][2]}',false)">${linkarray[n][1]} </a>`
+            topScreen.innerHTML += `<br> <span class='bracket'> > </span> <a onclick="link('${linkarray[n][2]}',false)">${linkarray[n][1]} </a>`
        
         }   else if(linkarray[n][0] == "S") {
-            messages.innerHTML += `<br> <span class='bracket'> ></span> <a onclick="linkSplit('${linkarray[n][2]}', false)">${linkarray[n][1]}</a>`
+            topScreen.innerHTML += `<br> <span class='bracket'> ></span> <a onclick="linkSplit('${linkarray[n][2]}', false)">${linkarray[n][1]}</a>`
 
         }
     }
 }
         if(back && Game.adventureLog.length !== 1) Game.adventureLog.pop()
         else Game.adventureLog[Game.adventureLog.length] = text
-        if(Game.adventureLog.length !== 1) messages.innerHTML += `<br><br> <a id='back' onclick="link('${Game.adventureLog[Game.adventureLog.length-2]}',true)">Go Back </a>`
+        if(Game.adventureLog.length !== 1) topScreen.innerHTML += `<br><br> <a id='back' onclick="link('${Game.adventureLog[Game.adventureLog.length-2]}',true)">Go Back </a>`
 
 }
 
@@ -1014,14 +1005,14 @@ function linkSplit(text, back) {
                 linkarray[n-1] = textarray[n].split("~")
             }
     
-            messages.innerHTML = `<p class='messageStrip line'>${textarray[0]}</p>`
+            topScreen.innerHTML = `<p class='messageStrip line'>${textarray[0]}</p>`
     
     
             for(n in linkarray) { if(linkarray[n][0] == "D"){
-                messages.innerHTML += `<br> <span class='bracket'> ></span> <a onclick="link('${linkarray[n][2]}', false)">${linkarray[n][1]}</a>`
+                topScreen.innerHTML += `<br> <span class='bracket'> ></span> <a onclick="link('${linkarray[n][2]}', false)">${linkarray[n][1]}</a>`
            
             } else if(linkarray[n][0] == "S") {
-                messages.innerHTML += `<br> <span class='bracket'> ></span> <a  onclick="linkSplit('${linkarray[n][2]}', false)">${linkarray[n][1]}</a>`
+                topScreen.innerHTML += `<br> <span class='bracket'> ></span> <a  onclick="linkSplit('${linkarray[n][2]}', false)">${linkarray[n][1]}</a>`
             }
         }
         chosenNode = choice.title
@@ -1045,7 +1036,7 @@ function linkSplit(text, back) {
 
      if(back) Game.adventureLog.splice(Game.adventureLog.length-1, 1)
 
-     messages.innerHTML += `<br><br> <a id='back' onclick="link('${Game.adventureLog[Game.adventureLog.length-2]}',true)">Go Back </a>`
+     topScreen.innerHTML += `<br><br> <a id='back' onclick="link('${Game.adventureLog[Game.adventureLog.length-2]}',true)">Go Back </a>`
  }
 
 
@@ -1155,282 +1146,198 @@ secondHeart.addEventListener("click", ()=>{
 
 
 
-// function SAVE(isClear) {
-//     if(!autosavetoggle && !isClear) writeMessage("STATE SAVED", false, 0)
-
-//     //btoa(unescape(encodeURIComponent(str)))
-//     //localStorage.firstSave = "true"
-
-//     localStorage.Game = ""
-//     saveslot = ""
-
-//     for(n in Game.upgrade) {
-
-//         saveslot +=  btoa(unescape(encodeURIComponent(Game.upgrade[n][0]))) + "~"
-//         saveslot +=  btoa(unescape(encodeURIComponent(Game.upgrade[n][1]))) + "~"
-//         saveslot +=  btoa(unescape(encodeURIComponent(Game.upgrade[n][2]))) 
-//         if(n != Game.upgrade.length - 1) saveslot += "?"
-//     }
-
-//     saveslot += "|"
-
-//     for(n in Game.special) {
-
-//         saveslot +=  btoa(unescape(encodeURIComponent(Game.special[n][4]))) + "~"
-//         saveslot +=  btoa(unescape(encodeURIComponent(Game.special[n][5]))) + "~"
-//         saveslot +=  btoa(unescape(encodeURIComponent(Game.special[n][6]))) 
-//         if(n != Game.special.length - 1) saveslot += "?"
-//     }
-
-//     saveslot += "|"
-
-//     saveslot += btoa(unescape(encodeURIComponent(messages.innerHTML))) + "|"
-//     saveslot += btoa(unescape(encodeURIComponent(newmessages.innerHTML))) + "|"
-//     saveslot += btoa(unescape(encodeURIComponent(counterText.innerHTML))) + "|"
-//     saveslot += btoa(unescape(encodeURIComponent(JSON.stringify(Game.adventureLog)))) + "|"
-//     saveslot += btoa(unescape(encodeURIComponent(JSON.stringify(Game.messageLog)))) + "|"
-//     saveslot += btoa(unescape(encodeURIComponent(JSON.stringify(messagePresets)))) + "|"
-//     saveslot += btoa(unescape(encodeURIComponent(newsCounter))) + "|"
-//     saveslot += btoa(unescape(encodeURIComponent(autosavetoggle))) + "|"
-//     saveslot += btoa(unescape(encodeURIComponent(wires[0]))) + "|"
-//     saveslot += btoa(unescape(encodeURIComponent(wiresPauses))) + "|"
-//     saveslot += btoa(unescape(encodeURIComponent(Game.counter))) + "|"
-//     saveslot += btoa(unescape(encodeURIComponent(EnergySwitchToggle))) + "|"
-//     saveslot += btoa(unescape(encodeURIComponent(heartOffset))) + "|"
-//     saveslot += btoa(unescape(encodeURIComponent(ExpandToggle))) + "|"
-//     saveslot += btoa(unescape(encodeURIComponent(health))) 
-
-//     // saveslot += btoa(unescape(encodeURIComponent(""))) + "|"
-//     //for new save Game
-
-//     localStorage.Game = btoa(unescape(encodeURIComponent(saveslot)))
-
-//     return localStorage.Game
-// }
-
-// //////
-
-
-// function LOAD() {
-//  try {
-     
-
-//     loadDump = decodeURIComponent(escape(window.atob(localStorage.Game)))
-
-//     loadArray = loadDump.split("|")
-
-//     for(let n = 0; n <= 1; n++) {
-//         loadArray[n] = loadArray[n].split("?")
-//         for(m in loadArray[n]) {
-//             loadArray[n][m] = loadArray[n][m].split("~")
-//             for(o in loadArray[n][m]) {
-//                 loadArray[n][m][o] = decodeURIComponent(escape(window.atob(loadArray[n][m][o])));
-//             }
-//         }
-//     }
-
-//     for(let n = 2; n < loadArray.length ; n++) {
-//         loadArray[n] = decodeURIComponent(escape(window.atob(loadArray[n])));
-//     }
-
-//     let loadNullCheck = new Array()
-
-
-//     for(n in loadArray) if(loadArray[n] !== undefined && loadArray[n] !== null) loadNullCheck[n] = true
-
-//     for(n in intervals)clearInterval(intervals[n])
-//     for(n in  decayIntervals)clearInterval( decayIntervals[n])
-   
-//     leftPane.innerHTML = ""
-//     for(n in upgradePresets) addUpgrade(upgradePresets[n])
-
-//     if(loadNullCheck[0]) for(n in loadArray[0]) {
-//         Game.upgrade[n][0] = parseInt(loadArray[0][n][0])
-//         Game.upgrade[n][1] = parseInt(loadArray[0][n][1])
-//         Game.upgrade[n][2] = parseInt(loadArray[0][n][2])
-// }
-
-
-//     if(loadNullCheck[1]) for(n in loadArray[1]) {
-//         Game.special[n][4] = loadArray[1][n][0] === "true"?true:false
-//         Game.special[n][5] = parseInt(loadArray[1][n][1])
-//         Game.special[n][6] = loadArray[1][n][2] === "true"?true:false
-// }
-
-    
-
-//     if(loadNullCheck[2]) messages.innerHTML = loadArray[2]
-//     if(loadNullCheck[3]) newmessages.innerHTML = loadArray[3]
-//     if(loadNullCheck[4]) counterText.innerHTML = loadArray[4]
-//     if(loadNullCheck[5]) Game.adventureLog = JSON.parse(loadArray[5])
-//     if(loadNullCheck[6]) Game.messageLog = JSON.parse(loadArray[6])
-//     if(loadNullCheck[7]) messagePresets = JSON.parse(loadArray[7])
-//     if(loadNullCheck[8]) newsCounter = parseInt(loadArray[8])
-//     if(loadNullCheck[10]) wires[0] = parseInt(loadArray[10]) //skip 1
-//     if(loadNullCheck[11]) wiresPauses = loadArray[11] === "true"?true:false
-//     if(loadNullCheck[12]) Game.counter = parseInt(loadArray[12])
-//     if(loadNullCheck[13]) EnergySwitchToggle = loadArray[13] === "true"?true:false
-//     if(loadNullCheck[14]) heartOffset = parseInt(loadArray[14]) 
-//     if(loadNullCheck[15]) ExpandToggle = loadArray[15] === "true"?true:false
-//     if(loadNullCheck[16]) health = parseInt(loadArray[16]) 
-
-//     link(Game.adventureLog.pop(), false)
-
-
-
-//     removeSpecials()
-
-//     for(n in Game.special){ if(Game.special[n][4]) {
-//         console.log(Game.special[n][4])
-
-//          Game.special[n].do()
-
-//         console.log(Game.special[n][1])
-
-//         if(Game.special[n][1] !== undefined) Game.special[n][1].style.display = "none"
-
-//          }  else if (Game.special[n][6]) if(Game.special[n][1] !== undefined) Game.special[n][1].style.display = ""
-
-//             else if(Game.special[n][1] !== undefined) Game.special[n][1].style.display = "none"
-//  }
-
-
-
-//     if(loadNullCheck[9]) autosavetoggle = loadArray[9] === "true"?true:false
-
-//     switch (autosavetoggle) {
-//         case true:
-//         autosave.innerHTML = "<span id='on'>[ON]</span> AUTOSAVE"
-//         break;
-//         case false:
-//         autosave.innerHTML = "<span id='off'>[OFF]</span> AUTOSAVE"
-//         break;
-//     }
-
-//     if(ExpandToggle) {
-//         gameContainer.style.display  = "none";
-//         counterDiv.style.display = "none";
-//         newmessages.style.maxHeight = "40vh";
-//         second.style.display = "flex";
-//         } else if(!ExpandToggle) {
-//             gameContainer.style.display  = "";
-//             counterDiv.style.display = "";
-//             newmessages.style.maxHeight = "";
-//             second.style.display = "none";
-//         }
-
-//     EnergySwitch.style.backgroundImage  = EnergySwitchToggle ? "url('css/images/energySwitch.png')" : "url('css/images/energySwitch2.png')"
-//     heart.style.setProperty("--heart-offset", heartOffset + "px");
-//     secondOffset.innerHTML = `[${health} / 100]`
-
-//     if(ExpandToggle) d.querySelector(".outer").style = "min-width: 200px;"
-//     else d.querySelector(".outer").style = "min-width: 410px;"
-
-
-// } catch (error) {
-//      RESET()
-//      console.log(`There was an error in load: ${error}`)
-//      alert(`There was an error on load. Here's your Game: ${localStorage.Game}`)
-//      RESET()
-// }}
-
-// //////
-
-// function RESET() {
-
-//     var CLEARspookInterval = setInterval(()=>{
-//         d.getElementById("newmessages").style.display = "inline-block"
-//         writeMessage("ERROR", false, 0);
-//     },10)
-
-//     setTimeout(()=>{
-//         clearInterval(CLEARspookInterval)
-//         d.getElementById("newmessages").style.display = "none"
-//         newmessages.innerHTML = ""
-//         Game.messageLog = new Array()
-//         newsCounter = -1
-//     }, 400)
-
-//     localStorage.Game = ""
-//     Game.counter = 0;
-//     newsCounter = -1;
-//     wires[0] = 1
-//     heartOffset = 0;
-//     health = 0;
-//     cmdHistory = []
-
-//     messagePresets = new Array(10)
-//     messagePresets.fill(false)
-
-
-//     for(n in intervals) {
-//         clearInterval(intervals[n])
-//     }
-
-//     wiresPauses = false
-//     EnergySwitchToggle = false
-
-
-
-//     EnergySwitch.style.backgroundImage = "url('css/images/energySwitch2.png')"
-
-//     removeSpecials()
-
-//     leftPane.innerHTML  = ""
-
-//     for(n in Game.upgrade) {
-        
-//         Game.upgrade[n][5].style.display = "none"
-//         Game.upgrade[n][0] = 0
-//         Game.upgrade[n][1] = upgradePresets[n][0]
-//         Game.upgrade[n][2] = 0
-//     }
-
-//     for(n in Game.special) {
-//         Game.special[n][1].style.display = "none"
-//         Game.special[n][4] = false;
-//         Game.special[n][6] = false;
-//         Game.special[n][5] = 0;
-//     }
-//     for(n in upgradePresets) addUpgrade(upgradePresets[n])
-
-//     Game.adventureLog = []
-
-//     newmessages.innerHTML = ""
-
-//     autosavetoggle = false
-
-//     gameContainer.style.display  = "";
-//     counterDiv.style.display = "";
-//     newmessages.style.maxHeight = "";
-//     second.style.display = "none";
-//     Game.messageChecker = new Array(10)
-//     Game.messageChecker.fill(false);
-//     Game.messageLog = new Array()
-//     heart.style.setProperty("--heart-offset", heartOffset + "px");
-//     autosavetoggle = false
-//     ExpandToggle = false
-//     gameContainer.style.display  = "";
-//     counterDiv.style.display = "";
-//     newmessages.style.maxHeight = "";
-//     second.style.display = "none";
-
-//     link("home", false)
-//     SAVE(true)
-//     removeSpecials()
-
-
-// }
+function SAVE(isClear) {
+    if(!autosavetoggle && !isClear) writeMessage("STATE SAVED", false, 0)
+
+    //btoa(unescape(encodeURIComponent(str)))
+    //localStorage.firstSave = "true"
+
+    localStorage.Game = ""
+    saveslot = ""
+
+    for(n in Game.upgrade) {
+
+        saveslot +=  btoa(unescape(encodeURIComponent(Game.upgrade[n].counter))) + "~"
+        saveslot +=  btoa(unescape(encodeURIComponent(Game.upgrade[n].number))) + "~"
+        saveslot +=  btoa(unescape(encodeURIComponent(Game.upgrade[n].cost))) 
+        if(n != Game.upgrade.length - 1) saveslot += "?"
+    }
+
+    saveslot += "|"
+
+    for(n in Game.special) {
+
+        saveslot +=  btoa(unescape(encodeURIComponent(Game.special[n].bought))) + "~"
+        saveslot +=  btoa(unescape(encodeURIComponent(Game.special[n].seen)))
+        if(n != Game.special.length - 1) saveslot += "?"
+    }
+
+    saveslot += "|"
+
+    saveslot += btoa(unescape(encodeURIComponent(topScreen.innerHTML))) + "|"
+    saveslot += btoa(unescape(encodeURIComponent(bottomScreen.innerHTML))) + "|"
+    saveslot += btoa(unescape(encodeURIComponent(counterText.innerHTML))) + "|"
+    saveslot += btoa(unescape(encodeURIComponent(JSON.stringify(Game.adventureLog)))) + "|"
+    saveslot += btoa(unescape(encodeURIComponent(JSON.stringify(Game.messageLog)))) + "|"
+    saveslot += btoa(unescape(encodeURIComponent(JSON.stringify(messagePresets)))) + "|"
+    saveslot += btoa(unescape(encodeURIComponent(newsCounter))) + "|"
+    saveslot += btoa(unescape(encodeURIComponent(autosavetoggle))) + "|"
+    saveslot += btoa(unescape(encodeURIComponent(wires[0]))) + "|"
+    saveslot += btoa(unescape(encodeURIComponent(wiresPauses))) + "|"
+    saveslot += btoa(unescape(encodeURIComponent(Game.counter))) + "|"
+    saveslot += btoa(unescape(encodeURIComponent(EnergySwitchToggle))) + "|"
+    saveslot += btoa(unescape(encodeURIComponent(heartOffset))) + "|"
+    saveslot += btoa(unescape(encodeURIComponent(ExpandToggle))) + "|"
+    saveslot += btoa(unescape(encodeURIComponent(health))) 
+
+    // saveslot += btoa(unescape(encodeURIComponent(""))) + "|"
+    //for new save Game
+
+    localStorage.Game = btoa(unescape(encodeURIComponent(saveslot)))
+
+    return localStorage.Game
+}
 
 //////
 
 
-function startGame() {
-var date = new Date(); let currentYear = date.getFullYear(); 
-console.log(`IdleBot ~~ An incremental game\nCopyright © ${currentYear} https://shutterstacks.net`)
-autosavedelay = true;
+function LOAD() {
 
-//saving
+     //decode all that jazz
+
+    loadDump = decodeURIComponent(escape(window.atob(localStorage.Game)))
+
+    loadArray = loadDump.split("|")
+
+    for(let n = 0; n <= 1; n++) {
+        loadArray[n] = loadArray[n].split("?")
+        for(m in loadArray[n]) {
+            loadArray[n][m] = loadArray[n][m].split("~")
+            for(o in loadArray[n][m]) {
+                loadArray[n][m][o] = decodeURIComponent(escape(window.atob(loadArray[n][m][o])));
+            }
+        }
+    }
+
+    for(let n = 2; n < loadArray.length ; n++) {
+        loadArray[n] = decodeURIComponent(escape(window.atob(loadArray[n])));
+    }
+
+    let loadNullCheck = new Array()
+    for(n in loadArray) if(loadArray[n] !== undefined && loadArray[n] !== null) loadNullCheck[n] = true
+
+    // plug all that jazz back
+
+
+    if(loadNullCheck[0]) for(n in Game.upgrade) {
+        Game.upgrade[n].counter = parseInt(loadArray[0][Game.upgrade[n].savePosition][0])
+        Game.upgrade[n].number = parseInt(loadArray[0][Game.upgrade[n].savePosition][1])
+        Game.upgrade[n].cost = parseInt(loadArray[0][Game.upgrade[n].savePosition][2])
+}
+
+
+    if(loadNullCheck[1]) for(n in Game.special) { if(Game.special[n] !== undefined) {
+        Game.special[n].bought = loadArray[1][Game.special[n].savePosition][0] === "true"?true:false
+        Game.special[n].seen = loadArray[1][Game.special[n].savePosition][1] === "true"?true:false
+}}
+
+    
+
+    if(loadNullCheck[2]) topScreen.innerHTML = loadArray[2]
+    if(loadNullCheck[3]) bottomScreen.innerHTML = loadArray[3]
+    if(loadNullCheck[4]) counterText.innerHTML = loadArray[4]
+    if(loadNullCheck[5]) Game.adventureLog = JSON.parse(loadArray[5])
+    if(loadNullCheck[6]) Game.messageLog = JSON.parse(loadArray[6])
+    if(loadNullCheck[7]) messagePresets = JSON.parse(loadArray[7])
+    if(loadNullCheck[8]) newsCounter = parseInt(loadArray[8])
+    if(loadNullCheck[10]) wires[0] = parseInt(loadArray[10]) //skip 1
+    if(loadNullCheck[11]) wiresPauses = loadArray[11] === "true"?true:false
+    if(loadNullCheck[12]) Game.counter = parseInt(loadArray[12])
+    if(loadNullCheck[13]) EnergySwitchToggle = loadArray[13] === "true"?true:false
+    if(loadNullCheck[14]) heartOffset = parseInt(loadArray[14]) 
+    if(loadNullCheck[15]) ExpandToggle = loadArray[15] === "true"?true:false
+    if(loadNullCheck[16]) health = parseInt(loadArray[16]) 
+
+    link(Game.adventureLog.pop(), false)
+
+
+
+    removeSpecials()
+
+    for(n in Game.special){ 
+        if(Game.special[n] !== undefined) {
+            console.log(n)
+        if(Game.special[n].bought) {
+        
+
+         Game.special[n].do()
+
+        if(Game.special[n] !== undefined) if(Game.special[n].Element !== undefined) Game.special[n].Element.style.display = "none"
+         }  else if (Game.special[n].seen) if(Game.special[n].Element !== undefined) Game.special[n].Element.style.display = ""
+            else if(Game.special[n].Element !== undefined) Game.special[n].Element.style.display = "none"
+
+ }}
+
+
+
+    if(loadNullCheck[9]) autosavetoggle = loadArray[9] === "true"?true:false
+
+    switch (autosavetoggle) {
+        case true:
+        autosave.innerHTML = "<span id='on'>[ON]</span> AUTOSAVE"
+        break;
+        case false:
+        autosave.innerHTML = "<span id='off'>[OFF]</span> AUTOSAVE"
+        break;
+    }
+
+    if(ExpandToggle) {
+        gameContainer.style.display  = "none";
+        counterDiv.style.display = "none";
+        bottomScreen.style.maxHeight = "40vh";
+        second.style.display = "flex";
+        } else if(!ExpandToggle) {
+            gameContainer.style.display  = "";
+            counterDiv.style.display = "";
+            bottomScreen.style.maxHeight = "";
+            second.style.display = "none";
+        }
+
+    EnergySwitch.style.backgroundImage  = EnergySwitchToggle ? "url('css/images/energySwitch.png')" : "url('css/images/energySwitch2.png')"
+    heart.style.setProperty("--heart-offset", heartOffset + "px");
+    secondOffset.innerHTML = `[${health} / 100]`
+
+    if(ExpandToggle) d.querySelector(".outer").style = "min-width: 200px;"
+    else d.querySelector(".outer").style = "min-width: 410px;"
+
+
+ }
+
+// //////
+
+function RESET() {
+
+    var CLEARspookInterval = setInterval(()=>{
+        d.getElementById("bottomScreen").style.display = "inline-block"
+        writeMessage("ERROR", false, 0);
+    },10)
+
+    setTimeout(()=>{
+        clearInterval(CLEARspookInterval)
+        d.getElementById("bottomScreen").style.display = "none"
+        bottomScreen.innerHTML = ""
+        Game.messageLog = new Array()
+        newsCounter = -1
+    }, 400)
+
+    localStorage.Game = "howdy"
+
+    window.location.href = window.location.pathname + window.location.search + window.location.hash;
+    window.location.replace(window.location.pathname + window.location.search + window.location.hash);
+}
+
+//////
+
 save.addEventListener("click", ()=>{ SAVE(false) })
 load.addEventListener("click", ()=>{ LOAD() })
 
@@ -1474,18 +1381,36 @@ autosave.addEventListener("click", ()=>{
     }
 })
 
+//////
+let autosavedelay = true
+
+
+
+function startGame() {
+ console.log(localStorage.Game)
+autosavedelay = true
+
+var date = new Date(); let currentYear = date.getFullYear(); 
+console.log(`IdleBot ~~ An incremental game\nCopyright © ${currentYear} https://shutterstacks.net`)
+
 //generating the content
 
 for(n in upgradePresets) addUpgrade(upgradePresets[n])
 for(n in specialPresets) addSpecial(specialPresets[n])
 
+link("home", false);
 
 
+if(localStorage.Game !== "howdy"){
+console.log("welcome back!")
+console.log(loadArray)
+ LOAD()
+    console.log(loadArray)
 
+} else console.log("welcome!");
 
-
-// LOAD()
 autosavedelay = false
+
 loopGame()
 }
 
@@ -1502,10 +1427,10 @@ if(heartOffset > 80) heartOffset = 81
 
 
 
- //if(autosavetoggle && !autosavedelay) SAVE(false)
+ if(autosavetoggle && !autosavedelay) SAVE(false)
 
 
-newmessages.scrollTop = newmessages.scrollHeight;
+bottomScreen.scrollTop = bottomScreen.scrollHeight;
 title.innerHTML = Math.floor(Game.counter) + " - IdleBot"
 
 updateEverything();
