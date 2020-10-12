@@ -139,6 +139,9 @@ addSpecial([6, "openconsole", "Activate Console", "", 0, false, 0, ()=>{
 
             console.log("yo")
             clearInterval(nameInterval)
+
+            writeMessage("<span class='valet'> Hello $NAME </span>", false, 0)
+            
             Game.counter = 10
 
         }}
@@ -214,8 +217,6 @@ function count(number) {
 
 function writeMessage(text, check, delay) {
 
-
-
     let result = false
     if(check == true) return true;
 
@@ -223,6 +224,12 @@ function writeMessage(text, check, delay) {
 
         if(delay === 0) {
             newsCounter++
+
+            let textArray = text.split(" ")
+            for(n in textArray) if(textArray[n].includes("$")) {console.log(textArray[n]); textArray[n] = textArray[n].replace('$', ''); if(variables[textArray[n]])  textArray[n] = variables[textArray[n]]}
+            text = ""
+            for(n in textArray) text += textArray[n] + " "
+
 
             bottomScreen.innerHTML += '<p class="messageStrip" id="strip'+ newsCounter 
             +'" >'+ text + '</p>';
@@ -249,12 +256,8 @@ function writeMessage(text, check, delay) {
            }}, 500)
              result =  true;
 
-             console.log(newsCounter)
-
-             for(let n = 0; n < newsCounter;n++) {
-                 d.getElementById("strip" + n).style.animation = ""
-                 console.log(n, d.getElementById("strip" + n).style.animation)
-             }
+             for(let n = 0; n < newsCounter;n++) d.getElementById("strip" + n).style.animation = ""
+             
              
     }, delay)
 
@@ -270,7 +273,6 @@ if(type === "start") {
 
     for(let n = 0; n < newsCounter;n++) {
         d.getElementById("strip" + n).style.animation = ""
-        console.log(n, d.getElementById("strip" + n).style.animation)
     }
 
     bottomScreen.innerHTML += '<p class="messageStrip" id="strip'+ newsCounter 
@@ -632,6 +634,10 @@ window.document.addEventListener('keydown', e => {
 //      d.stopPropagation();
 //   }; //taken from https://stackoverflow.com/questions/49280847/firefox-switching-tab-on-backspace
 
+let variables = {
+"NAME": Game.name
+
+}
 
 document.addEventListener('keydown', (event) => {
   key = event.key;
@@ -673,8 +679,9 @@ if(inputStream[inputStream.length - 1] === "Enter") {
    // console.log(cmd)
 
     for(n in cmd) {
-        cmd[n] = cmd[n].replace('Shift', '');
-        cmd[n] = cmd[n].replace("Shift", '');
+        while(cmd[n].includes("Shift")) cmd[n] = cmd[n].replace('Shift', '');
+
+        if(cmd[n].includes("$")) { ;cmd[n] = cmd[n].replace('$', ''); if(variables[cmd[n]])  cmd[n] = variables[cmd[n]]  }
       //  console.log(cmd[n])
     }
 
@@ -744,9 +751,9 @@ if(inputStream[inputStream.length - 1] === "Enter") {
         break;
 
         case ">v":
-            Game.special.viewportYEAH.do();
-            Game.special.viewportYEAH.Element.style.display = "none"
-            Game.special.viewportYEAH.bought = true
+            Game.special.opentopscreen.do();
+            Game.special.opentopscreen.Element.style.display = "none"
+            Game.special.opentopscreen.bought = true
             bottomScreen.style.display = "inline-block";
         break;
 
@@ -815,9 +822,20 @@ if(inputStream[inputStream.length - 1] === "Enter") {
         case ">name":
         if(cmd[1]) {
             Game.name = cmd[1];
+            variables.NAME = Game.name
             writeMessage(`Name has been set to "${Game.name}"`, false, 0)
         } else writeMessage("No name given", false, 0)
         break;
+
+        case ">set":
+        for(let n = 1; n < cmd.length; n++) {
+            let settings = cmd[n].split("=");
+            variables[settings[0]] = settings[1]
+            writeMessage(`${settings[0]} has been set to "${variables[settings[0]]}"`, false, 0)
+
+        }
+        break;
+
 
         case ">hrt":
             Game.special.opensesame.do();
