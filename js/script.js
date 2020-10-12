@@ -6,6 +6,7 @@
 var d = document;
 var heart = d.getElementById("heart");
 var counterText = d.getElementById("counter");
+var topPane = d.getElementById("topPane")
 var topScreen = d.getElementById("topScreen");
 var bottomScreen = d.getElementById("bottomScreen");
 var gameContainer = d.getElementById("gameContainer")
@@ -88,6 +89,7 @@ addUpgrade([1, "bloodpipe", "Blood Pipe", "Pipes blood every 0.5s<br>Decays ever
 
 /// savePosition, reference, name, description, cost, hasCost, appearAt, function
 addSpecial([0, "saving", "SAVING", "Allows you to save.", 30, true, 20, ()=>{
+    d.getElementById("bottomRow2").style.display = "flex"
     d.getElementById("saving").style.display = "flex"
     autosavetoggle = true;
     autosave.innerHTML = "<span id='on'>[ON]</span> AUTOSAVE"
@@ -98,6 +100,7 @@ addSpecial([1, "bloodvalvesappear", "Research Blood Valves", "All valves come eq
 }])
 
 addSpecial([2, "opentopscreen", "Activate Viewport", "", 20, true, 11, ()=>{
+    topPane.style.display = "flex"
     topScreen.style.display = "inline-block"
     if(!messagePresets[2]) messagePresets[0] =  writeMessage("Visual display non-responsive. Switching to text-based display.", messagePresets[0], 0)
 }])
@@ -112,6 +115,7 @@ addSpecial([4, "bloodpipesappear", "Research blood pipes", "It ain't gonna pipe 
 }])
 
 addSpecial([5, "opensesame", "Activate Mechanical Cardiac Engine", "", 10, false, 10, ()=>{
+    gameContainer.style.display =  "flex"
     for(n in close){  if(close[n].style !== undefined) {close[n].style.animation = "open-sesame 2s ease"; close[n].style.width = "0%"}}
 }])
 
@@ -130,18 +134,16 @@ addSpecial([6, "openconsole", "Activate Console", "", 0, false, 0, ()=>{
     writeMessage("<span class='valet'>WHO IS THIS?</span>", false, 12000)
     writeMessage("<span class='valet'>AH, RIGHT. YOU DON'T KNOW HOW TO TYPE</span>", false, 15000)
     writeMessage("<span class='valet'>TYPE > TO ACTIVATE THE CONSOLE PROMPT</span>", false, 17000)
-    writeMessage("<span class='valet'>THEN WRITE name yourname</span>", false, 19000)
+    writeMessage("<span class='valet'>THEN WRITE setname REPLACETHISWITHYOURNAME</span>", false, 19000)
     writeMessage("<span class='valet'>IN THAT ORDER</span>", false, 21000)
 
     var nameInterval = setInterval(()=>{
 
-        if(cmdHistory[cmdHistory.length - 1] !== undefined) { if(cmdHistory[cmdHistory.length - 1][0] == ">name"&& Game.name !== "") {
+        if(cmdHistory[cmdHistory.length - 1] !== undefined) { if(cmdHistory[cmdHistory.length - 1][0] == ">setname"&& Game.name !== "") {
 
+            writeMessage("<span class='valet'>HELLO $NAME </span>", false, 1000)
             console.log("yo")
             clearInterval(nameInterval)
-
-            writeMessage("<span class='valet'> Hello $NAME </span>", false, 0)
-            
             Game.counter = 10
 
         }}
@@ -150,13 +152,14 @@ addSpecial([6, "openconsole", "Activate Console", "", 0, false, 0, ()=>{
 
     }, 10)
 } 
-
 }])
 
 
 
 function removeSpecials() {
-
+    d.getElementById("bottomRow2").style.display = "none"
+    //gameContainer.style.display =  "none"
+    topPane.style.display = "none"
     d.getElementById("saving").style.display = "none"
     autosave.innerHTML = "<span id='off'>[OFF]</span> AUTOSAVE"
     Game.upgrade["bloodvalve"].Element.style.display = "none"
@@ -222,14 +225,13 @@ function writeMessage(text, check, delay) {
 
     else if(check === false) {
 
+        let textArray = text.split(" ")
+        for(n in textArray) if(textArray[n].includes("$")) {console.log(textArray[n]); textArray[n] = textArray[n].replace('$', ''); if(variables[textArray[n]])  textArray[n] = variables[textArray[n]]}
+        text = ""
+        for(n in textArray) text += textArray[n] + " "
+
         if(delay === 0) {
             newsCounter++
-
-            let textArray = text.split(" ")
-            for(n in textArray) if(textArray[n].includes("$")) {console.log(textArray[n]); textArray[n] = textArray[n].replace('$', ''); if(variables[textArray[n]])  textArray[n] = variables[textArray[n]]}
-            text = ""
-            for(n in textArray) text += textArray[n] + " "
-
 
             bottomScreen.innerHTML += '<p class="messageStrip" id="strip'+ newsCounter 
             +'" >'+ text + '</p>';
@@ -653,11 +655,11 @@ writeCharacter(cmdlocation + ">", "start")
 if(inputStream[0] === ">" && !disableCommands && key !== ">" && key !== "Backspace" && key !== "Shift" && key !== "Enter") writeCharacter(key, "open")
 
 
-if(inputStream[inputStream.length - 1] === "Backspace") { inputStream.pop(); inputStream.pop(); writeCharacter("", "erase");  }
+if(inputStream[inputStream.length - 1] === "Backspace" && inputStream[0] === ">") { inputStream.pop(); inputStream.pop(); writeCharacter("", "erase");  inputStream[0] = ">"}
 
 //if(inputStream[inputStream.length - 1] === "ArrowUp") { }
 
-if(inputStream[inputStream.length - 1] === "Enter") { 
+if(inputStream[inputStream.length - 1] === "Enter" && inputStream[0] === ">") { 
 
     writeCharacter("", "end")
     
@@ -680,6 +682,7 @@ if(inputStream[inputStream.length - 1] === "Enter") {
 
     for(n in cmd) {
         while(cmd[n].includes("Shift")) cmd[n] = cmd[n].replace('Shift', '');
+        while(cmd[n].includes("Backspace")) cmd[n] = cmd[n].replace('Backspace', '');
 
         if(cmd[n].includes("$")) { ;cmd[n] = cmd[n].replace('$', ''); if(variables[cmd[n]])  cmd[n] = variables[cmd[n]]  }
       //  console.log(cmd[n])
@@ -688,81 +691,122 @@ if(inputStream[inputStream.length - 1] === "Enter") {
    // console.log(cmd)
 
     let msg = ""
+    defaultBreak = false
 
+    for(n in cmds) {
+        if(!defaultBreak) {
     switch(cmd[0]) {
 
-        case ">save":
-        SAVE();
+        case ">" + n:
+        if(cmds[n][0]) cmds[n][1]()
         break;
 
-        case ">autosave":
-            autosavetoggle = !autosavetoggle
-    
-            switch (autosavetoggle) {
-                case true:
-                writeMessage("AUTOSAVE ACTIVATED", false, 0)
-                autosave.innerHTML = "<span id='on'>[ON]</span> AUTOSAVE"
-                break;
-                case false:
-                writeMessage("AUTOSAVE DEACTIVATED", false, 0)
-                autosave.innerHTML = "<span id='off'>[OFF]</span> AUTOSAVE"
-                break;
-            } break;
-        
+        default :
+        if(!(cmd[0].replace(">", "") in cmds)) {
+        msg = ""
 
-        case ">load":
-        LOAD();
-        break;
+         cmd = cmd.slice(" ")
 
-        case ">reset":
-        RESET();
-        break;
+         for(n in cmd) msg += cmd[n] + " "
+         msg += "is not a command. Try again."
+         writeMessage(msg, false, 0)
+         writeMessage("<br>", false, 0)
+         defaultBreak = true
+         }break;
 
-        case ">expand":
-            ExpandToggle = !ExpandToggle
+    } if(cmd[0] == ">" + n) break;
+}}}});
 
-            if(ExpandToggle) {   for(n in close) if(close[n].style !== undefined) close[n].style.animation = "close-sesame 0.5s"
-           setTimeout(()=>{
-            gameContainer.style.display  = "none";
-            counterDiv.style.display = "none";
-            bottomScreen.style.maxHeight = "40vh";
-            second.style.display = "flex";
-            d.querySelector(".outer").style = "min-width: 200px;"
-            openFullscreen();
-           }, 500)
 
-        } else if(!ExpandToggle) {  for(n in close) if(close[n].style !== undefined)  close[n].style.animation = "open-sesame 1s"
-            gameContainer.style.display  = "";
-            counterDiv.style.display = "";
-            bottomScreen.style.maxHeight = "";
-            second.style.display = "none";
-            d.querySelector(".outer").style = "min-width: 410px;"
-            closeFullscreen();
-            } 
-        break;
 
-        case ">c":
+cmds = {
+    "c" : [true, ()=>{
         if(cmd[1]) Game.counter = parseInt(cmd[1]);
-        break;
+    }],
+    "save" : [false, ()=>{ SAVE()}],
+    "load": [false, ()=>{LOAD()}],
+    "reset": [false, ()=>{RESET()}],
+    "autosave":[true, ()=>{autosaveclick()}],
+    "play":[false, ()=>{if(cmd[1]) if(audio[cmd[1]]) audio[cmd[1]].play();}],
+    "pause":[false, ()=>{if(cmd[1]) if(audio[cmd[1]]) audio[cmd[1]].pause();}],
+    "cmdh":[true, ()=>{
+        msg = ""
+        for(n in cmdHistory) msg += cmdHistory[n] + " "
+        writeMessage(msg, false, 0)
 
-        case ">cmdh":
-      //  console.log(cmdHistory);
-        writeMessage(JSON.stringify(cmdHistory), false, 0)
-        break;
+    }],
+    "hrt":[true, ()=>{
+        Game.special.opensesame.do();
+        Game.special.opensesame.Element.style.display = "none"
+        Game.special.opensesame.bought = true
+    }],
+    "set":[true, ()=>{
+        for(let n = 1; n < cmd.length; n++) {
+            let settings = cmd[n].split("=");
+            variables[settings[0]] = settings[1]
+            writeMessage(`${settings[0]} has been set to "${variables[settings[0]]}"`, false, 0)
+        }
+    }],
+    "setname":[true, ()=>{
+        if(cmd[1]) {
+            Game.name = cmd[1];
+            variables["NAME"] = Game.name
+            writeMessage(`NAME has been set to "${Game.name}"`, false, 0)
+        } else writeMessage("No name given", false, 0)
+    }],
+    "clear":[true, ()=>{
+        let clearNum = 0
+        if(ExpandToggle) clearNum = 25
+         else clearNum = 10
+        for(let n = 0; n <= clearNum; n++) {
+            writeMessage("<br>", false, 0)
+        } 
+    }],
+    "click":[true, ()=>{
+        pipeCount++; heartOffset++;  heart.style.setProperty("--heart-offset", heartOffset + "px");
+    }],
+    "r":[true, ()=>{
+        window.location.href = window.location.pathname + window.location.search + window.location.hash;
+        window.location.replace(window.location.pathname + window.location.search + window.location.hash);
+            // does not create a history entry
+      //  window.location.reload(false); 
+            // If we needed to pull the document from
+            //  the web-server again (such as where the document contents
+            //  change dynamically) we would pass the argument as 'true'.
+            //taken from https://stackoverflow.com/questions/3715047/how-to-reload-a-page-using-javascript
+    }],
+    "expand":[true, ()=>{
+        ExpandToggle = !ExpandToggle
 
-        case ">v":
-            Game.special.opentopscreen.do();
-            Game.special.opentopscreen.Element.style.display = "none"
-            Game.special.opentopscreen.bought = true
-            bottomScreen.style.display = "inline-block";
-        break;
+        if(ExpandToggle) {   for(n in close) if(close[n].style !== undefined) close[n].style.animation = "close-sesame 0.5s"
+       setTimeout(()=>{
+        gameContainer.style.display  = "none";
+        counterDiv.style.display = "none";
+        bottomScreen.style.maxHeight = "40vh";
+        second.style.display = "flex";
+        d.querySelector(".outer").style = "min-width: 200px;"
+        openFullscreen();
+       }, 500)
 
-
-        case ">alert":
+    } else if(!ExpandToggle) {  for(n in close) if(close[n].style !== undefined)  close[n].style.animation = "open-sesame 1s"
+        gameContainer.style.display  = "";
+        counterDiv.style.display = "";
+        bottomScreen.style.maxHeight = "";
+        second.style.display = "none";
+        d.querySelector(".outer").style = "min-width: 410px;"
+        closeFullscreen();
+        } 
+    }],
+    "v":[true, ()=>{
+        Game.special.opentopscreen.do();
+        Game.special.opentopscreen.Element.style.display = "none"
+        Game.special.opentopscreen.bought = true
+        bottomScreen.style.display = "inline-block";
+    }],
+    "alert":[true, ()=>{
         if(cmd[1]) alert(cmd[1]); else alert("No message written");
-        break;
-
-        case ">echo":
+    }],
+    "echo":[true, ()=>{
         if(cmd[1]) { 
             if(cmd[cmd.length - 1][0] === "#") { msg = "<span style='color:" + cmd[cmd.length - 1] + "' >"
             for(let n = 1; n < cmd.length - 1; n++)  msg += cmd[n] + " "
@@ -775,92 +819,23 @@ if(inputStream[inputStream.length - 1] === "Enter") {
             writeMessage(msg, false, 0)
             writeMessage("<br>", false, 0)
         }}
-        break;
+    }],
+    "wt":[true, ()=>{
+        if(cmd[1] && cmd[2]){
+            
+            for(let n = 2; n <cmd.length; n++) msg += cmd[n] + " "
 
-        case ">wt":
-
-            if(cmd[1] && cmd[2]){
-                
-                for(let n = 2; n <cmd.length; n++) msg += cmd[n] + " "
-
-                download(msg, cmd[1], "txt");
-            }
-            else if(!cmd[1]) writeMessage("No name given", false, 0)
-            else if(!cmd[2]) writeMessage("No Game given", false, 0)
-            break;
-
-        case ">clear":
-            let clearNum = 0
-            if(ExpandToggle) clearNum = 25
-             else clearNum = 10
-            for(let n = 0; n <= clearNum; n++) {
-                writeMessage("<br>", false, 0)
-            } break;
-
-        case ">click":
-            pipeCount++; heartOffset++;  heart.style.setProperty("--heart-offset", heartOffset + "px"); break;
-        
-        case ">r": 
-        window.location.href = window.location.pathname + window.location.search + window.location.hash;
-        window.location.replace(window.location.pathname + window.location.search + window.location.hash);
-            // does not create a history entry
-      //  window.location.reload(false); 
-            // If we needed to pull the document from
-            //  the web-server again (such as where the document contents
-            //  change dynamically) we would pass the argument as 'true'.
-            //taken from https://stackoverflow.com/questions/3715047/how-to-reload-a-page-using-javascript
-            break;
-
-        case ">play": 
-
-        if(cmd[1]) if(audio[cmd[1]]) audio[cmd[1]].play(); break;
-        
-
-        case ">pause": 
-        if(cmd[1]) if(audio[cmd[1]]) audio[cmd[1]].pause(); break;
-
-        case ">name":
-        if(cmd[1]) {
-            Game.name = cmd[1];
-            variables.NAME = Game.name
-            writeMessage(`Name has been set to "${Game.name}"`, false, 0)
-        } else writeMessage("No name given", false, 0)
-        break;
-
-        case ">set":
-        for(let n = 1; n < cmd.length; n++) {
-            let settings = cmd[n].split("=");
-            variables[settings[0]] = settings[1]
-            writeMessage(`${settings[0]} has been set to "${variables[settings[0]]}"`, false, 0)
-
+            download(msg, cmd[1], "txt");
         }
-        break;
+        else if(!cmd[1]) writeMessage("No name given", false, 0)
+        else if(!cmd[2]) writeMessage("No data given", false, 0)
+    }],
+    "none":[true, ()=>{
 
-
-        case ">hrt":
-            Game.special.opensesame.do();
-            Game.special.opensesame.Element.style.display = "none"
-            Game.special.opensesame.bought = true
-        break;
-
-        case ">":break;
-
-        default :
-         msg = ""
-
-        cmd[0] = cmd[0].slice(1)
-
-        for(n in cmd) msg += cmd[n] + " "
-        msg += "is not a command. Try again."
-        writeMessage(msg, false, 0)
-        writeMessage("<br>", false, 0)
-     //   console.log("Unknown command");
-        break;
-    }
-    
+    }],
+    "" : [true, ()=>{}]
 }
 
-});
 
 
 
@@ -1342,7 +1317,8 @@ importSave.addEventListener("click", ()=>{
         console.log(`There was an error in importing: ${error}`)
     }})
 
-autosave.addEventListener("click", ()=>{
+
+autosaveclick = function() {
     autosavetoggle = !autosavetoggle
     
     switch (autosavetoggle) {
@@ -1355,7 +1331,9 @@ autosave.addEventListener("click", ()=>{
         autosave.innerHTML = "<span id='off'>[OFF]</span> AUTOSAVE"
         break;
     }
-})
+}
+
+autosave.addEventListener("click", autosaveclick())
 
 //////
 let autosavedelay = true
