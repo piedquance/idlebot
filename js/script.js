@@ -5,17 +5,23 @@
 
 var d = document;
 var heart = d.getElementById("heart");
+var HEART = d.getElementById("HEART")
 var counterText = d.getElementById("counter");
 var topPane = d.getElementById("topPane")
+var bottomPane  =d.getElementById("bottomPane")
 var topScreen = d.getElementById("topScreen");
 var bottomScreen = d.getElementById("bottomScreen");
 var gameContainer = d.getElementById("gameContainer")
+var outer = d.getElementById("outer")
+
 var counterDiv = d.getElementById("counterDiv")
 var second = d.getElementById("second")
 var secondCounter = d.getElementById("secondCounter")
 var secondHeart = d.getElementById("SecondheartColor")
 var secondOffset = d.getElementById("secondOffset")
 var title = d.querySelector("title")
+var powerButton = d.getElementById("power-button")
+var powerRow = d.getElementById("power-row")
 second.style.display = "none";
 
 var leftPane = d.getElementById("left")
@@ -33,6 +39,7 @@ var newsCounter = -1;
 let heartOffset = 0;
 let pipeCount = 0;
 let gameTick = 10;
+let autosaveTick = 0;
 
 let inputStream = [];
 let cmd = ""
@@ -41,18 +48,32 @@ let cmdlocation = "C:\\"
 
 let loadDump = ""
 let loadArray = []
+let saveslotnumber = 0;
+let maxsaveslots = 9;
+let saveslot = "";
 
 let resetSaveguard = false
 let ExpandToggle = false;
 let EnergySwitchToggle = false;
 let autosavetoggle = false;
 let disableCommands = false;
-let saveslot = "";
 var audio = {
     "stopIt" : new Audio('css/audio/AUDIO_FILE.mp3'),
     "AllStar":  new Audio('css/audio/AllStar.mp3'),
     "turtles": new Audio('css/audio/HappyTogether.mp3')
+}
 
+var keysounds = [
+    new Audio("css/audio/key1.mp3"),
+    new Audio("css/audio/key2.mp3"),
+    new Audio("css/audio/keys.mp3"),
+]
+
+var syssounds = {
+
+    "start" : new Audio("css/audio/startup.mp3"),
+    "fan":    new Audio("css/audio/fan.mp3"),
+    "msg": new Audio("css/audio/tack.mp3")
 }
 
 var countNum = [];
@@ -73,6 +94,7 @@ let Game = {
     adventureLog: new Array(),
     messageLog : new Array(),
     name: "",
+    prologue: true,
 }
 
 Game.messageChecker.fill(false);
@@ -87,7 +109,7 @@ addUpgrade([0, "bloodvalve", "Blood Valve", "Pumps blood every 1s<br>Decays ever
 addUpgrade([1, "bloodpipe", "Blood Pipe", "Pipes blood every 0.5s<br>Decays every 20s", "basicCounter", ])
 
 
-/// savePosition, reference, name, description, cost, hasCost, appearAt, function
+/// savePosition, reference, name, description, cost, hasCost, appearAt, function, optional marker
 addSpecial([0, "saving", "SAVING", "Allows you to save.", 30, true, 20, ()=>{
     d.getElementById("bottomRow2").style.display = "flex"
     d.getElementById("saving").style.display = "flex"
@@ -102,7 +124,7 @@ addSpecial([1, "bloodvalvesappear", "Research Blood Valves", "All valves come eq
 addSpecial([2, "opentopscreen", "Activate Viewport", "", 20, true, 11, ()=>{
     topPane.style.display = "flex"
     topScreen.style.display = "inline-block"
-    if(!messagePresets[2]) messagePresets[0] =  writeMessage("Visual display non-responsive. Switching to text-based display.", messagePresets[0], 0)
+    if(!messagePresets[2]) messagePresets[0] =  writeMessage("Visual display non-responsive. Switching to text-based display.", messagePresets[0], 0, "")
 }])
 
 addSpecial([3, "bloodvalveupgrade1", "Upgrade Blood Valves", "Now twice as efficient!", 100, true, 70, ()=>{
@@ -120,40 +142,52 @@ addSpecial([5, "opensesame", "Activate Mechanical Cardiac Engine", "", 10, false
 }])
 
 
-addSpecial([6, "openconsole", "Activate Console", "", 0, false, 0, ()=>{
-    bottomScreen.style.display = "inline-block"
+///////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////FUNCTIONS///////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////
 
-    if(!messagePresets[1]) {
+function prologue() {
 
-    disableCommands = true
-    setTimeout(()=>{disableCommands = false},21000)
-    writeMessage("Console activated", false, 0)
-    writeMessage("<span class='valet'>...</span>", false, 4000)
-    writeMessage("<span class='valet'>......</span>", false, 7000)
-    writeMessage("<span class='valet'>...HELLO?</span>", false, 10000)
-    writeMessage("<span class='valet'>WHO IS THIS?</span>", false, 12000)
-    writeMessage("<span class='valet'>AH, RIGHT. YOU DON'T KNOW HOW TO TYPE</span>", false, 15000)
-    writeMessage("<span class='valet'>TYPE > TO ACTIVATE THE CONSOLE PROMPT</span>", false, 17000)
-    writeMessage("<span class='valet'>THEN WRITE setname REPLACETHISWITHYOURNAME</span>", false, 19000)
-    writeMessage("<span class='valet'>IN THAT ORDER</span>", false, 21000)
+        autosavetoggle = false
+        bottomScreen.style.display = "inline-block"
+    
 
-    var nameInterval = setInterval(()=>{
+        disableCommands = true
+        setTimeout(()=>{disableCommands = false},100)
+        writeMessage("Console activated", false, 0, "")
+        writeMessage("Hello", false, 200, "valet")
+        messageAnimation("....", true, 3, 201, "valet")
 
-        if(cmdHistory[cmdHistory.length - 1] !== undefined) { if(cmdHistory[cmdHistory.length - 1][0] == ">setname"&& Game.name !== "") {
+        writeMessage("Hello", false, 7000, "tulip")
+        messageAnimation("/", true, 4, 7001, "tulip")
 
-            writeMessage("<span class='valet'>HELLO $NAME </span>", false, 1000)
-            console.log("yo")
-            clearInterval(nameInterval)
-            Game.counter = 10
+        writeMessage("Hello", false, 12000, "suzie")
+        messageAnimation("wave", true, 5, 12001, "suzie")
+        // writeMessage("...", false, 4000, "valet")
+        // writeMessage("......", false, 7000, "valet")
+        // writeMessage("...HELLO?", false, 10000, "valet")
 
-        }}
+        // writeMessage("<span class='valet'>WHO IS THIS?</span>", false, 12000)
+        // writeMessage("<span class='valet'>AH, RIGHT. YOU DON'T KNOW HOW TO TYPE</span>", false, 15000)
+        // writeMessage("<span class='valet'>TYPE > TO ACTIVATE THE CONSOLE PROMPT</span>", false, 17000)
+        // writeMessage("<span class='valet'>THEN WRITE setname REPLACETHISWITHYOURNAME</span>", false, 19000)
+        // writeMessage("<span class='valet'>IN THAT ORDER</span>", false, 21000)
+    
+        var nameInterval = setInterval(()=>{
+    
+            if(cmdHistory[cmdHistory.length - 1] !== undefined) { if(cmdHistory[cmdHistory.length - 1][0] == ">setname"&& Game.name !== "") {
+    
+                writeMessage("HELLO $NAME ", false, 1000, "valet")
+                console.log("yo")
+                clearInterval(nameInterval)    
+            }}
+    
+            messagePresets[1] = true
+    
+        }, 10)
 
-        messagePresets[1] = true
 
-    }, 10)
-} 
-}])
-
+}
 
 
 function removeSpecials() {
@@ -178,11 +212,6 @@ function removeSpecials() {
     autosavetoggle = false;
 }
 
-
-
-///////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////FUNCTIONS///////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////
 
 function count(number) {
     Game.counter += number;
@@ -218,10 +247,11 @@ function count(number) {
 }
 //////
 
-function writeMessage(text, check, delay) {
+function writeMessage(text, check, delay, type) {
 
     let result = false
     if(check == true) return true;
+    if(type == undefined) type = ""
 
     else if(check === false) {
 
@@ -230,26 +260,29 @@ function writeMessage(text, check, delay) {
         text = ""
         for(n in textArray) text += textArray[n] + " "
 
+        
+
         if(delay === 0) {
-            result =  basicWriter(text)
+
+            result =  basicWriter(text, type)
+
         } else {setTimeout(()=>{
             
-            result =  basicWriter(text)
+            result =  basicWriter(text, type)
+
     }, delay)
 
     } 
 return result;
 }}
 
-function basicWriter(text) {
+function basicWriter(text, type) {
     newsCounter++
 
-    bottomScreen.innerHTML += '<p class="messageStrip" id="strip'+ newsCounter 
-    +'" >'+ text + '</p>';
+        bottomScreen.innerHTML += '<p class="' + type +' messageStrip" id="strip'+ newsCounter  +'">' + text + '</p>';
+    
     d.getElementById("strip" + newsCounter).style.animation = "messageLoad 0.3s"
    setTimeout(()=>{
-
-    
        if(d.getElementById("strip" + newsCounter != null)) {
     d.getElementById("strip" + newsCounter).style = "";
    }}, 500)
@@ -260,9 +293,9 @@ function basicWriter(text) {
 
 
 function writeCharacter(char, type) {
-
+   
 if(type === "start") {
-
+    keysounds[1].play()
     newsCounter++
 
     for(let n = 0; n < newsCounter;n++) {
@@ -270,32 +303,83 @@ if(type === "start") {
     }
 
     bottomScreen.innerHTML += '<p class="messageStrip" id="strip'+ newsCounter 
-        +'">'+ char + '<span id="blinky">_</span>';
+        +'">'+ char + '<span id="blinky">█</span>';
 
     if(newsCounter > 0) {
         for(let number = 0; number < newsCounter; number++) {
             let child = d.getElementById("strip" + number)
             if (child.children[(child.children.length - 1)] !== undefined)  {
-            if (child.children[child.children.length - 1].innerHTML == '_')  { child.removeChild(child.childNodes[1]) }
+            if (child.children[child.children.length - 1].innerHTML == '█')  { child.removeChild(child.childNodes[1]) }
         }}
     }
 
 } else if(type === "open") {
+  //  keysounds[Math.floor((Math.random() * keysounds.length))].play()
 d.getElementById("strip" + newsCounter).removeChild(d.getElementById("strip" + newsCounter).childNodes[1])
-d.getElementById("strip" + newsCounter).innerHTML += char + '<span id="blinky">_</span>'
+d.getElementById("strip" + newsCounter).innerHTML += char + '<span id="blinky">█</span>'
 
 } else if(type === "end") {
+    keysounds[0].play()
     d.getElementById("strip" + newsCounter).removeChild(d.getElementById("strip" + newsCounter).childNodes[1])
     Game.messageLog[newsCounter] =  d.getElementById("strip" + newsCounter).innerHTML
 
 } else if(type == "erase") {
+  //  keysounds[Math.floor((Math.random() * keysounds.length))].play()
     d.getElementById("strip" + newsCounter).removeChild(d.getElementById("strip" + newsCounter).childNodes[1])
     d.getElementById("strip" + newsCounter).innerHTML = d.getElementById("strip" + newsCounter).innerHTML.slice(0, this.length - 1)
-    d.getElementById("strip" + newsCounter).innerHTML += '<span id="blinky">_</span>'
+    d.getElementById("strip" + newsCounter).innerHTML += '<span id="blinky">█</span>'
 }}
 
-//////
 
+function messageAnimation(anime, append, cycles, delay, type) {
+    let timer = 0;
+    let msgg = ""
+setTimeout(()=>{
+    if(!append) {
+        writeMessage("", false, 0, type)
+    } 
+    let strip = d.getElementById("strip" + newsCounter)
+    let msgarrayposition = 0
+    strip.innerHTML = strip.innerHTML.replace(" ", "")
+    let initialstrip = strip.innerHTML
+    let Aarray = []
+    let limit = 0
+
+    if(anime == "....") {
+         Aarray = ["", ".", "..", "...", "...."]
+         limit = 200
+    } else if(anime == "//") {
+         Aarray = ["─    ─", "\\    \\", "│    │", "/    /"]
+         limit = 200
+    }  else if(anime == "wave") { 
+         Aarray = ["º¤ø,", "¤ø,¸", "ø,¸¸", ",¸¸,", "¸¸,ø", "¸,ø¤", ",ø¤º", "ø¤º°", "¤º°`", "º°`°", "°`°º", "`°º¤","°º¤ø"]
+         limit = 100
+    } else if(anime == "...") {
+        Aarray = ["", ".", "..", "..."]
+        limit = 400
+    } else if(anime = "/") {
+        Aarray= ["─", "\\", "│", "/"]
+        limit = 400
+    }
+     
+    let msgAnime = setInterval(()=>{
+            strip.innerHTML = initialstrip + Aarray[msgarrayposition]
+            timer += 200
+            //console.log(cycles, timer, 200 * Aarray.length * cycles,  Aarray[msgarrayposition])
+            msgarrayposition++
+            if(msgarrayposition >  Aarray.length-1) msgarrayposition = 0
+
+            if(timer > (200 *  Aarray.length * cycles)) {
+                clearInterval(msgAnime)
+                if(!append) strip.innerHTML = initialstrip
+                else strip.innerHTML = initialstrip + Aarray[Aarray.length - 1]
+            } }, limit)
+
+
+}, delay)}
+
+
+//////
 
 function addUpgrade(preset) {
 
@@ -392,7 +476,7 @@ Game.upgrade[reference].descriptionElement = d.getElementById(reference + "Descr
         intervals[reference] = setInterval(()=>{
             if(Game.upgrade[reference].number > 0) {
                 
-                writeMessage(LoggerMessage, false, 0)
+                writeMessage(LoggerMessage, false, 0, "")
         
             }}, Game.upgrade[reference].tick * 1000)
 
@@ -422,16 +506,30 @@ Game.special[set[1]].reference = set[1]
 
 
 
+
+   if((Game.special[reference].cost === 0 ||  !Game.special[reference].hasCost) && set[8] === undefined) {
     var node = d.createElement("DIV");
     node.id = reference + "Special";
     node.classList.add("tile");
-   if( Game.special[reference].cost === 0 ||  !Game.special[reference].hasCost) {
+
     node.innerHTML = '<div class="generalDesc"><p id="'+ reference +'Name" class="Name">'+  Game.special[reference].name
     +'</p><p class="Description"  id="'+  reference +'Description">'+  Game.special[reference].description
     +'</p></div><div class=generalNum style="display:none;"><p class="Num" id="'+ reference 
     +'Cost"></p></div>'
 
+   }else if(set[8] === "console") {
+    var node = d.createElement("DIV");
+    node.id = reference + "Special";
+    node.classList.add(set[8])
+    node.classList.add("tile");
+
+    node.innerHTML = '<div class="generalDesc"><p class="Description"  id="'+  +'Description">'+  Game.special[reference].description
+    +'</p></div><div class=generalNum style="display:none;"><p class="Num" id="'+ reference 
+    +'Cost"></p></div>'
    } else {
+    var node = d.createElement("DIV");
+    node.id = reference + "Special";
+    node.classList.add("tile");
 
     node.innerHTML = '<div class="generalDesc"><p id="'+ reference +'Name" class="Name">'+  Game.special[reference].name
     +'</p><p class="Description"  id="'+  reference +'Description">'+  Game.special[reference].description
@@ -453,6 +551,7 @@ Game.special[set[1]].reference = set[1]
     Game.special[reference].Element.addEventListener("click", ()=> {
 
         if(Game.counter >=  Game.special[reference].cost) {
+            syssounds.msg.play()
             Game.counter -=  Game.special[reference].cost
             Game.special[reference].Element.style.display = "none"
             Game.special[reference].bought = true
@@ -484,9 +583,10 @@ for(x in Game.upgrade) {
 
 
 for(x in Game.special) {
+    if(Game.special[x][8] === undefined && Game.special[x].nameElement !== null){
     Game.special[x].nameElement.innerHTML = Game.special[x].name
     Game.special[x].descriptionElement.innerHTML = Game.special[x].description
-
+    }
 }
     //for(n in messagePresets) if(Game.counter >= messagePresets[n][1]) Game.messageChecker[n] = writeMessage(messagePresets[n][0], Game.messageChecker[n], 0);
 }
@@ -524,7 +624,7 @@ if(type == "tick") {
         intervals[name] = setInterval(()=>{
             if(Game.upgrade[name].number > 0) {
                 
-                writeMessage("hey.", false, 0)
+                writeMessage("hey.", false, 0, "")
         
             }}, Game.upgrade[name].tick * 1000)
     
@@ -633,10 +733,24 @@ let variables = {
 
 }
 
+let keysoundon = false
+let keysoundstimout
+
+
 document.addEventListener('keydown', (event) => {
   key = event.key;
   inputStream.push(key);
 //console.log(inputStream);
+//Math.floor((Math.random() * wires.length))
+
+if(keysoundstimout) clearTimeout(keysoundstimout)
+
+keysoundon = true
+
+keysoundstimout =  setTimeout(()=>{
+     keysoundon = false
+ }, 100)
+
 
 if(inputStream[inputStream.length - 1] === ">" && !disableCommands) { inputStream = []; 
 
@@ -703,8 +817,8 @@ if(inputStream[inputStream.length - 1] === "Enter" && inputStream[0] === ">") {
 
          for(n in cmd) msg += cmd[n] + " "
          msg += "is not a command. Try again."
-         writeMessage(msg, false, 0)
-         writeMessage("<br>", false, 0)
+         writeMessage(msg, false, 0, "")
+         writeMessage("<br>", false, 0, "")
          defaultBreak = true
          }break;
 
@@ -726,7 +840,7 @@ cmds = {
     "cmdh":[true, ()=>{
         msg = ""
         for(n in cmdHistory) msg += cmdHistory[n] + " "
-        writeMessage(msg, false, 0)
+        writeMessage(msg, false, 0, "")
 
     }],
     "hrt":[true, ()=>{
@@ -738,22 +852,22 @@ cmds = {
         for(let n = 1; n < cmd.length; n++) {
             let settings = cmd[n].split("=");
             variables[settings[0]] = settings[1]
-            writeMessage(`${settings[0]} has been set to "${variables[settings[0]]}"`, false, 0)
+            writeMessage(`${settings[0]} has been set to "${variables[settings[0]]}"`, false, 0, "")
         }
     }],
     "setname":[true, ()=>{
         if(cmd[1]) {
             Game.name = cmd[1];
             variables["NAME"] = Game.name
-            writeMessage(`NAME has been set to "${Game.name}"`, false, 0)
-        } else writeMessage("No name given", false, 0)
+            writeMessage(`NAME has been set to "${Game.name}"`, false, 0, "")
+        } else writeMessage("No name given", false, 0, "")
     }],
     "clear":[true, ()=>{
         let clearNum = 0
         if(ExpandToggle) clearNum = 25
          else clearNum = 10
         for(let n = 0; n <= clearNum; n++) {
-            writeMessage("<br>", false, 0)
+            writeMessage("<br>", false, 0, "")
         } 
     }],
     "click":[true, ()=>{
@@ -776,7 +890,6 @@ cmds = {
        setTimeout(()=>{
         gameContainer.style.display  = "none";
         counterDiv.style.display = "none";
-        bottomScreen.style.maxHeight = "40vh";
         second.style.display = "flex";
         d.querySelector(".outer").style = "min-width: 200px;"
         openFullscreen();
@@ -785,7 +898,6 @@ cmds = {
     } else if(!ExpandToggle) {  for(n in close) if(close[n].style !== undefined)  close[n].style.animation = "open-sesame 1s"
         gameContainer.style.display  = "";
         counterDiv.style.display = "";
-        bottomScreen.style.maxHeight = "";
         second.style.display = "none";
         d.querySelector(".outer").style = "min-width: 410px;"
         closeFullscreen();
@@ -805,13 +917,13 @@ cmds = {
             if(cmd[cmd.length - 1][0] === "#") { msg = "<span style='color:" + cmd[cmd.length - 1] + "' >"
             for(let n = 1; n < cmd.length - 1; n++)  msg += cmd[n] + " "
             msg += "</span>"
-            writeMessage(msg, false, 0)
-            writeMessage("<br>", false, 0)
+            writeMessage(msg, false, 0, "")
+            writeMessage("<br>", false, 0, "")
         }  else {
             msg = ""
             for(let n = 1; n < cmd.length; n++)  msg += cmd[n] + " "
-            writeMessage(msg, false, 0)
-            writeMessage("<br>", false, 0)
+            writeMessage(msg, false, 0, "")
+            writeMessage("<br>", false, 0, "")
         }}
     }],
     "wt":[true, ()=>{
@@ -821,8 +933,8 @@ cmds = {
 
             download(msg, cmd[1], "txt");
         }
-        else if(!cmd[1]) writeMessage("No name given", false, 0)
-        else if(!cmd[2]) writeMessage("No data given", false, 0)
+        else if(!cmd[1]) writeMessage("No name given", false, 0, "")
+        else if(!cmd[2]) writeMessage("No data given", false, 0, "")
     }],
     "none":[true, ()=>{
 
@@ -980,7 +1092,7 @@ function linkSplit(text, back) {
         choiceNumberOf++
     
          }
-         if(Nodes[n] !== undefined) if(Game.counter <= Nodes[n].Value) writeMessage(`${Nodes[n].Value} Energy Needed`, false, 0)
+         if(Nodes[n] !== undefined) if(Game.counter <= Nodes[n].Value) writeMessage(`${Nodes[n].Value} Energy Needed`, false, 0, "")
 
      }}}
 
@@ -991,7 +1103,7 @@ function linkSplit(text, back) {
      }
 
      Game.counter -= Nodes [ Game.adventureLog[Game.adventureLog.length - 1 ] ].Value
-     writeMessage(`${ Nodes [ Game.adventureLog[Game.adventureLog.length - 1 ] ].Value} Energy Used`, false, 0)
+     writeMessage(`${ Nodes [ Game.adventureLog[Game.adventureLog.length - 1 ] ].Value} Energy Used`, false, 0, "")
 
      if(back) Game.adventureLog.splice(Game.adventureLog.length-1, 1)
 
@@ -1011,7 +1123,7 @@ wireItems[n].addEventListener("click", ()=>{
     if (messagePresets[0]) {
     switch (true) {
         case (wires[0] < 32):
-            writeMessage(wires[wires[0]], false, 0);
+            writeMessage(wires[wires[0]], false, 0, "");
             wires[0]++;
             break;
         case (wires[0] >= 32 && wires[0] < 35):
@@ -1024,7 +1136,7 @@ wireItems[n].addEventListener("click", ()=>{
 
 function wireStop() {
     if(wiresPauses) {
-        writeMessage(wires[wires[0]], false, 0)
+        writeMessage(wires[wires[0]], false, 0, "")
         wires[0]++
 
     }}
@@ -1058,7 +1170,7 @@ let wires = [1,
     "IF YOU DON'T STOP...",//26
     "I'LL BE FORCED TO USE MY <i>SECRET MOVE</i>",//27
     "LAST WARNING...",//28
-    "<span class='link' onclick=' Game.counter = 0; if(wiresPauses === false){writeMessage(wires[32], false, 0);wires[0]++;wiresPauses = true}'>eraseCounter.exe</span>",//29
+    "<span class='link' onclick=' Game.counter = 0; if(wiresPauses === false){writeMessage(wires[32], false, 0, '');wires[0]++;wiresPauses = true}'>eraseCounter.exe</span>",//29
     "...",//30
     "COULD YOU, UM, CLICK ON THE FILE?",//31
     "HAHAHAHAHA!",//32
@@ -1106,13 +1218,14 @@ secondHeart.addEventListener("click", ()=>{
 
 
 function SAVE(isClear) {
-    if(!autosavetoggle && !isClear) writeMessage("STATE SAVED", false, 0)
+    if(!autosavetoggle && !isClear) writeMessage("STATE SAVED", false, 0, "")
 
     //btoa(unescape(encodeURIComponent(str)))
     //localStorage.firstSave = "true"
 
-    localStorage.Game = ""
+    localStorage["Game" + saveslotnumber] = ""
     saveslot = ""
+    
 
     for(n in Game.upgrade) {
 
@@ -1147,14 +1260,15 @@ function SAVE(isClear) {
     saveslot += btoa(unescape(encodeURIComponent(EnergySwitchToggle))) + "|"
     saveslot += btoa(unescape(encodeURIComponent(heartOffset))) + "|"
     saveslot += btoa(unescape(encodeURIComponent(ExpandToggle))) + "|"
-    saveslot += btoa(unescape(encodeURIComponent(health))) 
+    saveslot += btoa(unescape(encodeURIComponent(health))) + "|"
+    saveslot += btoa(unescape(encodeURIComponent(Game.prologue))) + "|"
 
     // saveslot += btoa(unescape(encodeURIComponent(""))) + "|"
     //for new save Game
 
-    localStorage.Game = btoa(unescape(encodeURIComponent(saveslot)))
+    localStorage["Game" + saveslotnumber] = btoa(unescape(encodeURIComponent(saveslot)))
 
-    return localStorage.Game
+    return localStorage["Game" + saveslotnumber]
 }
 
 //////
@@ -1164,7 +1278,7 @@ function LOAD() {
 
      //decode all that jazz
 
-    loadDump = decodeURIComponent(escape(window.atob(localStorage.Game)))
+    loadDump = decodeURIComponent(escape(window.atob(localStorage["Game" + saveslotnumber])))
 
     loadArray = loadDump.split("|")
 
@@ -1216,6 +1330,7 @@ function LOAD() {
     if(loadNullCheck[14]) heartOffset = parseInt(loadArray[14]) 
     if(loadNullCheck[15]) ExpandToggle = loadArray[15] === "true"?true:false
     if(loadNullCheck[16]) health = parseInt(loadArray[16]) 
+    if(loadNullCheck[17]) Game.prologue = loadArray[17] === "true"?true:false
 
     link(Game.adventureLog.pop(), false)
 
@@ -1236,7 +1351,7 @@ function LOAD() {
 
  }}
 
-
+console.log("LOADED!")
 
     if(loadNullCheck[9]) autosavetoggle = loadArray[9] === "true"?true:false
 
@@ -1252,12 +1367,10 @@ function LOAD() {
     if(ExpandToggle) {
         gameContainer.style.display  = "none";
         counterDiv.style.display = "none";
-        bottomScreen.style.maxHeight = "40vh";
         second.style.display = "flex";
         } else if(!ExpandToggle) {
             gameContainer.style.display  = "";
             counterDiv.style.display = "";
-            bottomScreen.style.maxHeight = "";
             second.style.display = "none";
         }
 
@@ -1275,7 +1388,8 @@ function LOAD() {
 
 function RESET() {
     removeSpecials()
-    localStorage.Game = "howdy"
+    for(let n = 0; n <= maxsaveslots; n++)
+    localStorage["Game" + n] = "howdy"
 
     window.location.href = window.location.pathname + window.location.search + window.location.hash;
     window.location.replace(window.location.pathname + window.location.search + window.location.hash);
@@ -1288,7 +1402,7 @@ load.addEventListener("click", ()=>{ LOAD() })
 
 reset.addEventListener("click", ()=>{ 
     resetSaveguard= false
-    writeMessage("This will erase all of you Game. Are you sure that you want to proceed? [<span class='link' onclick='if(!resetSaveguard) RESET() '>YES</span>][<span class='link' onclick='if(!resetSaveguard) {writeMessage(`All right.`, false, 0); resetSaveguard = true}'>NO</span>]", false, 0)
+    writeMessage("This will erase all of you Game. Are you sure that you want to proceed? [<span class='link' onclick='if(!resetSaveguard) RESET() '>YES</span>][<span class='link' onclick='if(!resetSaveguard) {writeMessage(`All right.`, false, 0); resetSaveguard = true}'>NO</span>]", false, 0, "")
 })
 
 exportSave.addEventListener("click", ()=>{ 
@@ -1297,14 +1411,14 @@ exportSave.addEventListener("click", ()=>{
     const text = exportFile
     try {
        navigator.clipboard.writeText('"' +text + '"')
-       writeMessage("DATA COPIED TO CLIPBOARD", false, 0)
+       writeMessage("DATA COPIED TO CLIPBOARD", false, 0, "")
     } catch (err) {
-        writeMessage("DATA FAILED TO EXPORT", false, 0)
+        writeMessage("DATA FAILED TO EXPORT", false, 0, "")
     }})
 
 importSave.addEventListener("click", ()=>{ 
     try {
-        localStorage.Game = prompt("Please paste your save Game here:\n")
+        localStorage["Game" + saveslotnumber] = prompt("Please paste your save Game here:\n")
         LOAD()
     } catch (error) {
         alert("There was an error in importing your Game. Please try again.")
@@ -1314,18 +1428,20 @@ importSave.addEventListener("click", ()=>{
 
 autosaveclick = function() {
     autosavetoggle = !autosavetoggle
-    
+    if(prologue) autosavetoggle = false
+    else{
     switch (autosavetoggle) {
         case true:
-        writeMessage("AUTOSAVE ACTIVATED", false, 0)
+            console.log(autosavetoggle, "HAHAHA")
+        writeMessage("AUTOSAVE ACTIVATED", false, 0, "")
         autosave.innerHTML = "<span id='on'>[ON]</span> AUTOSAVE"
         break;
         case false:
-        writeMessage("AUTOSAVE DEACTIVATED", false, 0)
+        writeMessage("AUTOSAVE DEACTIVATED", false, 0, "")
         autosave.innerHTML = "<span id='off'>[OFF]</span> AUTOSAVE"
         break;
     }
-}
+}}
 
 autosave.addEventListener("click", autosaveclick())
 
@@ -1335,8 +1451,11 @@ autosavetoggle = false;
 
 
 function startGame() {
+HEART.style.display = "initial"
+gameContainer.style.flexDirection = "row"
 autosavedelay = true
 autosavetoggle = false
+
 
 var date = new Date(); let currentYear = date.getFullYear(); 
 console.log(`IdleBot ~~ An incremental game\nCopyright © ${currentYear} https://shutterstacks.net`)
@@ -1346,12 +1465,16 @@ console.log(`IdleBot ~~ An incremental game\nCopyright © ${currentYear} https:/
 link("home", false);
 
 
-if(localStorage.Game !== "howdy"){
+if(localStorage !== "howdy" && !Game.prologue){
 console.log("welcome back!")
  LOAD()
 
 
-} else {}
+} else {
+
+    prologue();
+
+}
 
 autosavedelay = false
 
@@ -1359,8 +1482,14 @@ loopGame()
 }
 
 function loopGame() {
-
 setInterval(()=>{
+
+
+    if(keysoundon) {
+        keysounds[2].play()
+    } else if(!keysoundon) {
+        keysounds[2].pause()
+    } 
 
     count(pipeCount)
     pipeCount = 0
@@ -1369,9 +1498,22 @@ if(Game.counter >= 999999999) Game.counter = 999999999
 if(health > 100) health = 100
 if(heartOffset > 80) heartOffset = 81
 
+if(ExpandToggle){
+    topPane.style.height = ((window.innerHeight)/2) + "px"
+    bottomPane.style.height = ((window.innerHeight)/2) + "px"
+    bottomScreen.style.height = ((window.innerHeight)/2) - 21 -  ((window.innerHeight)/2)%2 + "px"
+}    else {
+    topPane.style.minHeight = Math.floor(((window.innerHeight - 364)/2)) - 3 + "px"
+    bottomPane.style.minHeight = Math.floor(((window.innerHeight - 364)/2)) - 3 + "px"
+    bottomScreen.style.height = Math.floor(((window.innerHeight - 364)/2) - 20) -  Math.floor(((window.innerHeight - 364)/2)- 20)%15 + "px"
+}
 
+autosaveTick++
+ if(autosavetoggle && !autosavedelay && Game.special.opentopscreen.bought === true && autosaveTick >= 6000){
+    SAVE(false)
+    autosaveTick = 0
+ } 
 
- if(autosavetoggle && !autosavedelay) SAVE(false)
 
 
 bottomScreen.scrollTop = bottomScreen.scrollHeight;
@@ -1384,4 +1526,19 @@ updateEverything();
 }
 
 
+powerButton.addEventListener("click", ()=>{
+    syssounds.start.play()
+
+    setTimeout(()=>{
+        syssounds.fan.play()
+        syssounds.fan.addEventListener('ended', function() {
+            this.currentTime = 0;
+            this.play();
+        }, false);
+        
+    }, 6000)
+
+powerRow.style.display = "none";
 startGame(); //let's go
+})
+
