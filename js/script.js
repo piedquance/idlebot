@@ -153,16 +153,19 @@ function prologue() {
     
 
         disableCommands = true
-        setTimeout(()=>{disableCommands = false},100)
+        setTimeout(()=>{disableCommands = false},2100)
+
         writeMessage("Console activated", false, 0, "")
-        writeMessage("Hello", false, 200, "valet")
-        messageAnimation("....", true, 3, 201, "valet")
+        messageAnimation("letter", false, 1, 10, "valet", ["Hello there my friend.", 500])
 
-        writeMessage("Hello", false, 7000, "tulip")
-        messageAnimation("/", true, 4, 7001, "tulip")
+        // writeMessage("Hello", false, 200, "valet")
+        // messageAnimation("....", true, 3, 201, "valet")
 
-        writeMessage("Hello", false, 12000, "suzie")
-        messageAnimation("wave", true, 5, 12001, "suzie")
+        // writeMessage("Hello", false, 7000, "tulip")
+        // messageAnimation("/", true, 4, 7001, "tulip")
+
+        // writeMessage("Hello", false, 12000, "suzie")
+        // messageAnimation("wave", true, 5, 12001, "suzie")
         // writeMessage("...", false, 4000, "valet")
         // writeMessage("......", false, 7000, "valet")
         // writeMessage("...HELLO?", false, 10000, "valet")
@@ -331,7 +334,7 @@ d.getElementById("strip" + newsCounter).innerHTML += char + '<span id="blinky">�
 }}
 
 
-function messageAnimation(anime, append, cycles, delay, type) {
+function messageAnimation(anime, append, cycles, delay, type, optional) {
     let timer = 0;
     let msgg = ""
 setTimeout(()=>{
@@ -357,21 +360,53 @@ setTimeout(()=>{
     } else if(anime == "...") {
         Aarray = ["", ".", "..", "..."]
         limit = 400
-    } else if(anime = "/") {
+    } else if(anime == "/") {
         Aarray= ["─", "\\", "│", "/"]
         limit = 400
+    } else  if(anime == "loading") {
+
+            for(let n = 0; n < optional[0]; n++) {
+                Aarray[n] = "[" + "//".repeat(n) + "--".repeat(optional[0]-n) + "]"
+                Aarray[optional[0]] = "[" + "//".repeat(optional[0]) + "]"
+            }
+
+            limit = optional[1]
+        
+    }else if(anime == "word") {
+        let m = optional[0].split(" ").length
+        Aarray[m - 1] = optional[0]
+
+
+        for(let n = m - 2; n >= 0; n--) {
+            let array = Aarray[n + 1].split(" ")
+            array.pop()
+            Aarray[n] = array.toString().replace(/,/g, " ")
+        }
+
+        limit = optional[1]
+    }else if(anime == "letter") {
+        let m = optional[0].split("").length
+        Aarray[m - 1] = optional[0]
+
+        for(let n = m - 2; n >= 0; n--) {
+            let array = Aarray[n + 1].split("")
+            array.pop()
+            Aarray[n] = array.toString().replace(/,/g, "")
+        }
+
+        limit = optional[1]
     }
      
     let msgAnime = setInterval(()=>{
             strip.innerHTML = initialstrip + Aarray[msgarrayposition]
-            timer += 200
+            timer += limit
             //console.log(cycles, timer, 200 * Aarray.length * cycles,  Aarray[msgarrayposition])
             msgarrayposition++
             if(msgarrayposition >  Aarray.length-1) msgarrayposition = 0
 
-            if(timer > (200 *  Aarray.length * cycles)) {
+            if(timer > (limit *  Aarray.length * cycles)) {
                 clearInterval(msgAnime)
-                if(!append) strip.innerHTML = initialstrip
+                if(!append && optional == undefined) strip.innerHTML = initialstrip
                 else strip.innerHTML = initialstrip + Aarray[Aarray.length - 1]
             } }, limit)
 
