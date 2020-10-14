@@ -61,15 +61,21 @@ html, body {
   /* border-bottom: 3px double #fff; */
 }
 
-#topScreen, #news, #about {
-  display:none;
+#topScreen {
   z-index: 1;
   text-align: left;
-  margin:0;
-  padding:10px 0 10px 0;
-  margin:0 20px;
+  margin: 10px 20px 10px 20px;
   overflow-y: hidden;
   color:#fff;
+}
+
+#bottomScreen {
+  z-index: 1;
+  margin:0;
+  flex-grow:1;
+  margin:10px 20px 10px 20px;
+  overflow-y: hidden;
+  overflow-wrap: break-word;
 }
 
 #gameContainer {
@@ -183,16 +189,6 @@ a:visited {
   background-color: #000;
   color:#fff;
   font-size: 13px;
-}
-
-#bottomScreen {
-  display:none;
-  z-index: 1;
-  margin:0;
-  flex-grow:1;
-  margin:10px 20px 10px 20px;
-  overflow-y: hidden;
-  overflow-wrap: break-word;
 }
 
 .valet {

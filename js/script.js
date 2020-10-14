@@ -106,7 +106,7 @@ Game.messageChecker.fill(false);
 ///  save position, reference, name, description, type, cost, cost increase rate, tick, decay tick, message[o]
 
 addUpgrade([0, "bloodvalve", "Blood Valve", "Pumps blood every 1s<br>Decays every 10s", "basicCounter", 10, 5, 1, 10])
-addUpgrade([1, "bloodpipe", "Blood Pipe", "Pipes blood every 0.5s<br>Decays every 20s", "basicCounter", ])
+addUpgrade([1, "bloodpipe", "Blood Pipe", "Pipes blood every 0.5s<br>Decays every 20s", "basicCounter", 20, 7, 0.5, 20])
 
 
 /// savePosition, reference, name, description, cost, hasCost, appearAt, function, optional marker
@@ -133,7 +133,7 @@ addSpecial([3, "bloodvalveupgrade1", "Upgrade Blood Valves", "Now twice as effic
 }])
 
 addSpecial([4, "bloodpipesappear", "Research blood pipes", "It ain't gonna pipe itself...", 100, true, 80, ()=>{
-    Game.upgrade.pipe.Element.style.display = ""
+    Game.upgrade.bloodpipe.Element.style.display = ""
 }])
 
 addSpecial([5, "opensesame", "Activate Mechanical Cardiac Engine", "", 10, false, 10, ()=>{
@@ -314,77 +314,78 @@ function writeMessage(text, check, delay, type) {
         for(n in textArray) if(textArray[n].includes("$")) {console.log(textArray[n]); textArray[n] = textArray[n].replace('$', ''); if(variables[textArray[n]])  textArray[n] = variables[textArray[n]]}
         text = ""
         for(n in textArray) text += textArray[n] + " "
-
-        
-
-        if(delay === 0) {
-
-            result =  basicWriter(text, type)
-
-        } else {setTimeout(()=>{
-            
-            result =  basicWriter(text, type)
-
-    }, delay)
-
-    } 
+        if(delay === 0) result =  basicWriter(text, type)
+        else setTimeout(()=>{ result =  basicWriter(text, type)}, delay)  
 return result;
 }}
 
 function basicWriter(text, type) {
     newsCounter++
         if(type !== "") keysounds[1].play()
-        bottomScreen.innerHTML += '<p class="' + type +' messageStrip" id="strip'+ newsCounter  +'">' + text + '</p>';
+//         bottomScreen.innerHTML += '<p class="' + type +' messageStrip" id="strip'+ newsCounter  +'">' + text + '</p>';
     
-    d.getElementById("strip" + newsCounter).style.animation = "messageLoad 0.3s"
-   setTimeout(()=>{
-       if(d.getElementById("strip" + newsCounter != null)) {
-    d.getElementById("strip" + newsCounter).style = "";
-   }}, 500)
-     for(let n = 0; n < newsCounter;n++) d.getElementById("strip" + n).style.animation = ""
-     Game.messageLog[newsCounter] = text
+//     d.getElementById("strip" + newsCounter).style.animation = "messageLoad 0.3s"
+//    setTimeout(()=>{
+//        if(d.getElementById("strip" + newsCounter != null)) {
+//     d.getElementById("strip" + newsCounter).style = "";
+//    }}, 500)
+    // for(let n = 0; n < newsCounter;n++) d.getElementById("strip" + n).style.animation = ""
+     Game.messageLog[newsCounter] = `<span class="${type}">${text}</span>`
      return true
+}
+
+function writeMessages() {
+
+
 }
 
 
 function writeCharacter(char, type) {
    
+    for(let n = newsCounter; n>=0; n--) Game.messageLog[n] = Game.messageLog[n].replaceAll('<span id=\"blinky\">█</span>', "")
+
 if(type === "start") {
     keysounds[1].play()
-    newsCounter++
 
-    for(let n = 0; n < newsCounter;n++) {
-        d.getElementById("strip" + n).style.animation = ""
-    }
+    // for(let n = 0; n < newsCounter;n++) {
+    //     d.getElementById("strip" + n).style.animation = ""
+    // }
+    writeMessage(char.replace(" ",  ""), false, 0, "")
+    Game.messageLog[newsCounter] += '<span id="blinky">█</span>'
+    console.log(Game.messageLog[newsCounter])
 
-    bottomScreen.innerHTML += '<p class="messageStrip" id="strip'+ newsCounter 
-        +'">'+ char + '<span id="blinky">█</span>';
-
-    if(newsCounter > 0) {
-        for(let number = 0; number < newsCounter; number++) {
-            let child = d.getElementById("strip" + number)
-            if (child.children[(child.children.length - 1)] !== undefined)  {
-            if (child.children[child.children.length - 1].innerHTML == '█')  { child.removeChild(child.childNodes[1]) }
-        }}
-    }
+    // if(newsCounter > 0) {
+    //     for(let number = 0; number < maxLines*2; number++) {
+    //         let child = d.getElementById("B" + number)
+    //         if (child.children[(child.children.length - 1)] !== undefined)  {
+    //         if (child.children[child.children.length - 1].innerHTML == '█')  { child.removeChild(child.childNodes[1]) }
+    //     }}
+    // }
 
 } else if(type === "open") {
   //  keysounds[Math.floor((Math.random() * keysounds.length))].play()
-d.getElementById("strip" + newsCounter).removeChild(d.getElementById("strip" + newsCounter).childNodes[1])
-d.getElementById("strip" + newsCounter).innerHTML += char + '<span id="blinky">█</span>'
-
+  Game.messageLog[newsCounter] = Game.messageLog[newsCounter].replaceAll('</span><span id="blinky">█</span>', "")
+  Game.messageLog[newsCounter] = Game.messageLog[newsCounter].replaceAll('<span id="blinky">█</span>', "")
+Game.messageLog[newsCounter] += char + '</span><span id="blinky">█</span>'
+console.log(Game.messageLog[newsCounter])
 } else if(type === "end") {
     keysounds[0].play()
-    d.getElementById("strip" + newsCounter).removeChild(d.getElementById("strip" + newsCounter).childNodes[1])
-    Game.messageLog[newsCounter] =  d.getElementById("strip" + newsCounter).innerHTML
+    Game.messageLog[newsCounter] = Game.messageLog[newsCounter].replaceAll('<span id="blinky">█</span>', "")
+    Game.messageLog[newsCounter] =  Game.messageLog[newsCounter]
 
 } else if(type == "erase") {
   //  keysounds[Math.floor((Math.random() * keysounds.length))].play()
-    d.getElementById("strip" + newsCounter).removeChild(d.getElementById("strip" + newsCounter).childNodes[1])
-    d.getElementById("strip" + newsCounter).innerHTML = d.getElementById("strip" + newsCounter).innerHTML.slice(0, this.length - 1)
-    d.getElementById("strip" + newsCounter).innerHTML += '<span id="blinky">█</span>'
+  Game.messageLog[newsCounter] = Game.messageLog[newsCounter].replaceAll('</span><span id="blinky">█</span>', "")
+  Game.messageLog[newsCounter] = Game.messageLog[newsCounter].replaceAll('<span id="blinky">█</span>', "")
+
+    let array =  Game.messageLog[newsCounter].split("")
+    array.pop()
+    Game.messageLog[newsCounter] = array.toString().replace(/,/g, "")  + '<span id="blinky">█</span>' 
+    console.log(Game.messageLog[newsCounter])
 }}
 
+// Game.messageLog[newsCounter].removeChild(d.getElementById("strip" + newsCounter).childNodes[1])
+// d.getElementById("strip" + newsCounter).innerHTML = d.getElementById("strip" + newsCounter).innerHTML.slice(0, this.length - 1)
 
 function messageAnimation(animation, type, tick, cycles, delay, append, keep, optional) {
     let timer = 0;
@@ -411,8 +412,8 @@ setTimeout(()=>{
     } else  if(animation == "loading") {
 
             for(let n = 0; n < optional; n++) {
-                Aarray[n] = "[" + "//".repeat(n) + "--".repeat(optional-n) + "]"
-                Aarray[optional] = "[" + "//".repeat(optional) + "]"
+                Aarray[n] = "[" + "█".repeat(n) + "-".repeat(optional-n) + "]"
+                Aarray[optional] = "[" + "█".repeat(optional) + "]"
             }
 
         
@@ -640,8 +641,117 @@ Game.special[set[1]].reference = set[1]
 }
 
 //////
+let maxPaneHeight = Math.floor(((window.innerHeight - 364)/2)) - 3
+let maxScreenHeight = Math.floor(((window.innerHeight - 364)/2) - 20) -  Math.floor(((window.innerHeight - 364)/2)- 20)%15
+let maxLines = maxScreenHeight/15
+let previousMaxLines = 0;
+
+function show() {
+    Game.special.opentopscreen.do();
+    Game.special.opentopscreen.Element.style.display = "none"
+    Game.special.opentopscreen.bought = true
+    bottomScreen.style.display = "inline-block";
+}
+
+function writeScreenLines() {
+    if(previousMaxLines !== maxLines) {
+        topScreen.innerHTML = ""
+       bottomScreen.innerHTML = ""
+        console.log(maxLines)
+
+        for(let n = maxLines; n > 0; n--) {addScreenLine("A", n)}
+        for(let n = maxLines; n > 0; n--) {addScreenLine("B", n)}
+
+        previousMaxLines = maxLines
+        console.log(`all screens updated`)
+    }
+}
+
+function addScreenLine(screen, number) {
+    console.log(screen, number)
+if(screen === "A") {
+    topScreen.innerHTML += '<p class="messageStrip" id="'+ screen + number +'">' + screen + number + '</p>';
+} 
+if(screen === "B") {
+    bottomScreen.innerHTML += '<p class="messageStrip" id="'+ screen + number +'">' + screen + number + '</p>';
+}}
+
+function updateScreenLine(line, text) {
+if(d.getElementById(line) !== null){ if(d.getElementById(line).innerHTML !== text){  
+    d.getElementById(line).innerHTML = text;
+}}
+
+}
+
+function writeToScreen(screen) {
+        if(variables[screen] === "cmd") {
+            if(screen === "B") {
+            for(let n = 0; n <= maxLines ; n++){ if(Game.messageLog[newsCounter - n] !== undefined)  updateScreenLine("B" + (n+1), Game.messageLog[newsCounter - n])}
+        } else if(screen === "A") {
+            for(let n = 0; n <= maxLines ; n++){ if(Game.messageLog[newsCounter - maxLines - n] !== undefined)  updateScreenLine("A" + (n+1), Game.messageLog[newsCounter - maxLines - n])}
+}
+
+}}
+
+
+function chill() {
+        writeMessage("chill", false, 0, "valet")
+}
 
 function updateEverythingbutTick() {
+
+    if(keysoundon) {
+        keysounds[2].play()
+    } else if(!keysoundon) {
+        keysounds[2].pause()
+    } 
+
+    count(pipeCount)
+    pipeCount = 0
+
+if(Game.counter >= 999999999) Game.counter = 999999999
+if(health > 100) health = 100
+if(heartOffset > 80) heartOffset = 81
+
+if(ExpandToggle){
+    maxPaneHeight = Math.floor(((window.innerHeight)/2)) - 3
+    maxScreenHeight =  Math.floor(((window.innerHeight)/2)) -  Math.floor(((window.innerHeight)/2))%15
+    maxLines = maxScreenHeight/15
+
+    topScreen.style = "margin:0 20px 0 20px; position:absolute; bottom:0;"
+    bottomScreen.style.margin = "0 20px 0 20px"
+    gameContainer.style.display = "none"
+    topPane.style.minHeight = maxPaneHeight + "px"
+    bottomPane.style.minHeight = maxPaneHeight + "px"
+    topScreen.style.height =  maxScreenHeight + "px"
+    bottomScreen.style.height = maxScreenHeight + "px"
+}    else {
+    maxPaneHeight = Math.floor(((window.innerHeight - 364)/2)) - 3
+    maxScreenHeight =  Math.floor(((window.innerHeight - 364)/2) - 20) -  Math.floor(((window.innerHeight - 364)/2)- 20)%15
+    maxLines = maxScreenHeight/15
+
+    topScreen.style= "margin:10px 20px 10px 20px;"
+    bottomScreen.style.margin = "10px 20px 10px 20px"
+    gameContainer.style.display = ""
+
+    topPane.style.minHeight = maxPaneHeight + "px"
+    bottomPane.style.minHeight = maxPaneHeight + "px"
+    topScreen.style.height =  maxScreenHeight + "px"
+    bottomScreen.style.height = maxScreenHeight + "px"
+}
+
+writeScreenLines()
+writeToScreen("B")
+writeToScreen("A")
+
+autosaveTick++
+ if(autosavetoggle && !autosavedelay && Game.special.opentopscreen.bought === true && autosaveTick >= 6000){
+    SAVE(false)
+    autosaveTick = 0
+ } 
+
+//bottomScreen.scrollTop = bottomScreen.scrollHeight;
+title.innerHTML = Math.floor(Game.counter) + " - IdleBot"
 
 for(const [key, value] of Object.entries(Game.special)) {
     if(Game.counter >=  Game.special[key].appearAt && !Game.special[key].bought) {
@@ -808,7 +918,9 @@ window.document.addEventListener('keydown', e => {
 //   }; //taken from https://stackoverflow.com/questions/49280847/firefox-switching-tab-on-backspace
 
 let variables = {
-"NAME": Game.name
+"NAME": Game.name,
+"A" : "cmd",
+"B" : "cmd"
 
 }
 
@@ -834,13 +946,22 @@ keysoundstimout =  setTimeout(()=>{
 if(inputStream[inputStream.length - 1] === ">" && !disableCommands) { inputStream = []; 
 
 inputStream.push(">")
-writeCharacter(cmdlocation + ">", "start")
+writeCharacter(cmdlocation + "&gt;", "start")
 }
 
 if(inputStream[0] === ">" && !disableCommands && key !== ">" && key !== "Backspace" && key !== "Shift" && key !== "Enter") writeCharacter(key, "open")
 
 
-if(inputStream[inputStream.length - 1] === "Backspace" && inputStream[0] === ">") { inputStream.pop(); inputStream.pop(); writeCharacter("", "erase");  inputStream[0] = ">"}
+if((inputStream[inputStream.length - 1] === "Backspace" && inputStream[0] === ">")
+ &&( inputStream[inputStream.length-2] !== ">" && inputStream.length > 2)) 
+
+ {
+    inputStream.pop(); 
+    inputStream.pop(); 
+    writeCharacter("", "erase"); 
+    inputStream[0] = ">";
+    console.log(inputStream)
+}
 
 //if(inputStream[inputStream.length - 1] === "ArrowUp") { }
 
@@ -965,22 +1086,22 @@ cmds = {
     "expand":[true, ()=>{
         ExpandToggle = !ExpandToggle
 
-        if(ExpandToggle) {   for(n in close) if(close[n].style !== undefined) close[n].style.animation = "close-sesame 0.5s"
-       setTimeout(()=>{
-        gameContainer.style.display  = "none";
-        counterDiv.style.display = "none";
-        second.style.display = "flex";
-        d.querySelector(".outer").style = "min-width: 200px;"
-        openFullscreen();
-       }, 500)
+    //     if(ExpandToggle) {   for(n in close) if(close[n].style !== undefined) close[n].style.animation = "close-sesame 0.5s"
+    //    setTimeout(()=>{
+    //     gameContainer.style.display  = "none";
+    //     counterDiv.style.display = "none";
+    //     second.style.display = "flex";
+    //     d.querySelector(".outer").style = "min-width: 200px;"
+    //     openFullscreen();
+    //    }, 500)
 
-    } else if(!ExpandToggle) {  for(n in close) if(close[n].style !== undefined)  close[n].style.animation = "open-sesame 1s"
-        gameContainer.style.display  = "";
-        counterDiv.style.display = "";
-        second.style.display = "none";
-        d.querySelector(".outer").style = "min-width: 410px;"
-        closeFullscreen();
-        } 
+    // } else if(!ExpandToggle) {  for(n in close) if(close[n].style !== undefined)  close[n].style.animation = "open-sesame 1s"
+    //     gameContainer.style.display  = "";
+    //     counterDiv.style.display = "";
+    //     second.style.display = "none";
+    //     d.querySelector(".outer").style = "min-width: 410px;"
+    //     closeFullscreen();
+    //     } 
     }],
     "v":[true, ()=>{
         Game.special.opentopscreen.do();
@@ -1081,118 +1202,118 @@ function closeFullscreen() {
 
 
 
-let Nodes = {}
+// let Nodes = {}
 
-function Node(node) {
-    Nodes[node["title"]] = {}
+// function Node(node) {
+//     Nodes[node["title"]] = {}
 
-   if(node["title"]) Nodes[node["title"]].title = node.title;
-   if(node["text"]) Nodes[node["title"]].text = node.text;
-   if(node.common) Nodes[node["title"]].common = node.common;
-   if(node.Value || node.Value == 0) Nodes[node["title"]].Value = node.Value;
-}
-//taken from https://stackoverflow.com/questions/456177/function-overloading-in-javascript-best-practices
-
-
-//////
+//    if(node["title"]) Nodes[node["title"]].title = node.title;
+//    if(node["text"]) Nodes[node["title"]].text = node.text;
+//    if(node.common) Nodes[node["title"]].common = node.common;
+//    if(node.Value || node.Value == 0) Nodes[node["title"]].Value = node.Value;
+// }
+// //taken from https://stackoverflow.com/questions/456177/function-overloading-in-javascript-best-practices
 
 
-//You wake up locked in a deserted jail cell, completely alone. There is nothing at all in your cell, useful or otherwise.
-Node({"title":"home", "text":"You are in a field. There is nothing around you, useful or otherwise.|D~Look around~look_around|S~Get up~get_up"})
-
-Node({"title":"look_around", "text":"Fields as far as the eye can see.|S~Get up~get_up"})
-
-Node({"common":"get_up", "title":"get_up0","text":"You try to get up. You fail.<br>But maybe if you had more power...", "Value":0})
-
-Node({"common":"get_up", "title":"get_up10", "text":"You get up.|S~Look at yourself[MISSING]~look_at_yourself", "Value":10})
-
-Node({"common":"look_at_yourself", "title":"look_at_yourself0", "text":   "fail" , "Value":  0})
-
-Node({"common":"look_at_yourself", "title":"look_at_yourself10", "text": "ok now what?","Value":  10})
-
-//Node("look_at_yourself", ["After everything, it's still you— wait, what?"], [])
-
-//////
-
-function link(text, back) {
-
-     if(Nodes[text]) {
-
-        let choice = Nodes[text]
-        let textarray = choice.text.split("|")
-        let linkarray = []
-        for(let n = 1; n < textarray.length; n++) {
-            linkarray[n-1] = textarray[n].split("~")
-        }
-
-        topScreen.innerHTML = `<p class='messageStrip line'>${textarray[0]}</p>`
+// //////
 
 
-        for(n in linkarray) { 
-            if(linkarray[n][0] == "D"){
-            topScreen.innerHTML += `<br> <span class='bracket'> > </span> <a onclick="link('${linkarray[n][2]}',false)">${linkarray[n][1]} </a>`
+// //You wake up locked in a deserted jail cell, completely alone. There is nothing at all in your cell, useful or otherwise.
+// Node({"title":"home", "text":"You are in a field. There is nothing around you, useful or otherwise.|D~Look around~look_around|S~Get up~get_up"})
+
+// Node({"title":"look_around", "text":"Fields as far as the eye can see.|S~Get up~get_up"})
+
+// Node({"common":"get_up", "title":"get_up0","text":"You try to get up. You fail.<br>But maybe if you had more power...", "Value":0})
+
+// Node({"common":"get_up", "title":"get_up10", "text":"You get up.|S~Look at yourself[MISSING]~look_at_yourself", "Value":10})
+
+// Node({"common":"look_at_yourself", "title":"look_at_yourself0", "text":   "fail" , "Value":  0})
+
+// Node({"common":"look_at_yourself", "title":"look_at_yourself10", "text": "ok now what?","Value":  10})
+
+// //Node("look_at_yourself", ["After everything, it's still you— wait, what?"], [])
+
+// //////
+
+// function link(text, back) {
+
+//      if(Nodes[text]) {
+
+//         let choice = Nodes[text]
+//         let textarray = choice.text.split("|")
+//         let linkarray = []
+//         for(let n = 1; n < textarray.length; n++) {
+//             linkarray[n-1] = textarray[n].split("~")
+//         }
+
+//         topScreen.innerHTML = `<p class='messageStrip line'>${textarray[0]}</p>`
+
+
+//         for(n in linkarray) { 
+//             if(linkarray[n][0] == "D"){
+//             topScreen.innerHTML += `<br> <span class='bracket'> > </span> <a onclick="link('${linkarray[n][2]}',false)">${linkarray[n][1]} </a>`
        
-        }   else if(linkarray[n][0] == "S") {
-            topScreen.innerHTML += `<br> <span class='bracket'> ></span> <a onclick="linkSplit('${linkarray[n][2]}', false)">${linkarray[n][1]}</a>`
+//         }   else if(linkarray[n][0] == "S") {
+//             topScreen.innerHTML += `<br> <span class='bracket'> ></span> <a onclick="linkSplit('${linkarray[n][2]}', false)">${linkarray[n][1]}</a>`
 
-        }
-    }
-}
-        if(back && Game.adventureLog.length !== 1) Game.adventureLog.pop()
-        else Game.adventureLog[Game.adventureLog.length] = text
-        if(Game.adventureLog.length !== 1) topScreen.innerHTML += `<br><br> <a id='back' onclick="link('${Game.adventureLog[Game.adventureLog.length-2]}',true)">Go Back </a>`
+//         }
+//     }
+// }
+//         if(back && Game.adventureLog.length !== 1) Game.adventureLog.pop()
+//         else Game.adventureLog[Game.adventureLog.length] = text
+//         if(Game.adventureLog.length !== 1) topScreen.innerHTML += `<br><br> <a id='back' onclick="link('${Game.adventureLog[Game.adventureLog.length-2]}',true)">Go Back </a>`
 
-}
+// }
 
 
-function linkSplit(text, back) {
-    let choiceNumberOf = 0
-    let chosenNode = ""
+// function linkSplit(text, back) {
+//     let choiceNumberOf = 0
+//     let chosenNode = ""
 
-    for(n in Nodes) { if(Nodes[n].common) { if(Nodes[n].common === text) {
+//     for(n in Nodes) { if(Nodes[n].common) { if(Nodes[n].common === text) {
 
-        if(Game.counter >= Nodes[n].Value) {
+//         if(Game.counter >= Nodes[n].Value) {
 
-            let choice = Nodes[n]
-            let textarray = choice.text.split("|")
-            let linkarray = []
-            for(let n = 1; n < textarray.length; n++) {
-                linkarray[n-1] = textarray[n].split("~")
-            }
+//             let choice = Nodes[n]
+//             let textarray = choice.text.split("|")
+//             let linkarray = []
+//             for(let n = 1; n < textarray.length; n++) {
+//                 linkarray[n-1] = textarray[n].split("~")
+//             }
     
-            topScreen.innerHTML = `<p class='messageStrip line'>${textarray[0]}</p>`
+//             topScreen.innerHTML = `<p class='messageStrip line'>${textarray[0]}</p>`
     
     
-            for(n in linkarray) { if(linkarray[n][0] == "D"){
-                topScreen.innerHTML += `<br> <span class='bracket'> ></span> <a onclick="link('${linkarray[n][2]}', false)">${linkarray[n][1]}</a>`
+//             for(n in linkarray) { if(linkarray[n][0] == "D"){
+//                 topScreen.innerHTML += `<br> <span class='bracket'> ></span> <a onclick="link('${linkarray[n][2]}', false)">${linkarray[n][1]}</a>`
            
-            } else if(linkarray[n][0] == "S") {
-                topScreen.innerHTML += `<br> <span class='bracket'> ></span> <a  onclick="linkSplit('${linkarray[n][2]}', false)">${linkarray[n][1]}</a>`
-            }
-        }
-        chosenNode = choice.title
+//             } else if(linkarray[n][0] == "S") {
+//                 topScreen.innerHTML += `<br> <span class='bracket'> ></span> <a  onclick="linkSplit('${linkarray[n][2]}', false)">${linkarray[n][1]}</a>`
+//             }
+//         }
+//         chosenNode = choice.title
 
-        Game.adventureLog[Game.adventureLog.length] = choice.title
-        choiceNumberOf++
+//         Game.adventureLog[Game.adventureLog.length] = choice.title
+//         choiceNumberOf++
     
-         }
-         if(Nodes[n] !== undefined) if(Game.counter <= Nodes[n].Value) writeMessage(`${Nodes[n].Value} Energy Needed`, false, 0, "")
+//          }
+//          if(Nodes[n] !== undefined) if(Game.counter <= Nodes[n].Value) writeMessage(`${Nodes[n].Value} Energy Needed`, false, 0, "")
 
-     }}}
+//      }}}
 
 
-     let constData = Game.adventureLog.length
-     for(let n = constData - 1; n > constData - 1 - choiceNumberOf; n--)  {
-     if(Game.adventureLog[n] !== chosenNode) Game.adventureLog.splice(n, 1) 
-     }
+//      let constData = Game.adventureLog.length
+//      for(let n = constData - 1; n > constData - 1 - choiceNumberOf; n--)  {
+//      if(Game.adventureLog[n] !== chosenNode) Game.adventureLog.splice(n, 1) 
+//      }
 
-     Game.counter -= Nodes [ Game.adventureLog[Game.adventureLog.length - 1 ] ].Value
-     writeMessage(`${ Nodes [ Game.adventureLog[Game.adventureLog.length - 1 ] ].Value} Energy Used`, false, 0, "")
+//      Game.counter -= Nodes [ Game.adventureLog[Game.adventureLog.length - 1 ] ].Value
+//      writeMessage(`${ Nodes [ Game.adventureLog[Game.adventureLog.length - 1 ] ].Value} Energy Used`, false, 0, "")
 
-     if(back) Game.adventureLog.splice(Game.adventureLog.length-1, 1)
+//      if(back) Game.adventureLog.splice(Game.adventureLog.length-1, 1)
 
-     topScreen.innerHTML += `<br><br> <a id='back' onclick="link('${Game.adventureLog[Game.adventureLog.length-2]}',true)">Go Back </a>`
- }
+//      topScreen.innerHTML += `<br><br> <a id='back' onclick="link('${Game.adventureLog[Game.adventureLog.length-2]}',true)">Go Back </a>`
+//  }
 
 
 ////////////////
@@ -1416,8 +1537,6 @@ function LOAD() {
     if(loadNullCheck[16]) health = parseInt(loadArray[16]) 
     if(loadNullCheck[17]) Game.prologue = loadArray[17] === "true"?true:false
 
-    link(Game.adventureLog.pop(), false)
-
 
 
     removeSpecials()
@@ -1486,7 +1605,7 @@ load.addEventListener("click", ()=>{ LOAD() })
 
 reset.addEventListener("click", ()=>{ 
     resetSaveguard= false
-    writeMessage("This will erase all of you Game. Are you sure that you want to proceed? [<span class='link' onclick='if(!resetSaveguard) RESET() '>YES</span>][<span class='link' onclick='if(!resetSaveguard) {writeMessage(`All right.`, false, 0); resetSaveguard = true}'>NO</span>]", false, 0, "")
+    writeMessage("This will erase all of your saved data. Are you sure that you want to proceed? [<span class='link' onclick='if(!resetSaveguard) RESET() '>YES</span>][<span class='link' onclick='if(!resetSaveguard) {writeMessage(`All right.`, false, 0); resetSaveguard = true}'>NO</span>]", false, 0, "")
 })
 
 exportSave.addEventListener("click", ()=>{ 
@@ -1546,8 +1665,6 @@ console.log(`IdleBot ~~ An incremental game\nCopyright © ${currentYear} https:/
 
 //generating the content
 
-link("home", false);
-
 
 if(localStorage !== "howdy" && !Game.prologue){
 console.log("welcome back!")
@@ -1556,7 +1673,7 @@ console.log("welcome back!")
 
 } else {
 
-    prologue1();
+   // prologue1();
 
 }
 
@@ -1567,41 +1684,6 @@ loopGame()
 
 function loopGame() {
 setInterval(()=>{
-
-
-    if(keysoundon) {
-        keysounds[2].play()
-    } else if(!keysoundon) {
-        keysounds[2].pause()
-    } 
-
-    count(pipeCount)
-    pipeCount = 0
-
-if(Game.counter >= 999999999) Game.counter = 999999999
-if(health > 100) health = 100
-if(heartOffset > 80) heartOffset = 81
-
-if(ExpandToggle){
-    topPane.style.height = ((window.innerHeight)/2) + "px"
-    bottomPane.style.height = ((window.innerHeight)/2) + "px"
-    bottomScreen.style.height = ((window.innerHeight)/2) - 21 -  ((window.innerHeight)/2)%2 + "px"
-}    else {
-    topPane.style.minHeight = Math.floor(((window.innerHeight - 364)/2)) - 3 + "px"
-    bottomPane.style.minHeight = Math.floor(((window.innerHeight - 364)/2)) - 3 + "px"
-    bottomScreen.style.height = Math.floor(((window.innerHeight - 364)/2) - 20) -  Math.floor(((window.innerHeight - 364)/2)- 20)%15 + "px"
-}
-
-autosaveTick++
- if(autosavetoggle && !autosavedelay && Game.special.opentopscreen.bought === true && autosaveTick >= 6000){
-    SAVE(false)
-    autosaveTick = 0
- } 
-
-
-
-bottomScreen.scrollTop = bottomScreen.scrollHeight;
-title.innerHTML = Math.floor(Game.counter) + " - IdleBot"
 
 updateEverything();
 
