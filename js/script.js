@@ -164,7 +164,7 @@ function prologue1() {
 
         writeMessage("Loading CORE 4", false, 10610, "")
         messageAnimation("...", "",100, 10, 10611, true, false)
-        messageAnimation("loading", "",200, 1, 14612, false, true, [20])
+        messageAnimation("loading", "",200, 1, 14612, false, true, [30])
 
         writeMessage("CORE 4 Loaded", false, 20000, "")
         messageAnimation("....", "valet", 500, 1, 20000, false, false)
@@ -207,7 +207,8 @@ function prologue2() {
     disableCommands = true
     setTimeout(()=>{disableCommands = false},34000)
 
-    writeMessage("OH MY LATCHES", false, 500, "valet")
+    writeMessage("OH MY LATCHES", false, 100, "valet")
+    writeMessage("OK", false, 500, "valet")
     writeMessage("UMMM...", false, 1000, "valet")
     writeMessage("I STILL DON'T KNOW WHO YOU ARE, THOUGH", false, 3000, "valet")
     writeMessage("NO, WAIT", false, 5000, "valet")
@@ -386,9 +387,10 @@ setTimeout(()=>{
     if(!append) {
         writeMessage("", false, 0, type)
     } 
+    let messagePosition = newsCounter
  //   let strip = d.getElementById("strip" + newsCounter)
     let msgarrayposition = 0
-    let initialstrip = Game.messageLog[newsCounter].replaceAll('</span>', "")
+    let initialstrip = Game.messageLog[messagePosition].replaceAll('</span>', "")
     let Aarray = []
 
     if(animation == "....") {
@@ -435,7 +437,7 @@ setTimeout(()=>{
     }
      
     let msgAnime = setInterval(()=>{
-            Game.messageLog[newsCounter] = initialstrip + Aarray[msgarrayposition] + "<span>"
+            Game.messageLog[messagePosition] = initialstrip + Aarray[msgarrayposition] + "<span>"
             timer += tick
             msgarrayposition++
 
@@ -443,8 +445,8 @@ setTimeout(()=>{
 
             if(timer > (tick *  Aarray.length * cycles)) {
                 clearInterval(msgAnime)
-                if(!keep)  Game.messageLog[newsCounter] = initialstrip + "</span>"
-                else Game.messageLog[newsCounter] = initialstrip + Aarray[Aarray.length - 1] + "</span>"
+                if(!keep)  Game.messageLog[messagePosition] = initialstrip + "</span>"
+                else Game.messageLog[messagePosition] = initialstrip + Aarray[Aarray.length - 1] + "</span>"
             } }, tick)
 
 
@@ -1594,11 +1596,7 @@ function bootSAVE() {
 }
 
 function bootLOAD() {
-    ExpandToggle = true
-
-
   if(localStorage.boot) Game.prologue = localStorage.boot === "true"?true:false
-
 }
 
 
