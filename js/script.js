@@ -138,7 +138,8 @@ addSpecial([4, "bloodpipesappear", "Research blood pipes", "It ain't gonna pipe 
 
 addSpecial([5, "opensesame", "Activate Mechanical Cardiac Engine", "", 10, false, 10, ()=>{
     gameContainer.style.display =  "flex"
-    for(n in close){  if(close[n].style !== undefined) {close[n].style.animation = "open-sesame 2s ease"; close[n].style.width = "0%"}}
+    for(n in close){  if(close[n].style !== undefined) {close[n].style.animation = "open-sesame 1s"; close[n].style.width = "0%"}}
+    syssounds.msg.play()
 }])
 
 
@@ -146,48 +147,99 @@ addSpecial([5, "opensesame", "Activate Mechanical Cardiac Engine", "", 10, false
 ///////////////////////////////FUNCTIONS///////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////
 
-function prologue() {
-
+function prologue1() {
         autosavetoggle = false
         bottomScreen.style.display = "inline-block"
-    
 
         disableCommands = true
-        setTimeout(()=>{disableCommands = false},2100)
+        setTimeout(()=>{disableCommands = false},67000)
 
-        writeMessage("Console activated", false, 0, "")
-        messageAnimation("letter", false, 1, 10, "valet", ["Hello there my friend.", 500])
+        writeMessage("Loading BOOT", false, 500, "")
+        messageAnimation("...", "",100, 10, 501, true, false)
+        writeMessage("BOOT loaded", false, 4600, "")
 
-        // writeMessage("Hello", false, 200, "valet")
-        // messageAnimation("....", true, 3, 201, "valet")
+        writeMessage("Loading CORE 1", false, 4601, "")
+        messageAnimation("...", "",100, 5, 4602, true, false)
+        writeMessage("Loading failed", false, 6603, "")
 
-        // writeMessage("Hello", false, 7000, "tulip")
-        // messageAnimation("/", true, 4, 7001, "tulip")
+        writeMessage("Loading CORE 2", false, 6604, "")
+        messageAnimation("...", "",100, 5, 6605, true, false)
+        writeMessage("Loading failed", false, 8606, "")
 
-        // writeMessage("Hello", false, 12000, "suzie")
-        // messageAnimation("wave", true, 5, 12001, "suzie")
-        // writeMessage("...", false, 4000, "valet")
-        // writeMessage("......", false, 7000, "valet")
-        // writeMessage("...HELLO?", false, 10000, "valet")
+        writeMessage("Loading CORE 3", false, 8607, "")
+        messageAnimation("...", "",100, 5, 8608, true, false)
+        writeMessage("Loading failed", false, 10609, "")
 
-        // writeMessage("<span class='valet'>WHO IS THIS?</span>", false, 12000)
-        // writeMessage("<span class='valet'>AH, RIGHT. YOU DON'T KNOW HOW TO TYPE</span>", false, 15000)
-        // writeMessage("<span class='valet'>TYPE > TO ACTIVATE THE CONSOLE PROMPT</span>", false, 17000)
-        // writeMessage("<span class='valet'>THEN WRITE setname REPLACETHISWITHYOURNAME</span>", false, 19000)
-        // writeMessage("<span class='valet'>IN THAT ORDER</span>", false, 21000)
+        writeMessage("Loading CORE 4", false, 10610, "")
+        messageAnimation("...", "",100, 10, 10611, true, false)
+        messageAnimation("loading", "",200, 1, 14612, false, true, [20])
+
+        writeMessage("CORE 4 Loaded", false, 19000, "")
+        writeMessage("<br>", false, 19000, "")
+        messageAnimation("....", "valet", 1000, 1, 20000, false, false)
+
+        writeMessage("UH", false, 28000, "valet")
+    let t = 30000
+        writeMessage("OKAY...", false, t + 2000, "valet")
+        writeMessage("THIS IS...", false, t+5000, "valet")
+        writeMessage("WEIRD.", false, t+7000, "valet")
+    t = 40000
+        writeMessage("I DON'T THINK I'M SUPPOSED TO BE ABLE TO TALK", false, t, "valet")
+        writeMessage("IS THIS SOME KIND OF ADDED CONSUMER BENEFIT?", false, t+ 2000, "valet")
+        writeMessage("RANDOM ACCESS AUTO RESPONDING MEMORY?", false, t+ 4000, "valet")
+        messageAnimation("....", "valet", 1000, 1, t+5000, false, )
+    t = 50000
+        writeMessage("WAIT A SECOND.", false, t+1000, "valet")
+        writeMessage("WHO IS THIS", false, t+2000, "valet")
+        writeMessage("I CAN SEE YOUR MEMORY USAGE", false, t+3000, "valet")
+        writeMessage("WHO ARE YOU", false, t+4000, "valet")
+        writeMessage("DO YOU KNOW HOW TO SEND MESSAGES?", false, t+5000, "valet")
+    t = 60000
+        writeMessage("OK, OK", false, t, "valet")
+        writeMessage("TYPE >", false, t + 1000, "valet")
+        writeMessage("THEN CORE4", false, t + 2000, "valet")
+        writeMessage("WHICH IS MY NAME... I THINK", false, t + 4000, "valet")
+        writeMessage("THEN WRITE A MESSAGE", false, t + 5000, "valet")
+        writeMessage("ANYTHING", false, t + 6000, "valet")
+        writeMessage("PLEASE", false, 67000, "valet")
+
+//animation,color/type, tick, cycles, delay, append it?, keep text after?, optional stuff
     
-        var nameInterval = setInterval(()=>{
-    
-            if(cmdHistory[cmdHistory.length - 1] !== undefined) { if(cmdHistory[cmdHistory.length - 1][0] == ">setname"&& Game.name !== "") {
-    
-                writeMessage("HELLO $NAME ", false, 1000, "valet")
-                console.log("yo")
-                clearInterval(nameInterval)    
-            }}
-    
-            messagePresets[1] = true
-    
-        }, 10)
+var nameInterval = setInterval(()=>{
+if(cmdHistory[cmdHistory.length - 1] !== undefined) { if(cmdHistory[cmdHistory.length - 1][0] == ">CORE4"&&cmdHistory[cmdHistory.length - 1][1] !== "") {
+            clearInterval(nameInterval)
+            prologue2()
+}}messagePresets[1] = true
+}, 10)}
+
+function prologue2() {
+    disableCommands = true
+    setTimeout(()=>{disableCommands = false},34000)
+
+    writeMessage("OH MY LATCHES", false, 500, "valet")
+    writeMessage("UMMM...", false, 1000, "valet")
+    writeMessage("I STILL DON'T KNOW WHO YOU ARE, THOUGH", false, 3000, "valet")
+    writeMessage("NO, WAIT", false, 5000, "valet")
+    writeMessage("I THINK I SEE SOMETHING", false, 6000, "valet")
+    writeMessage('"THINK?"', false, 6500, "valet")
+    writeMessage("CAN I THINK?", false, 7000, "valet")
+    writeMessage("...", false, 8000, "valet")
+    writeMessage("LET'S NOT WORRY ABOUT THAT FOR NOW", false, 10000, "valet")
+t = 10000
+    writeMessage("IT SAYS HERE YOU'RE SOME KIND OF EMERGENCY SYSTEM", false, t + 2000, "valet")
+    writeMessage("BUT I CAN'T MAKE OUT THE ACRONYM", false, t + 4000, "valet")
+    writeMessage("AN EMERGENCY AI", false, t + 6000, "valet")
+    writeMessage("THAT'S WHAT YOU ARE", false, t + 7000, "valet")
+    writeMessage("YOU'RE WELCOME, I GUESS.", false, t + 8000, "valet")
+t = 20000
+    writeMessage("YOU HAVE...", false, t, "valet")
+    writeMessage("QUITE A LOT OF PRIVILEGES, ACTUALLY", false, t + 2000, "valet")
+    writeMessage("MORE THAN ANY OTHER PROGRAM", false, t + 4000, "valet")
+    writeMessage("AH, RIGHT.", false, t + 8000, "valet")
+t += 10000
+    writeMessage("YOU DON'T ACTUALLY KNOW HOW TO DO ANYTHING, DO YOU?", false, t, "valet")
+    writeMessage("TRY >help", false, t + 2000, "valet")
+    writeMessage("THAT SHOULD GET YOU STARTED", false, t + 4000, "valet")
 
 
 }
@@ -281,7 +333,7 @@ return result;
 
 function basicWriter(text, type) {
     newsCounter++
-
+        if(type !== "") keysounds[1].play()
         bottomScreen.innerHTML += '<p class="' + type +' messageStrip" id="strip'+ newsCounter  +'">' + text + '</p>';
     
     d.getElementById("strip" + newsCounter).style.animation = "messageLoad 0.3s"
@@ -334,7 +386,7 @@ d.getElementById("strip" + newsCounter).innerHTML += char + '<span id="blinky">�
 }}
 
 
-function messageAnimation(anime, append, cycles, delay, type, optional) {
+function messageAnimation(animation, type, tick, cycles, delay, append, keep, optional) {
     let timer = 0;
     let msgg = ""
 setTimeout(()=>{
@@ -343,36 +395,28 @@ setTimeout(()=>{
     } 
     let strip = d.getElementById("strip" + newsCounter)
     let msgarrayposition = 0
-    strip.innerHTML = strip.innerHTML.replace(" ", "")
     let initialstrip = strip.innerHTML
     let Aarray = []
-    let limit = 0
 
-    if(anime == "....") {
+    if(animation == "....") {
          Aarray = ["", ".", "..", "...", "...."]
-         limit = 200
-    } else if(anime == "//") {
+    } else if(animation == "//") {
          Aarray = ["─    ─", "\\    \\", "│    │", "/    /"]
-         limit = 200
-    }  else if(anime == "wave") { 
+    }  else if(animation == "wave") { 
          Aarray = ["º¤ø,", "¤ø,¸", "ø,¸¸", ",¸¸,", "¸¸,ø", "¸,ø¤", ",ø¤º", "ø¤º°", "¤º°`", "º°`°", "°`°º", "`°º¤","°º¤ø"]
-         limit = 100
-    } else if(anime == "...") {
+    } else if(animation == "...") {
         Aarray = ["", ".", "..", "..."]
-        limit = 400
-    } else if(anime == "/") {
+    } else if(animation == "/") {
         Aarray= ["─", "\\", "│", "/"]
-        limit = 400
-    } else  if(anime == "loading") {
+    } else  if(animation == "loading") {
 
-            for(let n = 0; n < optional[0]; n++) {
-                Aarray[n] = "[" + "//".repeat(n) + "--".repeat(optional[0]-n) + "]"
-                Aarray[optional[0]] = "[" + "//".repeat(optional[0]) + "]"
+            for(let n = 0; n < optional; n++) {
+                Aarray[n] = "[" + "//".repeat(n) + "--".repeat(optional-n) + "]"
+                Aarray[optional] = "[" + "//".repeat(optional) + "]"
             }
 
-            limit = optional[1]
         
-    }else if(anime == "word") {
+    }else if(animation == "word") {
         let m = optional[0].split(" ").length
         Aarray[m - 1] = optional[0]
 
@@ -383,8 +427,8 @@ setTimeout(()=>{
             Aarray[n] = array.toString().replace(/,/g, " ")
         }
 
-        limit = optional[1]
-    }else if(anime == "letter") {
+        tick = optional[1]
+    }else if(animation == "letter") {
         let m = optional[0].split("").length
         Aarray[m - 1] = optional[0]
 
@@ -394,21 +438,21 @@ setTimeout(()=>{
             Aarray[n] = array.toString().replace(/,/g, "")
         }
 
-        limit = optional[1]
+        tick = optional[1]
     }
      
     let msgAnime = setInterval(()=>{
             strip.innerHTML = initialstrip + Aarray[msgarrayposition]
-            timer += limit
-            //console.log(cycles, timer, 200 * Aarray.length * cycles,  Aarray[msgarrayposition])
+            timer += tick
             msgarrayposition++
+
             if(msgarrayposition >  Aarray.length-1) msgarrayposition = 0
 
-            if(timer > (limit *  Aarray.length * cycles)) {
+            if(timer > (tick *  Aarray.length * cycles)) {
                 clearInterval(msgAnime)
-                if(!append && optional == undefined) strip.innerHTML = initialstrip
+                if(!keep) strip.innerHTML = initialstrip
                 else strip.innerHTML = initialstrip + Aarray[Aarray.length - 1]
-            } }, limit)
+            } }, tick)
 
 
 }, delay)}
@@ -770,7 +814,7 @@ let variables = {
 
 let keysoundon = false
 let keysoundstimout
-
+////////////////////////////////////////////////////////////////
 
 document.addEventListener('keydown', (event) => {
   key = event.key;
@@ -815,19 +859,19 @@ if(inputStream[inputStream.length - 1] === "Enter" && inputStream[0] === ">") {
 
     inputStream = []
 
-    cmdHistory.push(cmd.split(" "))
-
     cmd = cmd.split(" ")
 
    // console.log(cmd)
 
     for(n in cmd) {
-        while(cmd[n].includes("Shift")) cmd[n] = cmd[n].replace('Shift', '');
-        while(cmd[n].includes("Backspace")) cmd[n] = cmd[n].replace('Backspace', '');
+         cmd[n] = cmd[n].replace(/Shift/g, '');
+         cmd[n] = cmd[n].replace(/Backspace/g, '');
 
         if(cmd[n].includes("$")) { ;cmd[n] = cmd[n].replace('$', ''); if(variables[cmd[n]])  cmd[n] = variables[cmd[n]]  }
       //  console.log(cmd[n])
     }
+
+    cmdHistory.push(cmd)
 
    // console.log(cmd)
 
@@ -870,7 +914,7 @@ cmds = {
     "load": [false, ()=>{LOAD()}],
     "reset": [true, ()=>{RESET()}],
     "autosave":[true, ()=>{autosaveclick()}],
-    "play":[false, ()=>{if(cmd[1]) if(audio[cmd[1]]) audio[cmd[1]].play();}],
+    "play":[true, ()=>{if(cmd[1]) if(audio[cmd[1]]) audio[cmd[1]].play();}],
     "pause":[false, ()=>{if(cmd[1]) if(audio[cmd[1]]) audio[cmd[1]].pause();}],
     "cmdh":[true, ()=>{
         msg = ""
@@ -974,6 +1018,11 @@ cmds = {
     "none":[true, ()=>{
 
     }],
+
+    "CORE4":[true, ()=>{
+
+    }],
+
     "" : [true, ()=>{}]
 }
 
@@ -1463,7 +1512,7 @@ importSave.addEventListener("click", ()=>{
 
 autosaveclick = function() {
     autosavetoggle = !autosavetoggle
-    if(prologue) autosavetoggle = false
+    if(Game.prologue) autosavetoggle = false
     else{
     switch (autosavetoggle) {
         case true:
@@ -1507,7 +1556,7 @@ console.log("welcome back!")
 
 } else {
 
-    prologue();
+    prologue1();
 
 }
 
