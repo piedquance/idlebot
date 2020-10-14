@@ -334,9 +334,12 @@ function basicWriter(text, type) {
      return true
 }
 
-function writeMessages() {
+function getMessage(position) {
+if(Game.messageLog[position] !== undefined) return Game.messageLog[position]
+}
 
-
+function setMessage(position, text) {
+    if(Game.messageLog[position] !== undefined) Game.messageLog[position] = text
 }
 
 
@@ -676,19 +679,22 @@ if(screen === "B") {
     bottomScreen.innerHTML += '<p class="messageStrip" id="'+ screen + number +'">' + screen + number + '</p>';
 }}
 
-function updateScreenLine(line, text) {
+function setScreenLine(line, text) {
 if(d.getElementById(line) !== null){ if(d.getElementById(line).innerHTML !== text){  
     d.getElementById(line).innerHTML = text;
-}}
+}}}
 
+function getScreenLine(line) {
+    if(d.getElementById(line) !== null) return d.getElementById(line).innerHTML
 }
+
 
 function writeToScreen(screen) {
         if(variables[screen] === "cmd") {
             if(screen === "B") {
-            for(let n = 0; n <= maxLines ; n++){ if(Game.messageLog[newsCounter - n] !== undefined)  updateScreenLine("B" + (n+1), Game.messageLog[newsCounter - n])}
+            for(let n = 0; n <= maxLines ; n++){ if(Game.messageLog[newsCounter - n] !== undefined)  setScreenLine("B" + (n+1), Game.messageLog[newsCounter - n])}
         } else if(screen === "A") {
-            for(let n = 0; n <= maxLines ; n++){ if(Game.messageLog[newsCounter - maxLines - n] !== undefined)  updateScreenLine("A" + (n+1), Game.messageLog[newsCounter - maxLines - n])}
+            for(let n = 0; n <= maxLines ; n++){ if(Game.messageLog[newsCounter - maxLines - n] !== undefined)  setScreenLine("A" + (n+1), Game.messageLog[newsCounter - maxLines - n])}
 }
 
 }}
@@ -944,30 +950,49 @@ keysoundstimout =  setTimeout(()=>{
 
 
 if(inputStream[inputStream.length - 1] === ">" && !disableCommands) { inputStream = []; 
-
+    keysounds[1].play()
 inputStream.push(">")
-writeCharacter(cmdlocation + "&gt;", "start")
+writeMessage(cmdlocation + "&gt;", false, 0, "")
+//writeCharacter(cmdlocation + "&gt;", "start")
 }
 
-if(inputStream[0] === ">" && !disableCommands && key !== ">" && key !== "Backspace" && key !== "Shift" && key !== "Enter") writeCharacter(key, "open")
+if(inputStream[0] === ">" && !disableCommands && key !== ">" && key !== "Backspace" && key !== "Shift" && key !== "Enter") {
+
+    setMessage(newsCounter, cmdlocation + "&gt;")
+    let line = getMessage(newsCounter).replaceAll("</span>", "")
+    
+    let word = ""
+    for(let n = 1; n < inputStream.length; n++) word += inputStream[n]
 
 
-if((inputStream[inputStream.length - 1] === "Backspace" && inputStream[0] === ">")
- &&( inputStream[inputStream.length-2] !== ">" && inputStream.length > 2)) 
+    console.log(line + word +  "</span>")
 
- {
+   setMessage(newsCounter, line + word + "</span>") 
+}
+
+if(inputStream[inputStream.length - 1] === "Backspace" && inputStream[0] === ">") {
     inputStream.pop(); 
     inputStream.pop(); 
-    writeCharacter("", "erase"); 
     inputStream[0] = ">";
-    console.log(inputStream)
+
+    setMessage(newsCounter, cmdlocation + "&gt;")
+    let line = getMessage(newsCounter).replaceAll("</span>", "")
+    
+    let word = ""
+    for(let n = 1; n < inputStream.length; n++) word += inputStream[n]
+
+
+    console.log(line + word +  "</span>")
+
+   setMessage(newsCounter, line + word + "</span>") 
 }
 
 //if(inputStream[inputStream.length - 1] === "ArrowUp") { }
 
 if(inputStream[inputStream.length - 1] === "Enter" && inputStream[0] === ">") { 
+    keysounds[0].play()
 
-    writeCharacter("", "end")
+   // writeCharacter("", "end")
     
     cmd = ""
 
