@@ -126,6 +126,8 @@ html, body {
 .messageStrip {
   color:#fff;
   margin:0;
+  min-height: 15px;
+  max-height: 15px;
 }
 
 .line {

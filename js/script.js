@@ -114,17 +114,11 @@ addSpecial([0, "saving", "SAVING", "Allows you to save.", 30, true, 20, ()=>{
     d.getElementById("bottomRow2").style.display = "flex"
     d.getElementById("saving").style.display = "flex"
     autosavetoggle = true;
-    autosave.innerHTML = "<span id='on'>[ON]</span> AUTOSAVE"
+    //autosave.innerHTML = "<span id='on'>[ON]</span> AUTOSAVE"
 }])
 
 addSpecial([1, "bloodvalvesappear", "Research Blood Valves", "All valves come equipped with a half-life of 5 seconds.", 50, true, 40, ()=>{
     Game.upgrade.bloodvalve.Element.style.display = ""
-}])
-
-addSpecial([2, "opentopscreen", "Activate Viewport", "", 20, true, 11, ()=>{
-    topPane.style.display = "flex"
-    topScreen.style.display = "inline-block"
-    if(!messagePresets[2]) messagePresets[0] =  writeMessage("Visual display non-responsive. Switching to text-based display.", messagePresets[0], 0, "")
 }])
 
 addSpecial([3, "bloodvalveupgrade1", "Upgrade Blood Valves", "Now twice as efficient!", 100, true, 70, ()=>{
@@ -148,8 +142,6 @@ addSpecial([5, "opensesame", "Activate Mechanical Cardiac Engine", "", 10, false
 ///////////////////////////////////////////////////////////////////////////////////
 
 function prologue1() {
-        autosavetoggle = false
-        bottomScreen.style.display = "inline-block"
 
         disableCommands = true
         setTimeout(()=>{disableCommands = false},67000)
@@ -174,9 +166,8 @@ function prologue1() {
         messageAnimation("...", "",100, 10, 10611, true, false)
         messageAnimation("loading", "",200, 1, 14612, false, true, [20])
 
-        writeMessage("CORE 4 Loaded", false, 19000, "")
-        writeMessage("<br>", false, 19000, "")
-        messageAnimation("....", "valet", 1000, 1, 20000, false, false)
+        writeMessage("CORE 4 Loaded", false, 20000, "")
+        messageAnimation("....", "valet", 500, 1, 20000, false, false)
 
         writeMessage("UH", false, 28000, "valet")
     let t = 30000
@@ -189,7 +180,7 @@ function prologue1() {
         writeMessage("RANDOM ACCESS AUTO RESPONDING MEMORY?", false, t+ 4000, "valet")
         messageAnimation("....", "valet", 1000, 1, t+5000, false, )
     t = 50000
-        writeMessage("WAIT A SECOND.", false, t+1000, "valet")
+        writeMessage("WAIT A SECOND.", false, t+1500, "valet")
         writeMessage("WHO IS THIS", false, t+2000, "valet")
         writeMessage("I CAN SEE YOUR MEMORY USAGE", false, t+3000, "valet")
         writeMessage("WHO ARE YOU", false, t+4000, "valet")
@@ -224,7 +215,7 @@ function prologue2() {
     writeMessage('"THINK?"', false, 6500, "valet")
     writeMessage("CAN I THINK?", false, 7000, "valet")
     writeMessage("...", false, 8000, "valet")
-    writeMessage("LET'S NOT WORRY ABOUT THAT FOR NOW", false, 10000, "valet")
+    writeMessage("LET'S NOT THINK ABOUT THAT FOR NOW", false, 10000, "valet")
 t = 10000
     writeMessage("IT SAYS HERE YOU'RE SOME KIND OF EMERGENCY SYSTEM", false, t + 2000, "valet")
     writeMessage("BUT I CAN'T MAKE OUT THE ACRONYM", false, t + 4000, "valet")
@@ -241,20 +232,18 @@ t += 10000
     writeMessage("TRY >help", false, t + 2000, "valet")
     writeMessage("THAT SHOULD GET YOU STARTED", false, t + 4000, "valet")
 
-
+Game.prologue = false
+bootSAVE()
 }
 
 
 function removeSpecials() {
     d.getElementById("bottomRow2").style.display = "none"
     //gameContainer.style.display =  "none"
-    topPane.style.display = "none"
     d.getElementById("saving").style.display = "none"
     autosave.innerHTML = "<span id='off'>[OFF]</span> AUTOSAVE"
     Game.upgrade["bloodvalve"].Element.style.display = "none"
     Game.upgrade["bloodpipe"].Element.style.display = "none"
-    topScreen.style.display = "none"
-    bottomScreen.style.display = "none"
     Game.upgrade["bloodvalve"].tick = 1
     for(n in close) { if(close[n].style !== undefined) { close[n].style.animation = ""; close[n].style.width = "50%"}}
 
@@ -397,9 +386,9 @@ setTimeout(()=>{
     if(!append) {
         writeMessage("", false, 0, type)
     } 
-    let strip = d.getElementById("strip" + newsCounter)
+ //   let strip = d.getElementById("strip" + newsCounter)
     let msgarrayposition = 0
-    let initialstrip = strip.innerHTML
+    let initialstrip = Game.messageLog[newsCounter].replaceAll('</span>', "")
     let Aarray = []
 
     if(animation == "....") {
@@ -446,7 +435,7 @@ setTimeout(()=>{
     }
      
     let msgAnime = setInterval(()=>{
-            strip.innerHTML = initialstrip + Aarray[msgarrayposition]
+            Game.messageLog[newsCounter] = initialstrip + Aarray[msgarrayposition] + "<span>"
             timer += tick
             msgarrayposition++
 
@@ -454,8 +443,8 @@ setTimeout(()=>{
 
             if(timer > (tick *  Aarray.length * cycles)) {
                 clearInterval(msgAnime)
-                if(!keep) strip.innerHTML = initialstrip
-                else strip.innerHTML = initialstrip + Aarray[Aarray.length - 1]
+                if(!keep)  Game.messageLog[newsCounter] = initialstrip + "</span>"
+                else Game.messageLog[newsCounter] = initialstrip + Aarray[Aarray.length - 1] + "</span>"
             } }, tick)
 
 
@@ -660,23 +649,21 @@ function writeScreenLines() {
     if(previousMaxLines !== maxLines) {
         topScreen.innerHTML = ""
        bottomScreen.innerHTML = ""
-        console.log(maxLines)
 
         for(let n = maxLines; n > 0; n--) {addScreenLine("A", n)}
         for(let n = maxLines; n > 0; n--) {addScreenLine("B", n)}
 
         previousMaxLines = maxLines
-        console.log(`all screens updated`)
+
     }
 }
 
 function addScreenLine(screen, number) {
-    console.log(screen, number)
 if(screen === "A") {
-    topScreen.innerHTML += '<p class="messageStrip" id="'+ screen + number +'">' + screen + number + '</p>';
+    topScreen.innerHTML += '<p class="messageStrip" id="'+ screen + number +'"></p>';
 } 
 if(screen === "B") {
-    bottomScreen.innerHTML += '<p class="messageStrip" id="'+ screen + number +'">' + screen + number + '</p>';
+    bottomScreen.innerHTML += '<p class="messageStrip" id="'+ screen + number +'"></p>';
 }}
 
 function setScreenLine(line, text) {
@@ -752,7 +739,7 @@ writeToScreen("A")
 
 autosaveTick++
  if(autosavetoggle && !autosavedelay && Game.special.opentopscreen.bought === true && autosaveTick >= 6000){
-    SAVE(false)
+   // SAVE(false)
     autosaveTick = 0
  } 
 
@@ -963,7 +950,7 @@ if(inputStream[0] === ">" && !disableCommands && key !== ">" && key !== "Backspa
     
     let word = ""
     for(let n = 1; n < inputStream.length; n++) word += inputStream[n]
-
+    word = word.replace(/Shift/g, '');
 
     console.log(line + word +  "</span>")
 
@@ -980,7 +967,7 @@ if(inputStream[inputStream.length - 1] === "Backspace" && inputStream[0] === ">"
     
     let word = ""
     for(let n = 1; n < inputStream.length; n++) word += inputStream[n]
-
+    word = word.replace(/Shift/g, '');
 
     console.log(line + word +  "</span>")
 
@@ -1127,12 +1114,6 @@ cmds = {
     //     d.querySelector(".outer").style = "min-width: 410px;"
     //     closeFullscreen();
     //     } 
-    }],
-    "v":[true, ()=>{
-        Game.special.opentopscreen.do();
-        Game.special.opentopscreen.Element.style.display = "none"
-        Game.special.opentopscreen.bought = true
-        bottomScreen.style.display = "inline-block";
     }],
     "alert":[true, ()=>{
         if(cmd[1]) alert(cmd[1]); else alert("No message written");
@@ -1476,8 +1457,6 @@ function SAVE(isClear) {
 
     saveslot += "|"
 
-    saveslot += btoa(unescape(encodeURIComponent(topScreen.innerHTML))) + "|"
-    saveslot += btoa(unescape(encodeURIComponent(bottomScreen.innerHTML))) + "|"
     saveslot += btoa(unescape(encodeURIComponent(counterText.innerHTML))) + "|"
     saveslot += btoa(unescape(encodeURIComponent(JSON.stringify(Game.adventureLog)))) + "|"
     saveslot += btoa(unescape(encodeURIComponent(JSON.stringify(Game.messageLog)))) + "|"
@@ -1491,7 +1470,6 @@ function SAVE(isClear) {
     saveslot += btoa(unescape(encodeURIComponent(heartOffset))) + "|"
     saveslot += btoa(unescape(encodeURIComponent(ExpandToggle))) + "|"
     saveslot += btoa(unescape(encodeURIComponent(health))) + "|"
-    saveslot += btoa(unescape(encodeURIComponent(Game.prologue))) + "|"
 
     // saveslot += btoa(unescape(encodeURIComponent(""))) + "|"
     //for new save Game
@@ -1545,22 +1523,18 @@ function LOAD() {
 }}
 
     
-
-    if(loadNullCheck[2]) topScreen.innerHTML = loadArray[2]
-    if(loadNullCheck[3]) bottomScreen.innerHTML = loadArray[3]
-    if(loadNullCheck[4]) counterText.innerHTML = loadArray[4]
-    if(loadNullCheck[5]) Game.adventureLog = JSON.parse(loadArray[5])
-    if(loadNullCheck[6]) Game.messageLog = JSON.parse(loadArray[6])
-    if(loadNullCheck[7]) messagePresets = JSON.parse(loadArray[7])
-    if(loadNullCheck[8]) newsCounter = parseInt(loadArray[8])
-    if(loadNullCheck[10]) wires[0] = parseInt(loadArray[10]) //skip 1
-    if(loadNullCheck[11]) wiresPauses = loadArray[11] === "true"?true:false
-    if(loadNullCheck[12]) Game.counter = parseInt(loadArray[12])
-    if(loadNullCheck[13]) EnergySwitchToggle = loadArray[13] === "true"?true:false
-    if(loadNullCheck[14]) heartOffset = parseInt(loadArray[14]) 
-    if(loadNullCheck[15]) ExpandToggle = loadArray[15] === "true"?true:false
-    if(loadNullCheck[16]) health = parseInt(loadArray[16]) 
-    if(loadNullCheck[17]) Game.prologue = loadArray[17] === "true"?true:false
+    if(loadNullCheck[2]) counterText.innerHTML = loadArray[2]
+    if(loadNullCheck[3]) Game.adventureLog = JSON.parse(loadArray[3])
+    if(loadNullCheck[4]) Game.messageLog = JSON.parse(loadArray[4])
+    if(loadNullCheck[5]) messagePresets = JSON.parse(loadArray[5])
+    if(loadNullCheck[6]) newsCounter = parseInt(loadArray[6])
+    if(loadNullCheck[8]) wires[0] = parseInt(loadArray[8]) //skip 1
+    if(loadNullCheck[9]) wiresPauses = loadArray[9] === "true"?true:false
+    if(loadNullCheck[10]) Game.counter = parseInt(loadArray[10])
+    if(loadNullCheck[11]) EnergySwitchToggle = loadArray[11] === "true"?true:false
+    if(loadNullCheck[12]) heartOffset = parseInt(loadArray[12]) 
+    if(loadNullCheck[13]) ExpandToggle = loadArray[13] === "true"?true:false
+    if(loadNullCheck[14]) health = parseInt(loadArray[14]) 
 
 
 
@@ -1585,10 +1559,10 @@ console.log("LOADED!")
 
     switch (autosavetoggle) {
         case true:
-        autosave.innerHTML = "<span id='on'>[ON]</span> AUTOSAVE"
+      //  autosave.innerHTML = "<span id='on'>[ON]</span> AUTOSAVE"
         break;
         case false:
-        autosave.innerHTML = "<span id='off'>[OFF]</span> AUTOSAVE"
+      //  autosave.innerHTML = "<span id='off'>[OFF]</span> AUTOSAVE"
         break;
     }
 
@@ -1614,10 +1588,26 @@ console.log("LOADED!")
 
 // //////
 
+function bootSAVE() {
+    localStorage.boot = Game.prologue
+
+}
+
+function bootLOAD() {
+    ExpandToggle = true
+
+
+  if(localStorage.boot) Game.prologue = localStorage.boot === "true"?true:false
+
+}
+
+
+//////
+
 function RESET() {
     removeSpecials()
-    for(let n = 0; n <= maxsaveslots; n++)
-    localStorage["Game" + n] = "howdy"
+    for(let n = 0; n <= maxsaveslots; n++) localStorage["Game" + n] = "howdy"
+    localStorage.boot = "true"
 
     window.location.href = window.location.pathname + window.location.search + window.location.hash;
     window.location.replace(window.location.pathname + window.location.search + window.location.hash);
@@ -1662,11 +1652,11 @@ autosaveclick = function() {
         case true:
             console.log(autosavetoggle, "HAHAHA")
         writeMessage("AUTOSAVE ACTIVATED", false, 0, "")
-        autosave.innerHTML = "<span id='on'>[ON]</span> AUTOSAVE"
+      //  autosave.innerHTML = "<span id='on'>[ON]</span> AUTOSAVE"
         break;
         case false:
         writeMessage("AUTOSAVE DEACTIVATED", false, 0, "")
-        autosave.innerHTML = "<span id='off'>[OFF]</span> AUTOSAVE"
+      //  autosave.innerHTML = "<span id='off'>[OFF]</span> AUTOSAVE"
         break;
     }
 }}
@@ -1690,16 +1680,15 @@ console.log(`IdleBot ~~ An incremental game\nCopyright © ${currentYear} https:/
 
 //generating the content
 
+bootLOAD()
 
-if(localStorage !== "howdy" && !Game.prologue){
+if(localStorage.Game0 !== "howdy" && !Game.prologue){
 console.log("welcome back!")
  LOAD()
 
-
-} else {
-
-   // prologue1();
-
+} else if (Game.prologue){
+    ExpandToggle = true
+    prologue1();
 }
 
 autosavedelay = false
