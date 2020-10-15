@@ -95,6 +95,7 @@ let Game = {
     messageLog : new Array(),
     name: "",
     prologue: true,
+    updated: true
 }
 
 Game.messageChecker.fill(false);
@@ -304,8 +305,8 @@ function writeMessage(text, check, delay, type) {
         for(n in textArray) if(textArray[n].includes("$")) { textArray[n] = textArray[n].replace('$', ''); if(variables[textArray[n]])  textArray[n] = variables[textArray[n]]}
         text = ""
         for(n in textArray) text += textArray[n] + " "
-        if(delay === 0) result =  basicWriter(text, type)
-        else setTimeout(()=>{ result =  basicWriter(text, type)}, delay)  
+        if(delay === 0) result = basicWriter(text, type)
+        else setTimeout(()=>{ result =  basicWriter(text, type)}, delay) 
 return result;
 }}
 
@@ -321,6 +322,7 @@ function basicWriter(text, type) {
 //    }}, 500)
     // for(let n = 0; n < newsCounter;n++) d.getElementById("strip" + n).style.animation = ""
      Game.messageLog[newsCounter] = `<span class="${type}">${text}</span>`
+     Game.updated = true;
      return true
 }
 
@@ -637,6 +639,8 @@ let maxScreenHeight = Math.floor(((window.innerHeight - 364)/2) - 20) -  Math.fl
 let maxLines = maxScreenHeight/15
 let maxChar = topPane.clientWidth - 40
 let previousMaxLines = 0;
+let previousMaxScreenLines = 0;
+let previousMaxChar = 0;
 
 function show() {
     Game.special.opentopscreen.do();
@@ -646,14 +650,14 @@ function show() {
 }
 
 function writeScreenLines() {
-    if(previousMaxLines !== maxLines) {
+    if(previousMaxScreenLines !== maxLines) {
         topScreen.innerHTML = ""
        bottomScreen.innerHTML = ""
 
         for(let n = maxLines; n > 0; n--) {addScreenLine("A", n)}
         for(let n = maxLines; n > 0; n--) {addScreenLine("B", n)}
 
-        previousMaxLines = maxLines
+        previousMaxScreenLines = maxLines
 
     }
 }
@@ -722,38 +726,36 @@ reText[pos] = ""
 switch(text[n][1]) {
     case "left":
         if(text[n][0].length > maxChar) {
-            text.splice(n+1, 0, [text[n][0].slice(maxChar, text[n][0].length), "left"])
-            text[n][0] = text[n][0].slice(0, maxChar)
+            text.splice(n+1, 0, [text[n][0].slice(maxChar-1, text[n][0].length), "left"])
+            text[n][0] = text[n][0].slice(0, maxChar-1) + "-"
         }
         reText[pos] += text[n][0]
-
-         reTextArray = reText[pos].match(/#+/g)
+        reTextArray = reText[pos].match(/#+/g)
         reText[pos] = reText[pos].replace(/#+/g, "")
         initialReText = reText[pos]
         reText[pos] = "<span class=\"b\">"
-        for( m in reTextArray[0].split("")) {
+        if(reTextArray !== null) for( m in reTextArray[0].split("")) {
             reText[pos] += "█"
         }
         reText[pos] += "</span>" + initialReText
-
 
         for(let m = text[n][0].length; m < maxChar; m++) reText[pos] += "#"
 
         reTextArray = reText[pos].match(/#+/g)
         reText[pos] = reText[pos].replace(/#/g, "")
         reText[pos] = reText[pos] + "<span class=\"b\">"
-        for( m in reTextArray[0].split("")) {
+       if(reTextArray !== null)  for( m in reTextArray[0].split("")) {
             reText[pos] += "█"
         }
         reText[pos] += "</span>"
-
-
         break;
 
     case "right":
        
         for(let m = 0; m < maxChar-text[n][0].length; m++) reText[pos] += "#"
         reText[pos] += text[n][0]
+
+
         break;
 
     case "center":
@@ -779,10 +781,6 @@ switch(text[n][1]) {
             reText[pos] += "█"
         }
         reText[pos] += "</span>"
-
-
-
-
         break;
 }
 
@@ -792,31 +790,18 @@ switch(text[n][1]) {
 
 emptyspace = emptyspace.replace(/#+/g, "<span class=\"b\">█</span>")
 
-// for(n in reText) {
-//     if(reText[n]) {
-//         let reTextArray = reText[pos].match(/#+/g)
-//         for( m in reTextArray) {
-
-
-//         }
-
-//         reText[n] = reText[n].replace(/#/g, "<span class=\"b\">█</span>")
-
-
-//     }} 
-
-for(let n = maxLines-1; n > 1 ; n--){
-
+for(let n = maxLines-1; n > 1 ; n--) {
     if(reText[n]) reBox[n] = reText[n]
+    else reBox[n] = emptyspace}
 
-    else reBox[n] = emptyspace
-}
 return reBox
 }
 
 function chill() {
         writeMessage("chill", false, 0, "valet")
 }
+
+let minusC = 0;
 
 function updateEverythingbutTick() {
 
@@ -833,37 +818,28 @@ if(Game.counter >= 999999999) Game.counter = 999999999
 if(health > 100) health = 100
 if(heartOffset > 80) heartOffset = 81
 
-if(ExpandToggle){
-    maxPaneHeight = Math.floor(((window.innerHeight)/2)) - 3
-    maxScreenHeight =  Math.floor(((window.innerHeight)/2) - 3) -  Math.floor(((window.innerHeight)/2) - 3)%15
-    maxLines = maxScreenHeight/15
-    maxChar = ((topPane.clientWidth - 40) - (topPane.clientWidth - 40)%8) / 8
 
+
+if(ExpandToggle) {
+    minusC = 0;
     topScreen.style = "margin:0 20px 0 20px; position:absolute; bottom:0;"
     bottomScreen.style.margin = "0 20px 0 20px"
     gameContainer.style.display = "none"
-
-    topPane.style.minHeight = maxPaneHeight + "px"
-    bottomPane.style.minHeight = maxPaneHeight + "px"
-
-    topScreen.style.height =  maxScreenHeight + "px"
-    bottomScreen.style.height = maxScreenHeight + "px"
-
-    topScreen.style.minWidth = maxChar*8 + "px"
-    bottomScreen.style.minWidth = topScreen.style.minWidth
-
-}    else {
-
-    maxPaneHeight = Math.floor(((window.innerHeight - 364)/2)) - 3
-    maxScreenHeight =  Math.floor(((window.innerHeight - 364)/2) - 23) -  Math.floor(((window.innerHeight - 364)/2)- 23)%15
-    maxLines = maxScreenHeight/15
-    maxChar = ((topPane.clientWidth - 40) - (topPane.clientWidth - 40)%8) / 8 - 1
-
-
+} else {
+    minusC = 364
     topScreen.style= "margin:10px 20px 10px 20px;"
     bottomScreen.style.margin = "10px 20px 10px 20px"
     gameContainer.style.display = ""
+}
 
+maxPaneHeight = ((window.innerHeight - minusC)/2) - 3
+
+maxScreenHeight = Math.floor(((window.innerHeight - minusC)/2) - 10) -  Math.floor(((window.innerHeight - minusC)/2)- 10)%15
+
+maxChar = ((topPane.clientWidth - 40) - (topPane.clientWidth - 40)%8) / 8
+maxLines = maxScreenHeight/15
+
+if(previousMaxLines !== maxLines || previousMaxChar !== maxChar) {
     topPane.style.minHeight = maxPaneHeight + "px"
     bottomPane.style.minHeight = maxPaneHeight + "px"
 
@@ -872,11 +848,20 @@ if(ExpandToggle){
 
     topScreen.style.minWidth = maxChar*8 + "px"
     bottomScreen.style.minWidth = topScreen.style.minWidth
+
+    previousMaxLines = maxLines;
+    previousMaxChar = maxChar;
+    Game.updated = true;
 }
 
+
+
 writeScreenLines()
+if(Game.updated) {
 writeToScreen("B")
 writeToScreen("A")
+Game.updated = false;
+}
 
 autosaveTick++
  if(autosavetoggle && !autosavedelay && autosaveTick >= 6000){
@@ -1105,6 +1090,7 @@ if(inputStream[0] === ">" && !disableCommands && key !== ">" && key !== "Backspa
     word = word.replace(/Shift/g, '');
 
    setMessage(newsCounter, "<span>" + line + word + '</span><span id="blinky">█</span>') 
+   Game.updated = true;
 }
 
 if(inputStream[inputStream.length - 1] === "Backspace" && inputStream[0] === ">") {
@@ -1121,6 +1107,7 @@ if(inputStream[inputStream.length - 1] === "Backspace" && inputStream[0] === ">"
     word = word.replace(/Shift/g, '');
 
    setMessage(newsCounter, line + word + '</span><span id="blinky">█</span>') 
+   Game.updated = true;
 }
 
 //if(inputStream[inputStream.length - 1] === "ArrowUp") { }
@@ -1132,6 +1119,7 @@ if(inputStream[inputStream.length - 1] === "Enter" && inputStream[0] === ">") {
    let line = getMessage(newsCounter).replaceAll('</span><span id="blinky">█</span>', "")
    setMessage(newsCounter, line + '</span>') 
 
+   Game.updated = true;
     cmd = ""
 
     inputStream.pop()
@@ -1308,13 +1296,15 @@ cmds = {
     "A":[true, ()=>{
         if(cmd[1]) {
             for(let n = 0; n <= maxLines ; n++) {setScreenLine("A" + (n+1), "");}
-         variables["A"] = cmd[1]}
+         variables["A"] = cmd[1]
+        Game.updated = true}
     }],
 
     "B":[true, ()=>{
         if(cmd[1]) {
             for(let n = 0; n <= maxLines ; n++) {setScreenLine("B" + (n+1), "");}
-         variables["B"] = cmd[1]}
+         variables["B"] = cmd[1]
+         Game.updated = true}
     }],
 
 
