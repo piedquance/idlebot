@@ -704,7 +704,8 @@ if(variables[screen] === "t1") {
 function boxIt(text) {
 let reBox = []
 let reText = []
-
+let reTextArray = []
+let initialReText = ""
 //top, bottom, and empty space
 let line = ""
 for(let n = 0; n <= maxChar; n++) line += "/"
@@ -721,14 +722,31 @@ reText[pos] = ""
 switch(text[n][1]) {
     case "left":
         if(text[n][0].length > maxChar) {
-
             text.splice(n+1, 0, [text[n][0].slice(maxChar, text[n][0].length), "left"])
-         if(aa< 5)   console.log(text)
             text[n][0] = text[n][0].slice(0, maxChar)
         }
-
         reText[pos] += text[n][0]
+
+         reTextArray = reText[pos].match(/#+/g)
+        reText[pos] = reText[pos].replace(/#+/g, "")
+        initialReText = reText[pos]
+        reText[pos] = "<span class=\"b\">"
+        for( m in reTextArray[0].split("")) {
+            reText[pos] += "█"
+        }
+        reText[pos] += "</span>" + initialReText
+
+
         for(let m = text[n][0].length; m < maxChar; m++) reText[pos] += "#"
+
+        reTextArray = reText[pos].match(/#+/g)
+        reText[pos] = reText[pos].replace(/#/g, "")
+        reText[pos] = reText[pos] + "<span class=\"b\">"
+        for( m in reTextArray[0].split("")) {
+            reText[pos] += "█"
+        }
+        reText[pos] += "</span>"
+
 
         break;
 
@@ -739,24 +757,32 @@ switch(text[n][1]) {
         break;
 
     case "center":
-        for(let m = 0; m < Math.floor((maxChar-text[n][0].length)/2) ; m++) reText[pos] += "#"
 
+        for(let m = 0; m < Math.floor((maxChar-text[n][0].length)/2) ; m++) reText[pos] += "#"
         reText[pos] += text[n][0]
+
+        reTextArray = reText[pos].match(/#+/g)
+        reText[pos] = reText[pos].replace(/#+/g, "")
+        initialReText = reText[pos]
+        reText[pos] = "<span class=\"b\">"
+        for( m in reTextArray[0].split("")) {
+            reText[pos] += "█"
+        }
+        reText[pos] += "</span>" + initialReText
 
         for(let m = 0; m < Math.floor((maxChar-text[n][0].length)/2); m++) reText[pos] += "#"
 
-
-        if(reText[pos].split("").length < emptyspace.split("").length-1) {
-
-            let num = emptyspace.split("").length-1  - reText[pos].split("").length
-            let array = reText[pos].split("")
-            
-            for(let n  = 1; n < num; n++) array.pop()
-
-            reText[pos] = array.toString().replace(/,/g, "")
-
-            for(let n  = 0; n <= num; n++) if(text[n]!== undefined)  reText[pos] += "#"
+        reTextArray = reText[pos].match(/#+/g)
+        reText[pos] = reText[pos].replace(/#/g, "")
+        reText[pos] = reText[pos] + "<span class=\"b\">"
+        for( m in reTextArray[0].split("")) {
+            reText[pos] += "█"
         }
+        reText[pos] += "</span>"
+
+
+
+
         break;
 }
 
@@ -764,9 +790,20 @@ switch(text[n][1]) {
 }
 //putting it in reBox
 
-emptyspace = emptyspace.replace(/#/g, "<span class=\"b\">█</span>")
+emptyspace = emptyspace.replace(/#+/g, "<span class=\"b\">█</span>")
 
-for(n in reText) if(reText[n]) reText[n] = reText[n].replace(/#/g, "<span class=\"b\">█</span>")
+// for(n in reText) {
+//     if(reText[n]) {
+//         let reTextArray = reText[pos].match(/#+/g)
+//         for( m in reTextArray) {
+
+
+//         }
+
+//         reText[n] = reText[n].replace(/#/g, "<span class=\"b\">█</span>")
+
+
+//     }} 
 
 for(let n = maxLines-1; n > 1 ; n--){
 
