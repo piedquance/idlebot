@@ -3,12 +3,19 @@ html, body {
   height: 100%;
   overflow: hidden;
   user-select: none;
-  color: #fff;
-  background-color: #000;
+  color: var(--color);
+  background-color: var(--bg-color);
   font-family: monospace;
-  font-size: 13px;
+  font-size: var(--text-font);
   }
 
+  :root {
+    --heart-offset : 0px;
+    --text-font: 13px;
+    --text-height: 15px;
+    --bg-color: #000;
+    --color: rgb(173, 219, 187);
+  }
 
 .row {
   display:flex;
@@ -21,14 +28,15 @@ html, body {
 
 .left {
   max-width: 400px;
-  background-color: #000;
+  background-color:var(--bg-color);
 }
 .right {
   max-width: 400px;
-   background-color: #000;
+   background-color:var(--bg-color);
 }
 
 .left, .right {
+  z-index: 1;
   width:20%;
   display: flex;
   flex-direction: column;
@@ -37,39 +45,48 @@ html, body {
 .outer {
   display:flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: space-around;
   width:50%;
   min-width: 410px;
-  border: 3px double #fff;
+  border: 3px double;
+  border-color: var(--color);
   /* border-width: 0 3px; */
 }
 
-
+#charRef {
+  z-index: 0;
+  position: fixed;
+  font-size: var(--text-font);
+}
 
 #topPane {
   position: relative;
-  background-color: #000;
+  display: flex;
+  justify-content: flex-end;
   flex-direction: column;
-  /* border-top: 3px double #fff; */
+  /* border-top: 3px double var(--text-font); */
 }
 
 #bottomPane {
   display:flex;
   flex-direction: row;
   position: relative;
-  background-color: #000;
-  /* border-bottom: 3px double #fff; */
+  /* border-bottom: 3px double var(--text-font); */
 }
 
 #topScreen {
+  display: flex;
+  flex-direction: column;
   z-index: 1;
   text-align: left;
   margin: 10px 20px 10px 20px;
   overflow-y: hidden;
-  color:#fff;
+  color: var(--color);
 }
 
 #bottomScreen {
+  display: flex;
+  flex-direction: column;
   z-index: 1;
   margin:0;
   flex-grow:1;
@@ -97,7 +114,7 @@ html, body {
   padding:10px 0 0 0;
   margin:0 20px;
   overflow-y: hidden;
-  color:#fff;
+  color: var(--color);
   max-height: 45%;
 }
 
@@ -112,7 +129,7 @@ html, body {
 
 #SecondheartColor:hover {
   color: #fff;
-  background-color: #000;
+  background-color:var(--bg-color);
 }
 
 #SecondheartColor:active {
@@ -124,15 +141,22 @@ html, body {
   100% { color: #fff; }
 }
 .messageStrip {
-  color:#fff;
+  color: var(--color);
   margin:0;
-  min-height: 15px;
-  max-height: 15px;
+  min-height: var(--text-height);
+  max-height: var(--text-height);
+  display: inline;
+  white-space: nowrap;
   overflow: hidden;
+  overflow: clip;
+}
+
+#text {
+  display: inline;
 }
 
 .b {
-  color:#000;
+  color:var(--bg-color);
 }
 
 .line {
@@ -141,8 +165,8 @@ html, body {
 }
 
 @keyframes bottomScreen {
-  0% {background-color: #fff;}
-  100% {background-color: #000;}
+  0% {background-color: var(--color);}
+  100% {background-color: var(--bg-color);}
 }
 
 .link:hover {
@@ -152,38 +176,38 @@ html, body {
 }
 
 #blinky {
-  background-color: #000;
-  color: #fff;
+  background-color:var(--bg-color);
+  color: var(--color);
   animation: blink 0.7s steps(1, end) infinite;
 }
 
 
 @keyframes blink {
-50% {color:#000;}
+50% {color:var(--bg-color);}
 }
 /* taken from https://stackoverflow.com/questions/16344354/how-to-make-blinking-flashing-text-with-css-3 */
 
 
 
 a {
-  background-color: #000;
-  color: #fff;
+  background-color:var(--bg-color);
+  color: var(--color);
   text-decoration: none;
 }
 
 a:hover {
-  background-color: #fff;
-  color: #000;
+  background-color: var(--text-font);
+  color: var(--bg-color);
 }
 
 a:active {
-  background-color: #000;
-  color: #fff;
+  background-color:var(--bg-color);
+  color: var(--color);
 }
 
 a:visited {
-  background-color: #000;
-  color: #fff;
+  background-color:var(--bg-color);
+  color: var(--color);
 }
 
 .flash {
@@ -193,9 +217,8 @@ a:visited {
 
 
 .bottomRow {
-  background-color: #000;
-  color:#fff;
-  font-size: 13px;
+  background-color:var(--bg-color);
+  color: var(--color);
 }
 
 .valet {
@@ -234,12 +257,12 @@ a:visited {
 
 .saveC:hover {
   background-color: #fff;
-  color:#000;
+  color:var(--bg-color);
 }
 
 .saveC:active {
-  background-color: #000;
-  color:#fff;
+  background-color:var(--bg-color);
+  color: var(--color);
 }
 
 #on {color:#e25151}
@@ -260,13 +283,13 @@ a:visited {
 }
 
 .aboutC:hover {
-  background-color: #fff;
-  color:#000;
+  background-color: var(--text-font);
+  color:var(--bg-color);
 }
 
 .donate {
-  background-color: #000;
-  color: #fff;
+  background-color:var(--bg-color);
+  color: var(--color);
   text-decoration: none;
   border:none;
   padding: 0;
@@ -280,26 +303,26 @@ a:visited {
 }
 
 .donate:hover {
-  background-color: #fff;
-  color:#000
+  background-color: var(--color);
+  color:var(--bg-color)
 }
 
 #donate-wrapper:hover .donate {
-  background-color: #fff;
-  color:#000
+  background-color: var(--color);
+  color:var(--bg-color)
 }
 
 .tile {
   min-height:100px;
   overflow-wrap: normal;
   display:flex;
-  background-color: #000;
+  background-color:var(--bg-color);
   border-width: 3px;
-  border-color: #fff;
+  border-color: var(--color);
   border-style: double;
   margin:10px;
-  animation-name: tile;
-  animation-duration:0.5s;
+  /* animation-name: tile;
+  animation-duration:0.5s; */
 }
 
 
@@ -318,14 +341,14 @@ a:visited {
 
 
 @keyframes tile {
-  0% {background-color: #fff;
+  0% {background-color: var(--color);
 
   }
-  100% { background-color: #000;}
+  100% { background-color: var(--bg-color);}
 }
 
 @keyframes tilerest {
-  0% {color:#fff}
+  0% {color:var(--color);}
     100% {}
 }
 
@@ -385,11 +408,11 @@ background-size: auto;
   padding-left: 25px;
   font-weight: 1000;
   font-size: 13px;
-  color:#fff;
+  color: var(--color);
   margin:0;
 }
 .Name {
-  color:#fff;
+  color: var(--color);
   padding-left: 20px;
   font-size: 18px;
   font-weight: 1000;
@@ -400,7 +423,7 @@ background-size: auto;
 }
 
 .Num {
-  color:#fff;
+  color: var(--color);
   float:right;
   padding-right:20px;
   font-size: 50px;
@@ -414,7 +437,7 @@ background-size: auto;
 
 #HEART {
   min-width:353px;
-  background-color: #fff;
+  background-color: var(--color);
   display: none;
 }
 
@@ -423,11 +446,11 @@ background-size: auto;
 }
 
 #left-background {
-  background-image: linear-gradient(to right, #000 0px, #000 20px, #fff 20px, #fff 100%);
+  background-image: linear-gradient(to right, var(--bg-color) 0px, var(--bg-color) 20px, var(--color) 20px, var(--color) 100%);
 }
 
 #right-background {
-  background-image: linear-gradient(to left, #000 0px,  #000 20px, #fff 20px, #fff 100%);
+  background-image: linear-gradient(to left, var(--bg-color) 0px,  var(--bg-color) 20px, var(--color) 20px, var(--color) 100%);
 }
 
 
@@ -469,9 +492,6 @@ background-size: auto;
   background-size: auto;
 }
 
-:root {
-  --heart-offset : 0px;
-}
 
 #heartBottom {
   z-index:5;
@@ -553,7 +573,7 @@ background-size: auto;
   position: absolute;
   width: 50%;
   height:100%;
-  background-color: #000;
+  background-color:var(--bg-color);
 }
 
 #closeLeft {
@@ -588,18 +608,18 @@ background-size: auto;
 }
 
 @keyframes upgradeClick {
-  0%  {border-color:#fff; }
+  0%  {border-color:var(--color); }
   100% { border-color:#444;}
 }
 
 @keyframes messageLoad {
-  0% {color:#fff; background-color: #000;}
-  30% {color:#000; background-color: #fff;}
-  100% {color:#fff; background-color: #000;}
+  0% {color:var(--color); background-color: var(--bg-color);}
+  30% {color:var(--bg-color); background-color: var(--color);}
+  100% {color:var(--color); background-color: var(--bg-color);}
 }
 
 @keyframes saveClick {
-  0% {color:#000; background-color: #fff;}
-  30% {color:#fff; background-color: #000;}
-  100% {color:#000; background-color: #fff;}
+  0% {color:var(--bg-color); background-color: var(--color);}
+  30% {color:var(--color); background-color: var(--bg-color);}
+  100% {color:var(--bg-color); background-color: var(--color);}
 }

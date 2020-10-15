@@ -634,10 +634,20 @@ Game.special[set[1]].reference = set[1]
 }
 
 //////
-let maxPaneHeight = Math.floor(((window.innerHeight - 364)/2)) - 3
-let maxScreenHeight = Math.floor(((window.innerHeight - 364)/2) - 20) -  Math.floor(((window.innerHeight - 364)/2)- 20)%15
-let maxLines = maxScreenHeight/15
-let maxChar = topPane.clientWidth - 40
+let variables = {
+    "NAME": Game.name,
+    "A" : "t2",
+    "B" : "t1",
+    "font": "14",
+    }
+    
+let textSize 
+let minusC = 0;
+let charRef = d.getElementById("charRef")
+let maxPaneHeight = Math.floor(((window.innerHeight - minusC)/2)) - 3
+let maxScreenHeight = Math.floor(((window.innerHeight - minusC)/2) - 20) -  Math.floor(((window.innerHeight - minusC)/2)- 20)%charRef.clientHeight
+let maxLines = Math.floor(maxScreenHeight/charRef.clientHeight)
+let maxChar = ((topPane.clientWidth - 40) - (topPane.clientWidth - 40)%charRef.clientWidth) / charRef.clientWidth
 let previousMaxLines = 0;
 let previousMaxScreenLines = 0;
 let previousMaxChar = 0;
@@ -670,18 +680,9 @@ if(screen === "B") {
     bottomScreen.innerHTML += '<p class="messageStrip" id="'+ screen + number +'"></p>';
 }}
 
-let aa = 0;
-
 function setScreenLine(line, text) {
 if(d.getElementById(line) !== null){ if(d.getElementById(line).innerHTML !== text){  
-    if(aa < 5) console.log(aa)
-   if(aa < 5)  console.log("before", d.getElementById(line).innerHTML !== text, d.getElementById(line).innerHTML, text)
-   if(aa < 5) console.log(text.length === 0)
-   if(aa < 5) console.log(`%c${Game.messageLog[0]}`, "color: #fff; background-color: #000")
     d.getElementById(line).innerHTML = text;
-    if(aa < 5) console.log("after",d.getElementById(line).innerHTML !== text, d.getElementById(line).innerHTML, text)
-
-    aa++
 }}}
 
 function getScreenLine(line) {
@@ -801,7 +802,7 @@ function chill() {
         writeMessage("chill", false, 0, "valet")
 }
 
-let minusC = 0;
+
 
 function updateEverythingbutTick() {
 
@@ -822,22 +823,25 @@ if(heartOffset > 80) heartOffset = 81
 
 if(ExpandToggle) {
     minusC = 0;
-    topScreen.style = "margin:0 20px 0 20px; position:absolute; bottom:0;"
-    bottomScreen.style.margin = "0 20px 0 20px"
+    topScreen.style = "margin:0 20px 0 20px;"
+    bottomScreen.style.margin = "0 20px 10px 20px"
     gameContainer.style.display = "none"
 } else {
     minusC = 364
-    topScreen.style= "margin:10px 20px 10px 20px;"
-    bottomScreen.style.margin = "10px 20px 10px 20px"
+    topScreen.style= "margin:10px 20px 0 20px;"
+    bottomScreen.style.margin = "0 20px 10px 20px"
     gameContainer.style.display = ""
 }
 
+//charRef.style.fontSize = variables.font + "px"
+d.documentElement.style.setProperty("--text-font", variables.font+"px")
+d.documentElement.style.setProperty("--text-height", charRef.clientHeight+"px")
+
+
 maxPaneHeight = ((window.innerHeight - minusC)/2) - 3
-
-maxScreenHeight = Math.floor(((window.innerHeight - minusC)/2) - 10) -  Math.floor(((window.innerHeight - minusC)/2)- 10)%15
-
-maxChar = ((topPane.clientWidth - 40) - (topPane.clientWidth - 40)%8) / 8
-maxLines = maxScreenHeight/15
+maxScreenHeight = Math.floor(((window.innerHeight - minusC)/2) - 10) -  Math.floor(((window.innerHeight - minusC)/2)- 10)%charRef.clientHeight
+maxChar = ((topPane.clientWidth - 40) - (topPane.clientWidth - 40)%charRef.clientWidth) / charRef.clientWidth
+maxLines = Math.floor(maxScreenHeight/charRef.clientHeight)
 
 if(previousMaxLines !== maxLines || previousMaxChar !== maxChar) {
     topPane.style.minHeight = maxPaneHeight + "px"
@@ -846,15 +850,13 @@ if(previousMaxLines !== maxLines || previousMaxChar !== maxChar) {
     topScreen.style.height =  maxScreenHeight + "px"
     bottomScreen.style.height = maxScreenHeight + "px"
 
-    topScreen.style.minWidth = maxChar*8 + "px"
-    bottomScreen.style.minWidth = topScreen.style.minWidth
+    topScreen.style.maxWidth = maxChar*charRef.clientWidth + "px"
+    bottomScreen.style.maxWidth = topScreen.style.minWidth
 
     previousMaxLines = maxLines;
     previousMaxChar = maxChar;
     Game.updated = true;
 }
-
-
 
 writeScreenLines()
 if(Game.updated) {
@@ -984,10 +986,12 @@ function checkUpgradeCost() {
     for(x in Game.upgrade) {
     if(Game.counter>=Game.upgrade[x].cost) {
         Game.upgrade[x].numberElement.style.color=""
+        Game.upgrade[x].costElement.style.color=""
         Game.upgrade[x].Element.style.borderColor = ""
         Game.upgrade[x].Element.classList.add("active");
     } else {
         Game.upgrade[x].numberElement.style.color="#888"
+        Game.upgrade[x].costElement.style.color="#888"
         Game.upgrade[x].Element.style.borderColor = "#888"
         Game.upgrade[x].Element.classList.remove("active");
     }
@@ -1036,12 +1040,7 @@ window.document.addEventListener('keydown', e => {
 //      d.stopPropagation();
 //   }; //taken from https://stackoverflow.com/questions/49280847/firefox-switching-tab-on-backspace
 
-let variables = {
-"NAME": Game.name,
-"A" : "t2",
-"B" : "t1"
 
-}
 
 let keysoundon = false
 let keysoundstimout
@@ -1205,6 +1204,7 @@ cmds = {
             variables[settings[0]] = settings[1]
             writeMessage(`${settings[0]} has been set to "${variables[settings[0]]}"`, false, 0, "")
         }
+        Game.updated = true;
     }],
     "setname":[true, ()=>{
         if(cmd[1]) {
@@ -1290,7 +1290,7 @@ cmds = {
     }],
 
     "help":[true, ()=>{
-        writeMessage("type \">set A=help\" or \">A help\" to view the help settings", false, 0, "")
+        writeMessage("type \">set A=help\" or \">A help\" to open the help document", false, 0, "")
     }],
 
     "A":[true, ()=>{
@@ -1644,7 +1644,7 @@ function LOAD() {
 
      //decode all that jazz
 
-    loadDump = decodeURIComponent(escape(window.atob(localStorage["Game" + saveslotnumber])))
+    if(localStorage["Game" + saveslotnumber]){  loadDump = decodeURIComponent(escape(window.atob(localStorage["Game" + saveslotnumber])))
 
     loadArray = loadDump.split("|")
 
@@ -1741,7 +1741,7 @@ console.log("LOADED!")
     if(ExpandToggle) d.querySelector(".outer").style = "min-width: 200px;"
     else d.querySelector(".outer").style = "min-width: 410px;"
 
-
+    }
  }
 
 // //////
@@ -1876,4 +1876,3 @@ powerButton.addEventListener("click", ()=>{
 powerRow.style.display = "none";
 startGame(); //let's go
 })
-
