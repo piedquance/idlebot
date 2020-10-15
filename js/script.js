@@ -164,7 +164,7 @@ function prologue1() {
 
         writeMessage("Loading CORE 4", false, 10610, "")
         messageAnimation("...", "",100, 10, 10611, true, false)
-        messageAnimation("loading", "",200, 1, 14612, false, true, [30])
+        messageAnimation("loading", "",200, 1, 14612, false, true, [20])
 
         writeMessage("CORE 4 Loaded", false, 20000, "")
         messageAnimation("....", "valet", 500, 1, 20000, false, false)
@@ -216,7 +216,7 @@ function prologue2() {
     writeMessage('"THINK?"', false, 6500, "valet")
     writeMessage("CAN I THINK?", false, 7000, "valet")
     writeMessage("...", false, 8000, "valet")
-    writeMessage("LET'S NOT THINK ABOUT THAT FOR NOW", false, 10000, "valet")
+    writeMessage("LET'S NOT THINK ABOUT THAT FOR NOW :P", false, 10000, "valet")
 t = 10000
     writeMessage("IT SAYS HERE YOU'RE SOME KIND OF EMERGENCY SYSTEM", false, t + 2000, "valet")
     writeMessage("BUT I CAN'T MAKE OUT THE ACRONYM", false, t + 4000, "valet")
@@ -638,6 +638,7 @@ Game.special[set[1]].reference = set[1]
 let maxPaneHeight = Math.floor(((window.innerHeight - 364)/2)) - 3
 let maxScreenHeight = Math.floor(((window.innerHeight - 364)/2) - 20) -  Math.floor(((window.innerHeight - 364)/2)- 20)%15
 let maxLines = maxScreenHeight/15
+let maxChar = topPane.clientWidth - 40
 let previousMaxLines = 0;
 
 function show() {
@@ -668,9 +669,16 @@ if(screen === "B") {
     bottomScreen.innerHTML += '<p class="messageStrip" id="'+ screen + number +'"></p>';
 }}
 
+let aa = 0;
+
 function setScreenLine(line, text) {
 if(d.getElementById(line) !== null){ if(d.getElementById(line).innerHTML !== text){  
+   if(aa < 5)  console.log("before", d.getElementById(line).innerHTML !== text, d.getElementById(line).innerHTML, text)
+   if(aa < 5) console.log(`%c${Game.messageLog[0]}`, "color: #fff; background-color: #000")
     d.getElementById(line).innerHTML = text;
+    if(aa < 5) console.log("after",d.getElementById(line).innerHTML !== text, d.getElementById(line).innerHTML, text)
+
+    aa++
 }}}
 
 function getScreenLine(line) {
@@ -679,14 +687,34 @@ function getScreenLine(line) {
 
 
 function writeToScreen(screen) {
-        if(variables[screen] === "cmd") {
-            if(screen === "B") {
-            for(let n = 0; n <= maxLines ; n++){ if(Game.messageLog[newsCounter - n] !== undefined)  setScreenLine("B" + (n+1), Game.messageLog[newsCounter - n])}
-        } else if(screen === "A") {
-            for(let n = 0; n <= maxLines ; n++){ if(Game.messageLog[newsCounter - maxLines - n] !== undefined)  setScreenLine("A" + (n+1), Game.messageLog[newsCounter - maxLines - n])}
-}
+if(variables[screen] === "t1") {
+    for(let n = 0; n <= maxLines ; n++) {setScreenLine(screen + (n+1), "");}
+  //  console.log(Game.messageLog[newsCounter - 0])
+    for(let n = 0; n <= maxLines ; n++){ if(Game.messageLog[newsCounter - n] !== undefined)  setScreenLine(screen + (n+1), Game.messageLog[newsCounter - n])}
 
-}}
+} else if(variables[screen] === "t2") {
+    for(let n = 0; n <= maxLines ; n++) {setScreenLine(screen + (n+1), ""); }
+    for(let n = 0; n <= maxLines ; n++){ if(Game.messageLog[newsCounter - maxLines - n] !== undefined)  setScreenLine(screen + (n+1), Game.messageLog[newsCounter - maxLines - n])}
+} else if(variables[screen] = "help") {
+    let helplinetop = "╔"
+    let helplinebottom = "╚"
+    let helpline = ""
+    for(let n = 2; n <= maxChar; n++) helpline += "═"
+    helplinetop += helpline + "╗"
+    helplinebottom += helpline + "╝"
+
+    let emptyspace = "║"
+    for(let n = 1; n <= maxChar-1; n++) emptyspace += "‏‏‎ ‎"
+    emptyspace += "║"
+
+    setScreenLine(screen + maxLines, helplinetop)
+    setScreenLine(screen + 1, helplinebottom)
+    for(let n = maxLines-1; n > 1 ; n--) setScreenLine(screen + (n), emptyspace)
+
+    
+
+}
+}
 
 
 function chill() {
@@ -710,19 +738,21 @@ if(heartOffset > 80) heartOffset = 81
 
 if(ExpandToggle){
     maxPaneHeight = Math.floor(((window.innerHeight)/2)) - 3
-    maxScreenHeight =  Math.floor(((window.innerHeight)/2)) -  Math.floor(((window.innerHeight)/2))%15
+    maxScreenHeight =  Math.floor(((window.innerHeight)/2) - 3) -  Math.floor(((window.innerHeight)/2) - 3)%15
     maxLines = maxScreenHeight/15
-
+    maxChar = ((topPane.clientWidth - 40) - (topPane.clientWidth - 40)%8) / 8
     topScreen.style = "margin:0 20px 0 20px; position:absolute; bottom:0;"
     bottomScreen.style.margin = "0 20px 0 20px"
     gameContainer.style.display = "none"
     topPane.style.minHeight = maxPaneHeight + "px"
     bottomPane.style.minHeight = maxPaneHeight + "px"
     topScreen.style.height =  maxScreenHeight + "px"
+
+    topScreen.style.minWidth = maxChar*8 + "px"
     bottomScreen.style.height = maxScreenHeight + "px"
 }    else {
     maxPaneHeight = Math.floor(((window.innerHeight - 364)/2)) - 3
-    maxScreenHeight =  Math.floor(((window.innerHeight - 364)/2) - 20) -  Math.floor(((window.innerHeight - 364)/2)- 20)%15
+    maxScreenHeight =  Math.floor(((window.innerHeight - 364)/2) - 23) -  Math.floor(((window.innerHeight - 364)/2)- 23)%15
     maxLines = maxScreenHeight/15
 
     topScreen.style= "margin:10px 20px 10px 20px;"
@@ -914,8 +944,8 @@ window.document.addEventListener('keydown', e => {
 
 let variables = {
 "NAME": Game.name,
-"A" : "cmd",
-"B" : "cmd"
+"A" : "help",
+"B" : "t1"
 
 }
 
@@ -938,25 +968,33 @@ keysoundstimout =  setTimeout(()=>{
  }, 100)
 
 
-if(inputStream[inputStream.length - 1] === ">" && !disableCommands) { inputStream = []; 
-    keysounds[1].play()
+if(inputStream[inputStream.length - 1] === ">" && !disableCommands) { 
+
+for(n in Game.messageLog) Game.messageLog[n] = Game.messageLog[n].replaceAll('<span id="blinky">█</span>', "")
+
+inputStream = []; 
+keysounds[1].play()
 inputStream.push(">")
 writeMessage(cmdlocation + "&gt;", false, 0, "")
+
+let line = getMessage(newsCounter).replaceAll(" </span>", "")
+
+setMessage(newsCounter, line + '</span><span id="blinky">█</span>')
+
 //writeCharacter(cmdlocation + "&gt;", "start")
 }
+//Game.messageLog[newsCounter].replaceAll('<span id="blinky">█</span>', "")
 
 if(inputStream[0] === ">" && !disableCommands && key !== ">" && key !== "Backspace" && key !== "Shift" && key !== "Enter") {
 
     setMessage(newsCounter, cmdlocation + "&gt;")
-    let line = getMessage(newsCounter).replaceAll("</span>", "")
+    let line = getMessage(newsCounter).replaceAll('</span><span id="blinky">█</span>', "")
     
     let word = ""
     for(let n = 1; n < inputStream.length; n++) word += inputStream[n]
     word = word.replace(/Shift/g, '');
 
-    console.log(line + word +  "</span>")
-
-   setMessage(newsCounter, line + word + "</span>") 
+   setMessage(newsCounter, "<span>" + line + word + '</span><span id="blinky">█</span>') 
 }
 
 if(inputStream[inputStream.length - 1] === "Backspace" && inputStream[0] === ">") {
@@ -965,15 +1003,14 @@ if(inputStream[inputStream.length - 1] === "Backspace" && inputStream[0] === ">"
     inputStream[0] = ">";
 
     setMessage(newsCounter, cmdlocation + "&gt;")
-    let line = getMessage(newsCounter).replaceAll("</span>", "")
+    let line = getMessage(newsCounter).replaceAll('</span><span id="blinky">█</span>', "")
     
     let word = ""
     for(let n = 1; n < inputStream.length; n++) word += inputStream[n]
+
     word = word.replace(/Shift/g, '');
 
-    console.log(line + word +  "</span>")
-
-   setMessage(newsCounter, line + word + "</span>") 
+   setMessage(newsCounter, line + word + '</span><span id="blinky">█</span>') 
 }
 
 //if(inputStream[inputStream.length - 1] === "ArrowUp") { }
@@ -982,7 +1019,9 @@ if(inputStream[inputStream.length - 1] === "Enter" && inputStream[0] === ">") {
     keysounds[0].play()
 
    // writeCharacter("", "end")
-    
+   let line = getMessage(newsCounter).replaceAll('</span><span id="blinky">█</span>', "")
+   setMessage(newsCounter, line + '</span>') 
+
     cmd = ""
 
     inputStream.pop()
@@ -1151,6 +1190,19 @@ cmds = {
     "CORE4":[true, ()=>{
 
     }],
+
+    "help":[true, ()=>{
+        writeMessage("type \">set A=help\" or \">A help\" to view the help settings", false, 0, "")
+    }],
+
+    "A":[true, ()=>{
+        if(cmd[1]) variables["A"] = cmd[1]
+    }],
+
+    "B":[true, ()=>{
+        if(cmd[1]) variables["B"] = cmd[1]
+    }],
+
 
     "" : [true, ()=>{}]
 }
@@ -1596,6 +1648,7 @@ function bootSAVE() {
 }
 
 function bootLOAD() {
+    ExpandToggle = true
   if(localStorage.boot) Game.prologue = localStorage.boot === "true"?true:false
 }
 
