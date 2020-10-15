@@ -131,6 +131,10 @@ html, body {
   overflow: hidden;
 }
 
+.b {
+  color:#000;
+}
+
 .line {
   animation-name: bottomScreen;
   animation-duration: 0.5s;

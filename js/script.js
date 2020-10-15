@@ -696,26 +696,90 @@ if(variables[screen] === "t1") {
     for(let n = 0; n <= maxLines ; n++) {setScreenLine(screen + (n+1), ""); }
     for(let n = 0; n <= maxLines ; n++){ if(Game.messageLog[newsCounter - maxLines - n] !== undefined)  setScreenLine(screen + (n+1), Game.messageLog[newsCounter - maxLines - n])}
 } else if(variables[screen] = "help") {
-    let helplinetop = "╔"
-    let helplinebottom = "╚"
-    let helpline = ""
-    for(let n = 2; n <= maxChar; n++) helpline += "═"
-    helplinetop += helpline + "╗"
-    helplinebottom += helpline + "╝"
 
-    let emptyspace = "║"
-    for(let n = 1; n <= maxChar-1; n++) emptyspace += "‏‏‎ ‎"
-    emptyspace += "║"
+    let text =  boxIt(
+        [
+            [maxLines-1, "HELP DOCUMENT", "center"],
 
-    setScreenLine(screen + maxLines, helplinetop)
-    setScreenLine(screen + 1, helplinebottom)
-    for(let n = maxLines-1; n > 1 ; n--) setScreenLine(screen + (n), emptyspace)
+            [maxLines-3, "###I'm here to help!", "left"]
 
-    
+        ]
+
+    )
+
+    for(let n = 0; n <= maxLines ; n++) setScreenLine(screen + (n), text[n])
+}}
+
+
+function boxIt(text) {
+let reBox = []
+let reText = []
+
+//top, bottom, and empty space
+let line = ""
+for(let n = 0; n <= maxChar; n++) line += "+"
+let emptyspace = ""
+for(let n = 0; n <= maxChar; n++) emptyspace += "#"
+reBox[maxLines] = line
+reBox[1] = line
+
+//the text
+for(n in text) {
+reText[text[n][0]] = ""
+
+switch(text[n][2]) {
+    case "left":
+        reText[text[n][0]] += text[n][1]
+        for(let m = text[n][1].length; m <maxChar; m++) reText[text[n][0]] += "#"
+        break;
+
+    case "right":
+       
+        for(let m = 0; m <maxChar-text[n][1].length; m++) reText[text[n][0]] += "#"
+        reText[text[n][0]] += text[n][1]
+        break;
+
+    case "center":
+        for(let m = 0; m < Math.floor((maxChar-text[n][1].length)/2) ; m++) reText[text[n][0]] += "#"
+
+        reText[text[n][0]] += text[n][1]
+
+        for(let m = 0; m < Math.floor((maxChar-text[n][1].length)/2); m++) reText[text[n][0]] += "#"
+
+      //  if(aa < 5) console.log(text[n][1].length, maxChar, Math.floor((maxChar-text[n][1].length-2)/2), reText[text[n][0]].length)
+
+        if(reText[text[n][0]].split("").length < emptyspace.split("").length-1) {
+
+            let num = emptyspace.split("").length-1  - reText[text[n][0]].split("").length
+
+         //   console.log(reText[text[n][0]].split("").length, emptyspace.length-1, num)
+            let array = reText[text[n][0]].split("")
+            
+            for(let n  = 1; n < num; n++) array.pop()
+
+            reText[text[n][0]] = array.toString().replace(/,/g, "")
+
+            for(let n  = 0; n <= num; n++) if(text[n] !== undefined)  reText[text[n][0]] += "#"
+        }
+        break;
+}
+
 
 }
-}
+//putting it in reBox
 
+emptyspace = emptyspace.replace(/#/g, "<span class=\"b\">█</span>")
+
+for(n in reText) if(reText[n]) reText[n] = reText[n].replace(/#/g, "<span class=\"b\">█</span>")
+
+for(let n = maxLines-1; n > 1 ; n--){
+
+    if(reText[n]) reBox[n] = reText[n]
+
+    else reBox[n] = emptyspace
+}
+return reBox
+}
 
 function chill() {
         writeMessage("chill", false, 0, "valet")
@@ -741,19 +805,27 @@ if(ExpandToggle){
     maxScreenHeight =  Math.floor(((window.innerHeight)/2) - 3) -  Math.floor(((window.innerHeight)/2) - 3)%15
     maxLines = maxScreenHeight/15
     maxChar = ((topPane.clientWidth - 40) - (topPane.clientWidth - 40)%8) / 8
+
     topScreen.style = "margin:0 20px 0 20px; position:absolute; bottom:0;"
     bottomScreen.style.margin = "0 20px 0 20px"
     gameContainer.style.display = "none"
+
     topPane.style.minHeight = maxPaneHeight + "px"
     bottomPane.style.minHeight = maxPaneHeight + "px"
+
     topScreen.style.height =  maxScreenHeight + "px"
+    bottomScreen.style.height = maxScreenHeight + "px"
 
     topScreen.style.minWidth = maxChar*8 + "px"
-    bottomScreen.style.height = maxScreenHeight + "px"
+    bottomScreen.style.minWidth = topScreen.style.minWidth
+
 }    else {
+
     maxPaneHeight = Math.floor(((window.innerHeight - 364)/2)) - 3
     maxScreenHeight =  Math.floor(((window.innerHeight - 364)/2) - 23) -  Math.floor(((window.innerHeight - 364)/2)- 23)%15
     maxLines = maxScreenHeight/15
+    maxChar = ((topPane.clientWidth - 40) - (topPane.clientWidth - 40)%8) / 8 - 1
+
 
     topScreen.style= "margin:10px 20px 10px 20px;"
     bottomScreen.style.margin = "10px 20px 10px 20px"
@@ -761,8 +833,12 @@ if(ExpandToggle){
 
     topPane.style.minHeight = maxPaneHeight + "px"
     bottomPane.style.minHeight = maxPaneHeight + "px"
+
     topScreen.style.height =  maxScreenHeight + "px"
     bottomScreen.style.height = maxScreenHeight + "px"
+
+    topScreen.style.minWidth = maxChar*8 + "px"
+    bottomScreen.style.minWidth = topScreen.style.minWidth
 }
 
 writeScreenLines()
