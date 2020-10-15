@@ -301,7 +301,7 @@ function writeMessage(text, check, delay, type) {
     else if(check === false) {
 
         let textArray = text.split(" ")
-        for(n in textArray) if(textArray[n].includes("$")) {console.log(textArray[n]); textArray[n] = textArray[n].replace('$', ''); if(variables[textArray[n]])  textArray[n] = variables[textArray[n]]}
+        for(n in textArray) if(textArray[n].includes("$")) { textArray[n] = textArray[n].replace('$', ''); if(variables[textArray[n]])  textArray[n] = variables[textArray[n]]}
         text = ""
         for(n in textArray) text += textArray[n] + " "
         if(delay === 0) result =  basicWriter(text, type)
@@ -345,7 +345,6 @@ if(type === "start") {
     // }
     writeMessage(char.replace(" ",  ""), false, 0, "")
     Game.messageLog[newsCounter] += '<span id="blinky">█</span>'
-    console.log(Game.messageLog[newsCounter])
 
     // if(newsCounter > 0) {
     //     for(let number = 0; number < maxLines*2; number++) {
@@ -360,7 +359,6 @@ if(type === "start") {
   Game.messageLog[newsCounter] = Game.messageLog[newsCounter].replaceAll('</span><span id="blinky">█</span>', "")
   Game.messageLog[newsCounter] = Game.messageLog[newsCounter].replaceAll('<span id="blinky">█</span>', "")
 Game.messageLog[newsCounter] += char + '</span><span id="blinky">█</span>'
-console.log(Game.messageLog[newsCounter])
 } else if(type === "end") {
     keysounds[0].play()
     Game.messageLog[newsCounter] = Game.messageLog[newsCounter].replaceAll('<span id="blinky">█</span>', "")
@@ -374,7 +372,6 @@ console.log(Game.messageLog[newsCounter])
     let array =  Game.messageLog[newsCounter].split("")
     array.pop()
     Game.messageLog[newsCounter] = array.toString().replace(/,/g, "")  + '<span id="blinky">█</span>' 
-    console.log(Game.messageLog[newsCounter])
 }}
 
 // Game.messageLog[newsCounter].removeChild(d.getElementById("strip" + newsCounter).childNodes[1])
@@ -673,7 +670,9 @@ let aa = 0;
 
 function setScreenLine(line, text) {
 if(d.getElementById(line) !== null){ if(d.getElementById(line).innerHTML !== text){  
+    if(aa < 5) console.log(aa)
    if(aa < 5)  console.log("before", d.getElementById(line).innerHTML !== text, d.getElementById(line).innerHTML, text)
+   if(aa < 5) console.log(text.length === 0)
    if(aa < 5) console.log(`%c${Game.messageLog[0]}`, "color: #fff; background-color: #000")
     d.getElementById(line).innerHTML = text;
     if(aa < 5) console.log("after",d.getElementById(line).innerHTML !== text, d.getElementById(line).innerHTML, text)
@@ -688,25 +687,16 @@ function getScreenLine(line) {
 
 function writeToScreen(screen) {
 if(variables[screen] === "t1") {
-    for(let n = 0; n <= maxLines ; n++) {setScreenLine(screen + (n+1), "");}
-  //  console.log(Game.messageLog[newsCounter - 0])
-    for(let n = 0; n <= maxLines ; n++){ if(Game.messageLog[newsCounter - n] !== undefined)  setScreenLine(screen + (n+1), Game.messageLog[newsCounter - n])}
+    for(let n = 0; n <= maxLines ; n++){ if(getMessage(newsCounter - n) !== undefined)   setScreenLine(screen + (n+1), getMessage(newsCounter - n))}
 
 } else if(variables[screen] === "t2") {
-    for(let n = 0; n <= maxLines ; n++) {setScreenLine(screen + (n+1), ""); }
-    for(let n = 0; n <= maxLines ; n++){ if(Game.messageLog[newsCounter - maxLines - n] !== undefined)  setScreenLine(screen + (n+1), Game.messageLog[newsCounter - maxLines - n])}
+    for(let n = 0; n <= maxLines ; n++){ if(getMessage(newsCounter - maxLines - n) !== undefined)   setScreenLine(screen + (n+1), getMessage(newsCounter- maxLines - n))}
+
 } else if(variables[screen] = "help") {
-
     let text =  boxIt(
-        [
-            [maxLines-1, "HELP DOCUMENT", "center"],
-
-            [maxLines-3, "###I'm here to help!", "left"]
-
-        ]
-
-    )
-
+        [   ["HELP DOCUMENT", "center"],
+            ["###First things first, how can you scroll around in here?", "left"]
+        ])
     for(let n = 0; n <= maxLines ; n++) setScreenLine(screen + (n), text[n])
 }}
 
@@ -717,49 +707,55 @@ let reText = []
 
 //top, bottom, and empty space
 let line = ""
-for(let n = 0; n <= maxChar; n++) line += "+"
+for(let n = 0; n <= maxChar; n++) line += "/"
 let emptyspace = ""
 for(let n = 0; n <= maxChar; n++) emptyspace += "#"
 reBox[maxLines] = line
 reBox[1] = line
 
 //the text
-for(n in text) {
-reText[text[n][0]] = ""
+for(let n = 0; n < text.length; n++) {
+let pos = maxLines - 1 - n
+reText[pos] = ""
 
-switch(text[n][2]) {
+switch(text[n][1]) {
     case "left":
-        reText[text[n][0]] += text[n][1]
-        for(let m = text[n][1].length; m <maxChar; m++) reText[text[n][0]] += "#"
+        if(text[n][0].length > maxChar) {
+
+            text.splice(n+1, 0, [text[n][0].slice(maxChar, text[n][0].length), "left"])
+         if(aa< 5)   console.log(text)
+            text[n][0] = text[n][0].slice(0, maxChar)
+        }
+
+        reText[pos] += text[n][0]
+        for(let m = text[n][0].length; m < maxChar; m++) reText[pos] += "#"
+
         break;
 
     case "right":
        
-        for(let m = 0; m <maxChar-text[n][1].length; m++) reText[text[n][0]] += "#"
-        reText[text[n][0]] += text[n][1]
+        for(let m = 0; m < maxChar-text[n][0].length; m++) reText[pos] += "#"
+        reText[pos] += text[n][0]
         break;
 
     case "center":
-        for(let m = 0; m < Math.floor((maxChar-text[n][1].length)/2) ; m++) reText[text[n][0]] += "#"
+        for(let m = 0; m < Math.floor((maxChar-text[n][0].length)/2) ; m++) reText[pos] += "#"
 
-        reText[text[n][0]] += text[n][1]
+        reText[pos] += text[n][0]
 
-        for(let m = 0; m < Math.floor((maxChar-text[n][1].length)/2); m++) reText[text[n][0]] += "#"
+        for(let m = 0; m < Math.floor((maxChar-text[n][0].length)/2); m++) reText[pos] += "#"
 
-      //  if(aa < 5) console.log(text[n][1].length, maxChar, Math.floor((maxChar-text[n][1].length-2)/2), reText[text[n][0]].length)
 
-        if(reText[text[n][0]].split("").length < emptyspace.split("").length-1) {
+        if(reText[pos].split("").length < emptyspace.split("").length-1) {
 
-            let num = emptyspace.split("").length-1  - reText[text[n][0]].split("").length
-
-         //   console.log(reText[text[n][0]].split("").length, emptyspace.length-1, num)
-            let array = reText[text[n][0]].split("")
+            let num = emptyspace.split("").length-1  - reText[pos].split("").length
+            let array = reText[pos].split("")
             
             for(let n  = 1; n < num; n++) array.pop()
 
-            reText[text[n][0]] = array.toString().replace(/,/g, "")
+            reText[pos] = array.toString().replace(/,/g, "")
 
-            for(let n  = 0; n <= num; n++) if(text[n] !== undefined)  reText[text[n][0]] += "#"
+            for(let n  = 0; n <= num; n++) if(text[n]!== undefined)  reText[pos] += "#"
         }
         break;
 }
@@ -846,7 +842,7 @@ writeToScreen("B")
 writeToScreen("A")
 
 autosaveTick++
- if(autosavetoggle && !autosavedelay && Game.special.opentopscreen.bought === true && autosaveTick >= 6000){
+ if(autosavetoggle && !autosavedelay && autosaveTick >= 6000){
    // SAVE(false)
     autosaveTick = 0
  } 
@@ -1020,7 +1016,7 @@ window.document.addEventListener('keydown', e => {
 
 let variables = {
 "NAME": Game.name,
-"A" : "help",
+"A" : "t2",
 "B" : "t1"
 
 }
@@ -1048,14 +1044,15 @@ if(inputStream[inputStream.length - 1] === ">" && !disableCommands) {
 
 for(n in Game.messageLog) Game.messageLog[n] = Game.messageLog[n].replaceAll('<span id="blinky">█</span>', "")
 
+writeMessage(cmdlocation + "&gt;", false, 0, "")
+let line = getMessage(newsCounter).replaceAll(" </span>", "")
+setMessage(newsCounter, line + '</span><span id="blinky">█</span>')
+if(aa < 5) console.log(getMessage(newsCounter))
 inputStream = []; 
 keysounds[1].play()
 inputStream.push(">")
-writeMessage(cmdlocation + "&gt;", false, 0, "")
 
-let line = getMessage(newsCounter).replaceAll(" </span>", "")
 
-setMessage(newsCounter, line + '</span><span id="blinky">█</span>')
 
 //writeCharacter(cmdlocation + "&gt;", "start")
 }
@@ -1272,11 +1269,15 @@ cmds = {
     }],
 
     "A":[true, ()=>{
-        if(cmd[1]) variables["A"] = cmd[1]
+        if(cmd[1]) {
+            for(let n = 0; n <= maxLines ; n++) {setScreenLine("A" + (n+1), "");}
+         variables["A"] = cmd[1]}
     }],
 
     "B":[true, ()=>{
-        if(cmd[1]) variables["B"] = cmd[1]
+        if(cmd[1]) {
+            for(let n = 0; n <= maxLines ; n++) {setScreenLine("B" + (n+1), "");}
+         variables["B"] = cmd[1]}
     }],
 
 
