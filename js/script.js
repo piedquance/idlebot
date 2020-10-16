@@ -454,6 +454,41 @@ setTimeout(()=>{
 
 //////
 
+function movePane(pane, out) {
+    switch(pane) {
+        case "left":
+            if(out) {
+                leftPane.style.animation = "leftOut 0.5s ease"
+                setTimeout(()=>{
+                    leftPane.style.transform = "translate(-400px)"
+                }, 500)
+            }
+            else {
+                leftPane.style.animation = "none"
+                leftPane.style.animation = "leftIn 0.5s ease"
+                leftPane.style.transform = "translate(0px)"
+            }
+            break;
+        case "right":
+            if(out) {
+                rightPane.style.animation = "rightOut 0.5s ease"
+                setTimeout(()=>{
+                    rightPane.style.transform = "translate(400px)"
+                }, 500)
+            }
+            else {
+                rightPane.style.animation = "rightIn 0.5s ease"
+                rightPane.style.transform = "translate(0px)"
+            }
+            break;
+    }
+}
+
+
+
+
+/////
+
 function addUpgrade(preset) {
 
     Game.upgrade[preset[1]] = {}

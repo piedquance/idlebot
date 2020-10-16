@@ -662,3 +662,24 @@ background-size: auto;
   background-position: 100% 0%
  }
 }
+
+
+@keyframes leftOut {
+  0% {translate: 0px}
+100% {translate: -400px;}
+}
+
+@keyframes leftIn{
+  0% {translate: -400px;}
+100% {translate: 0px}
+}
+
+@keyframes rightOut {
+  0% {translate: 0px}
+  100% {translate: 400px;}
+}
+
+@keyframes rightIn {
+  0% {translate: 400px;}
+  100% {translate: 0px}
+}
