@@ -9,13 +9,39 @@ html, body {
   font-size: var(--text-font);
   }
 
-  :root {
-    --heart-offset : 0px;
-    --text-font: 13px;
-    --text-height: 15px;
-    --bg-color: #000;
-    --color: rgb(173, 219, 187);
-  }
+
+  /* taken from https://css-tricks.com/old-timey-terminal-styling/ */
+ .Pane:after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: repeating-linear-gradient( 0deg,var(--lines), var(--lines) 1px, var(--no-lines) 1px, var(--no-lines) 2px);
+}
+
+.closeLines:after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: repeating-linear-gradient( 0deg,var(--lines), var(--lines) 1px, var(--no-lines) 1px, var(--no-lines) 2px);
+
+}
+
+ /* taken from https://css-tricks.com/old-timey-terminal-styling/ */
+:root {
+  --heart-offset : 0px;
+  --text-font: 13px;
+  --text-height: 15px;
+  --bg-color: #000;
+  --color: rgb(173, 219, 187);
+  --lines: rgba(173, 219, 187, 0.1);
+  --no-lines: rgba(255, 255, 255, 0)
+}
 
 .row {
   display:flex;
@@ -149,6 +175,7 @@ html, body {
   white-space: nowrap;
   overflow: hidden;
   overflow: clip;
+  text-shadow: 0 0 5px #C8C8C8;
 }
 
 #text {
@@ -157,6 +184,8 @@ html, body {
 
 .b {
   color:var(--bg-color);
+  opacity: 0;
+  text-shadow: none;
 }
 
 .line {
@@ -179,11 +208,12 @@ html, body {
   background-color:var(--bg-color);
   color: var(--color);
   animation: blink 0.7s steps(1, end) infinite;
+  text-shadow: none;
 }
 
 
 @keyframes blink {
-50% {color:var(--bg-color);}
+50% {opacity: 0;}
 }
 /* taken from https://stackoverflow.com/questions/16344354/how-to-make-blinking-flashing-text-with-css-3 */
 
@@ -217,7 +247,6 @@ a:visited {
 
 
 .bottomRow {
-  background-color:var(--bg-color);
   color: var(--color);
 }
 
@@ -252,7 +281,8 @@ a:visited {
   text-align: right;
   position:relative;
   animation-name:messageLoad;
-  animation-duration:0.5s
+  animation-duration:0.5s;
+  text-shadow: 0 0 5px #C8C8C8;
 }
 
 .saveC:hover {
@@ -317,12 +347,13 @@ a:visited {
   overflow-wrap: normal;
   display:flex;
   background-color:var(--bg-color);
+  background-size: 200% 100%;
+  background-image: linear-gradient(to right, #000 0%, #000 50%,  var(--color) 50%, var(--color) 50.5%, #000 50.5%, #000 100%);
   border-width: 3px;
   border-color: var(--color);
   border-style: double;
-  margin:10px;
-  /* animation-name: tile;
-  animation-duration:0.5s; */
+  margin:10px 10px 0 10px;
+  /* animation: decayTime 10s linear;  */
 }
 
 
@@ -586,11 +617,11 @@ background-size: auto;
 
 @keyframes open-sesame {
   from {width:50%}
-  to {width:0%}
+  to {width:20px}
 }
 
 @keyframes close-sesame {
-  from {width:0%}
+  from {width:20px}
   to {width:50%}
 
 }
@@ -622,4 +653,12 @@ background-size: auto;
   0% {color:var(--bg-color); background-color: var(--color);}
   30% {color:var(--color); background-color: var(--bg-color);}
   100% {color:var(--bg-color); background-color: var(--color);}
+}
+
+@keyframes decayTime {
+  0% {  background-position: 0% 0%
+  }
+ 100%  {
+  background-position: 100% 0%
+ }
 }

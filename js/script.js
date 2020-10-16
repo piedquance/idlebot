@@ -131,9 +131,9 @@ addSpecial([4, "bloodpipesappear", "Research blood pipes", "It ain't gonna pipe 
     Game.upgrade.bloodpipe.Element.style.display = ""
 }])
 
-addSpecial([5, "opensesame", "Activate Mechanical Cardiac Engine", "", 10, false, 10, ()=>{
+addSpecial([5, "opensesame", "Activate Cardio-Mechanical Engine", "", 10, false, 10, ()=>{
     gameContainer.style.display =  "flex"
-    for(n in close){  if(close[n].style !== undefined) {close[n].style.animation = "open-sesame 1s"; close[n].style.width = "0%"}}
+    for(n in close){  if(close[n].style !== undefined) {close[n].style.animation = "open-sesame 1s"; close[n].style.width = "20px"}}
     syssounds.msg.play()
 }])
 
@@ -153,22 +153,22 @@ function prologue1() {
 
         writeMessage("Loading CORE 1", false, 4601, "")
         messageAnimation("...", "",100, 5, 4602, true, false)
-        writeMessage("Loading failed", false, 6603, "")
+        writeMessage("Not enough power, operation aborted", false, 6603, "")
 
         writeMessage("Loading CORE 2", false, 6604, "")
         messageAnimation("...", "",100, 5, 6605, true, false)
-        writeMessage("Loading failed", false, 8606, "")
+        writeMessage("Not enough power, operation aborted", false, 8606, "")
 
         writeMessage("Loading CORE 3", false, 8607, "")
         messageAnimation("...", "",100, 5, 8608, true, false)
-        writeMessage("Loading failed", false, 10609, "")
+        writeMessage("Not enough power, operation aborted", false, 10609, "")
 
         writeMessage("Loading CORE 4", false, 10610, "")
         messageAnimation("...", "",100, 10, 10611, true, false)
         messageAnimation("loading", "",200, 1, 14612, false, true, [20])
 
         writeMessage("CORE 4 Loaded", false, 20000, "")
-        messageAnimation("....", "valet", 500, 1, 20000, false, false)
+        messageAnimation("....", "valet", 600, 1, 24000, false, false)
 
         writeMessage("UH", false, 28000, "valet")
     let t = 30000
@@ -439,7 +439,7 @@ setTimeout(()=>{
             Game.messageLog[messagePosition] = initialstrip + Aarray[msgarrayposition] + "<span>"
             timer += tick
             msgarrayposition++
-
+            Game.updated = true;
             if(msgarrayposition >  Aarray.length-1) msgarrayposition = 0
 
             if(timer > (tick *  Aarray.length * cycles)) {
@@ -501,14 +501,31 @@ Game.upgrade[reference].descriptionElement = d.getElementById(reference + "Descr
 
     }}, Game.upgrade[reference].tick * 1000)
 
-    decayIntervals[reference] = setInterval(()=>{
+    if( Game.upgrade[reference].number > 0) {
+        Game.upgrade[reference].Element.style.animation = "none"
+        Game.upgrade[reference].Element.style.animation = ""
 
+       setTimeout(()=>{
+        Game.upgrade[reference].Element.style.animation = "decayTime " + Game.upgrade[reference].decaytick + "s linear"
+       }, 10)  
+    }
+
+    decayIntervals[reference] = setInterval(()=>{
         if( Game.upgrade[reference].number > 0) {
         Game.upgrade[reference].number--
         Game.upgrade[reference].counter--
         Game.upgrade[reference].cost -= Game.upgrade[reference].costIncreaseRate
+        Game.upgrade[reference].Element.style.animation = "none"
+
+        Game.upgrade[reference].Element.style.animation = ""
+
+               setTimeout(()=>{
+        Game.upgrade[reference].Element.style.animation = "decayTime " + Game.upgrade[reference].decaytick + "s linear"
+       }, 10) 
+
         }
     }, Game.upgrade[reference].decaytick * 1000)
+
 
         Game.upgrade[reference].Element.addEventListener("click", ()=> {
             if(Game.counter >= Game.upgrade[reference].cost) {
@@ -520,14 +537,31 @@ Game.upgrade[reference].descriptionElement = d.getElementById(reference + "Descr
 
                 clearInterval(decayIntervals[reference])
 
+                if( Game.upgrade[reference].number > 0) {
+                    console.log(reference)
+                    Game.upgrade[reference].Element.style.animation = "none"
+                    Game.upgrade[reference].Element.style.animation = ""
+                           setTimeout(()=>{
+        Game.upgrade[reference].Element.style.animation = "decayTime " + Game.upgrade[reference].decaytick + "s linear"
+       }, 10) 
+                } 
+
                 decayIntervals[reference] = setInterval(()=>{
                   
                     if( Game.upgrade[reference].number > 0) {
                     Game.upgrade[reference].number--
                     Game.upgrade[reference].counter--
                     Game.upgrade[reference].cost -= Game.upgrade[reference].costIncreaseRate
+                    Game.upgrade[reference].Element.style.animation = "none"
+                    Game.upgrade[reference].Element.style.animation = ""
+                           setTimeout(()=>{
+        Game.upgrade[reference].Element.style.animation = "decayTime " + Game.upgrade[reference].decaytick + "s linear"
+       }, 10) 
                     }
                 }, Game.upgrade[reference].decaytick * 1000)
+                console.log(Game.upgrade[reference].number)
+                
+              
                 
             }
         })
@@ -827,7 +861,7 @@ if(ExpandToggle) {
     bottomScreen.style.margin = "0 20px 10px 20px"
     gameContainer.style.display = "none"
 } else {
-    minusC = 364
+    minusC = 365
     topScreen.style= "margin:10px 20px 0 20px;"
     bottomScreen.style.margin = "0 20px 10px 20px"
     gameContainer.style.display = ""
@@ -963,8 +997,22 @@ if(type == "tick") {
             Game.upgrade[name].number--
             Game.upgrade[name].counter--
             Game.upgrade[name].cost -= Game.upgrade[name].costIncreaseRate
-            }
+            Game.upgrade[name].Element.style.animation = "none"
+            Game.upgrade[name].Element.style.animation = ""
+                               setTimeout(()=>{
+        Game.upgrade[name].Element.style.animation = "decayTime " + Game.upgrade[name].decaytick + "s linear"
+       }, 10) 
+    
+    }
         }, Game.upgrade[name].decaytick * 1000)
+
+        if( Game.upgrade[name].number > 0) {
+            Game.upgrade[name].Element.style.animation = "none"
+            Game.upgrade[name].Element.style.animation = ""
+                   setTimeout(()=>{
+        Game.upgrade[name].Element.style.animation = "decayTime " + Game.upgrade[name].decaytick + "s linear"
+       }, 10) 
+        } 
 
     }}}} else if(type = "all") {
         updateTick("all", "tick")
@@ -1068,7 +1116,6 @@ for(n in Game.messageLog) Game.messageLog[n] = Game.messageLog[n].replaceAll('<s
 writeMessage(cmdlocation + "&gt;", false, 0, "")
 let line = getMessage(newsCounter).replaceAll(" </span>", "")
 setMessage(newsCounter, line + '</span><span id="blinky">█</span>')
-if(aa < 5) console.log(getMessage(newsCounter))
 inputStream = []; 
 keysounds[1].play()
 inputStream.push(">")
@@ -1741,8 +1788,27 @@ console.log("LOADED!")
     if(ExpandToggle) d.querySelector(".outer").style = "min-width: 200px;"
     else d.querySelector(".outer").style = "min-width: 410px;"
 
+
+
+for(n in Game.upgrade) {
+Game.upgrade[n].previousdecaytick = 0;
+Game.upgrade[n].previoustick = 0;
+console.log(Game.upgrade[n])
+
+    if( Game.upgrade[n].number > 0) {
+        Game.upgrade[n].Element.style.animation = "none"
+        Game.upgrade[n].Element.style.animation = ""
+
+       setTimeout(()=>{
+        Game.upgrade[n].Element.style.animation = "decayTime " + Game.upgrade[n].decaytick + "s linear"
+       }, 10)  
     }
- }
+
+}
+  
+
+
+    }}
 
 // //////
 
@@ -1874,5 +1940,10 @@ powerButton.addEventListener("click", ()=>{
     }, 6000)
 
 powerRow.style.display = "none";
+
+topPane.classList.add("Pane")
+bottomPane.classList.add("Pane")
+close.closeLeft.classList.add("closeLines")
+close.closeRight.classList.add("closeLines")
 startGame(); //let's go
 })
