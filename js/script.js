@@ -9,6 +9,7 @@ var bottomPane  =d.getElementById("bottomPane")
 var topScreen = d.getElementById("topScreen");
 var bottomScreen = d.getElementById("bottomScreen");
 var outer = d.getElementById("outer")
+var columns = d.getElementsByClassName("column")
 
 var title = d.querySelector("title")
 var powerButton = d.getElementById("power-button")
@@ -29,11 +30,6 @@ let heartOffset = 0;
 let pipeCount = 0;
 let gameTick = 10;
 let autosaveTick = 0;
-
-let inputStream = [];
-let cmd = ""
-let cmdHistory = [];
-let cmdlocation = "C:\\"
 
 let loadDump = ""
 let loadArray = []
@@ -105,6 +101,194 @@ let previousMaxLines = 0;
 let previousMaxScreenLines = 0;
 let previousMaxChar = 0;
 
+let autosavedelay = true
+let keysoundon = false
+let keysoundstimout
+let health = 0;
+
+cmds = {
+    "c" : [true, ()=>{
+        if(cmd[1]) Game.counter = parseInt(cmd[1]);
+    }],
+    "save" : [false, ()=>{ SAVE()}],
+    "load": [false, ()=>{LOAD()}],
+    "reset": [true, ()=>{RESET()}],
+    "autosave":[true, ()=>{autosaveclick()}],
+    "play":[true, ()=>{if(cmd[1]) if(audio[cmd[1]]) audio[cmd[1]].play();}],
+    "pause":[false, ()=>{if(cmd[1]) if(audio[cmd[1]]) audio[cmd[1]].pause();}],
+    "cmdh":[true, ()=>{
+        msg = ""
+        for(n in cmdHistory) msg += cmdHistory[n] + " "
+        writeMessage(msg, false, 0, "")
+
+    }],
+    "set":[true, ()=>{
+        for(let n = 1; n < cmd.length; n++) {
+            let settings = cmd[n].split("=");
+            variables[settings[0]] = settings[1]
+            writeMessage(`${settings[0]} has been set to "${variables[settings[0]]}"`, false, 0, "")
+        }
+        Game.updated = true;
+    }],
+    "setname":[true, ()=>{
+        if(cmd[1]) {
+            Game.name = cmd[1];
+            variables["NAME"] = Game.name
+            writeMessage(`NAME has been set to "${Game.name}"`, false, 0, "")
+        } else writeMessage("No name given", false, 0, "")
+    }],
+    "clear":[true, ()=>{
+        let clearNum = maxLines*2
+        for(let n = 0; n <= clearNum; n++) {
+            writeMessage("<br>", false, 0, "")
+        } 
+    }],
+    "click":[true, ()=>{
+        pipeCount++; heartOffset++;  heart.style.setProperty("--heart-offset", heartOffset + "px");
+    }],
+    "restart":[true, ()=>{
+        window.location.href = window.location.pathname + window.location.search + window.location.hash;
+        window.location.replace(window.location.pathname + window.location.search + window.location.hash);
+            // does not create a history entry
+      //  window.location.reload(false); 
+            // If we needed to pull the document from
+            //  the web-server again (such as where the document contents
+            //  change dynamically) we would pass the argument as 'true'.
+            //taken from https://stackoverflow.com/questions/3715047/how-to-reload-a-page-using-javascript
+    }],
+    "alert":[true, ()=>{
+        if(cmd[1]) alert(cmd[1]); else alert("No message written");
+    }],
+    "echo":[true, ()=>{
+        if(cmd[1]) { 
+            if(cmd[cmd.length - 1][0] === "#") { msg = "<span style='color:" + cmd[cmd.length - 1] + "' >"
+            for(let n = 1; n < cmd.length - 1; n++)  msg += cmd[n] + " "
+            msg += "</span>"
+            writeMessage(msg, false, 0, "")
+            writeMessage("<br>", false, 0, "")
+        }  else {
+            msg = ""
+            for(let n = 1; n < cmd.length; n++)  msg += cmd[n] + " "
+            writeMessage(msg, false, 0, "")
+            writeMessage("<br>", false, 0, "")
+        }}
+    }],
+    "wt":[true, ()=>{
+        if(cmd[1] && cmd[2]){
+            
+            for(let n = 2; n <cmd.length; n++) msg += cmd[n] + " "
+
+            download(msg, cmd[1], "txt");
+        }
+        else if(!cmd[1]) writeMessage("No name given", false, 0, "")
+        else if(!cmd[2]) writeMessage("No data given", false, 0, "")
+    }],
+    "none":[true, ()=>{
+
+    }],
+
+    "CORE4":[true, ()=>{
+
+    }],
+
+    "help":[true, ()=>{
+        writeMessage("type \">set A=help\" or \">A help\" to open the help document", false, 0, "")
+    }],
+
+    "ls":[true, ()=>{
+       writeMessage(root.list(), false, 0, "")
+    }],
+
+    "cd":[true, ()=>{
+        let temp = root.location
+        root.setLocation(cmd[1])
+        cmdlocation = temp + "\\" + root.getLocation().name + "\\"
+    }],
+
+    "A":[true, ()=>{
+        if(cmd[1]) {
+            for(let n = 0; n <= maxLines ; n++) {setScreenLine("A" + (n+1), "");}
+         variables["A"] = cmd[1]
+        Game.updated = true}
+    }],
+
+    "B":[true, ()=>{
+        if(cmd[1]) {
+            for(let n = 0; n <= maxLines ; n++) {setScreenLine("B" + (n+1), "");}
+         variables["B"] = cmd[1]
+         Game.updated = true}
+    }],
+
+
+    "" : [true, ()=>{}]
+}
+
+
+let aFile = function(name, path) {
+    this.name = name
+
+}
+
+
+let root = {
+    name:"root",
+    nodes:[],
+    search : (matchingTitle, element) => {
+        if(element === undefined) element = root
+        if(element.name == matchingTitle){
+            return element;
+       }else if (element.nodes != null){
+            var i;
+            var result = null;
+            for(i=0; result == null && i < element.nodes.length; i++){
+                 result = root.search(matchingTitle, element.nodes[i]);
+            }
+            return result;
+       }
+       return null;
+    }, // taken from https://stackoverflow.com/questions/9133500/how-to-find-a-node-in-a-tree-with-javascript
+
+    push: (name)=> {
+        root.nodes.push(name)
+        root[name.name] = name
+    },
+
+    location: "root",
+}
+
+root.getLocation = ()=>{
+    return root.search(root.location)
+}
+
+root.setLocation = (name)=>{
+  if(root.search(name))  root.location = root.search(name).name
+}
+
+root.list = () => {
+    let result = ""
+    for(n in root.getLocation().nodes) result += root.getLocation().nodes[n].name + " "
+    return result
+}
+
+let aFolder = function(name) {
+    this.name = name
+    this.nodes = []
+
+    this.push = (name)=>{
+        this.nodes.push(name)
+        this[name.name] = name
+    }
+}
+
+root.push(new aFolder("home", "root"))
+root.push(new aFolder("system", "root"))
+
+let inputStream = [];
+let cmd = ""
+let cmdHistory = [];
+let cmdlocation = root.getLocation().name + "\\"
+
+
 ///////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////PRESETS/////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////
@@ -127,12 +311,12 @@ addSpecial([1, "bloodvalvesappear", "Research Blood Valves", "All valves come eq
     Game.upgrade.bloodvalve.Element.style.display = ""
 }])
 
-addSpecial([3, "bloodvalveupgrade1", "Upgrade Blood Valves", "Now twice as efficient!", 100, true, 70, ()=>{
+addSpecial([2, "bloodvalveupgrade1", "Upgrade Blood Valves", "Now twice as efficient!", 100, true, 70, ()=>{
     Game.upgrade.bloodvalve.tick = 0.5
     Game.upgrade.bloodvalve.descriptionElement.innerHTML = "Pumps blood every 0.5s<br>Decays every 10s"
 }])
 
-addSpecial([4, "bloodpipesappear", "Research blood pipes", "It ain't gonna pipe itself...", 100, true, 80, ()=>{
+addSpecial([3, "bloodpipesappear", "Research blood pipes", "It ain't gonna pipe itself...", 100, true, 80, ()=>{
     Game.upgrade.bloodpipe.Element.style.display = ""
 }])
 
@@ -1085,9 +1269,6 @@ window.document.addEventListener('keydown', e => {
 //   }; //taken from https://stackoverflow.com/questions/49280847/firefox-switching-tab-on-backspace
 
 
-
-let keysoundon = false
-let keysoundstimout
 ////////////////////////////////////////////////////////////////
 
 document.addEventListener('keydown', (event) => {
@@ -1216,118 +1397,6 @@ if(inputStream[inputStream.length - 1] === "Enter" && inputStream[0] === ">") {
     } if(cmd[0] == ">" + n) break;
 }}}});
 
-
-
-cmds = {
-    "c" : [true, ()=>{
-        if(cmd[1]) Game.counter = parseInt(cmd[1]);
-    }],
-    "save" : [false, ()=>{ SAVE()}],
-    "load": [false, ()=>{LOAD()}],
-    "reset": [true, ()=>{RESET()}],
-    "autosave":[true, ()=>{autosaveclick()}],
-    "play":[true, ()=>{if(cmd[1]) if(audio[cmd[1]]) audio[cmd[1]].play();}],
-    "pause":[false, ()=>{if(cmd[1]) if(audio[cmd[1]]) audio[cmd[1]].pause();}],
-    "cmdh":[true, ()=>{
-        msg = ""
-        for(n in cmdHistory) msg += cmdHistory[n] + " "
-        writeMessage(msg, false, 0, "")
-
-    }],
-    "set":[true, ()=>{
-        for(let n = 1; n < cmd.length; n++) {
-            let settings = cmd[n].split("=");
-            variables[settings[0]] = settings[1]
-            writeMessage(`${settings[0]} has been set to "${variables[settings[0]]}"`, false, 0, "")
-        }
-        Game.updated = true;
-    }],
-    "setname":[true, ()=>{
-        if(cmd[1]) {
-            Game.name = cmd[1];
-            variables["NAME"] = Game.name
-            writeMessage(`NAME has been set to "${Game.name}"`, false, 0, "")
-        } else writeMessage("No name given", false, 0, "")
-    }],
-    "clear":[true, ()=>{
-        let clearNum = maxLines*2
-        for(let n = 0; n <= clearNum; n++) {
-            writeMessage("<br>", false, 0, "")
-        } 
-    }],
-    "click":[true, ()=>{
-        pipeCount++; heartOffset++;  heart.style.setProperty("--heart-offset", heartOffset + "px");
-    }],
-    "restart":[true, ()=>{
-        window.location.href = window.location.pathname + window.location.search + window.location.hash;
-        window.location.replace(window.location.pathname + window.location.search + window.location.hash);
-            // does not create a history entry
-      //  window.location.reload(false); 
-            // If we needed to pull the document from
-            //  the web-server again (such as where the document contents
-            //  change dynamically) we would pass the argument as 'true'.
-            //taken from https://stackoverflow.com/questions/3715047/how-to-reload-a-page-using-javascript
-    }],
-    "alert":[true, ()=>{
-        if(cmd[1]) alert(cmd[1]); else alert("No message written");
-    }],
-    "echo":[true, ()=>{
-        if(cmd[1]) { 
-            if(cmd[cmd.length - 1][0] === "#") { msg = "<span style='color:" + cmd[cmd.length - 1] + "' >"
-            for(let n = 1; n < cmd.length - 1; n++)  msg += cmd[n] + " "
-            msg += "</span>"
-            writeMessage(msg, false, 0, "")
-            writeMessage("<br>", false, 0, "")
-        }  else {
-            msg = ""
-            for(let n = 1; n < cmd.length; n++)  msg += cmd[n] + " "
-            writeMessage(msg, false, 0, "")
-            writeMessage("<br>", false, 0, "")
-        }}
-    }],
-    "wt":[true, ()=>{
-        if(cmd[1] && cmd[2]){
-            
-            for(let n = 2; n <cmd.length; n++) msg += cmd[n] + " "
-
-            download(msg, cmd[1], "txt");
-        }
-        else if(!cmd[1]) writeMessage("No name given", false, 0, "")
-        else if(!cmd[2]) writeMessage("No data given", false, 0, "")
-    }],
-    "none":[true, ()=>{
-
-    }],
-
-    "CORE4":[true, ()=>{
-
-    }],
-
-    "help":[true, ()=>{
-        writeMessage("type \">set A=help\" or \">A help\" to open the help document", false, 0, "")
-    }],
-
-    "A":[true, ()=>{
-        if(cmd[1]) {
-            for(let n = 0; n <= maxLines ; n++) {setScreenLine("A" + (n+1), "");}
-         variables["A"] = cmd[1]
-        Game.updated = true}
-    }],
-
-    "B":[true, ()=>{
-        if(cmd[1]) {
-            for(let n = 0; n <= maxLines ; n++) {setScreenLine("B" + (n+1), "");}
-         variables["B"] = cmd[1]
-         Game.updated = true}
-    }],
-
-
-    "" : [true, ()=>{}]
-}
-
-
-
-
 function download(Game, filename, type) {
     var file = new Blob([Game], {type: type});
     if (window.navigator.msSaveOrOpenBlob) // IE10+
@@ -1372,131 +1441,6 @@ function closeFullscreen() {
     document.msExitFullscreen();
   }
 }
-//taken from https://www.w3schools.com/howto/howto_js_fullscreen.asp
-
-///////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////TEXT ADVENTURE//////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////
-
-
-
-// let Nodes = {}
-
-// function Node(node) {
-//     Nodes[node["title"]] = {}
-
-//    if(node["title"]) Nodes[node["title"]].title = node.title;
-//    if(node["text"]) Nodes[node["title"]].text = node.text;
-//    if(node.common) Nodes[node["title"]].common = node.common;
-//    if(node.Value || node.Value == 0) Nodes[node["title"]].Value = node.Value;
-// }
-// //taken from https://stackoverflow.com/questions/456177/function-overloading-in-javascript-best-practices
-
-
-// //////
-
-
-// //You wake up locked in a deserted jail cell, completely alone. There is nothing at all in your cell, useful or otherwise.
-// Node({"title":"home", "text":"You are in a field. There is nothing around you, useful or otherwise.|D~Look around~look_around|S~Get up~get_up"})
-
-// Node({"title":"look_around", "text":"Fields as far as the eye can see.|S~Get up~get_up"})
-
-// Node({"common":"get_up", "title":"get_up0","text":"You try to get up. You fail.<br>But maybe if you had more power...", "Value":0})
-
-// Node({"common":"get_up", "title":"get_up10", "text":"You get up.|S~Look at yourself[MISSING]~look_at_yourself", "Value":10})
-
-// Node({"common":"look_at_yourself", "title":"look_at_yourself0", "text":   "fail" , "Value":  0})
-
-// Node({"common":"look_at_yourself", "title":"look_at_yourself10", "text": "ok now what?","Value":  10})
-
-// //Node("look_at_yourself", ["After everything, it's still you— wait, what?"], [])
-
-// //////
-
-// function link(text, back) {
-
-//      if(Nodes[text]) {
-
-//         let choice = Nodes[text]
-//         let textarray = choice.text.split("|")
-//         let linkarray = []
-//         for(let n = 1; n < textarray.length; n++) {
-//             linkarray[n-1] = textarray[n].split("~")
-//         }
-
-//         topScreen.innerHTML = `<p class='messageStrip line'>${textarray[0]}</p>`
-
-
-//         for(n in linkarray) { 
-//             if(linkarray[n][0] == "D"){
-//             topScreen.innerHTML += `<br> <span class='bracket'> > </span> <a onclick="link('${linkarray[n][2]}',false)">${linkarray[n][1]} </a>`
-       
-//         }   else if(linkarray[n][0] == "S") {
-//             topScreen.innerHTML += `<br> <span class='bracket'> ></span> <a onclick="linkSplit('${linkarray[n][2]}', false)">${linkarray[n][1]}</a>`
-
-//         }
-//     }
-// }
-//         if(back && Game.adventureLog.length !== 1) Game.adventureLog.pop()
-//         else Game.adventureLog[Game.adventureLog.length] = text
-//         if(Game.adventureLog.length !== 1) topScreen.innerHTML += `<br><br> <a id='back' onclick="link('${Game.adventureLog[Game.adventureLog.length-2]}',true)">Go Back </a>`
-
-// }
-
-
-// function linkSplit(text, back) {
-//     let choiceNumberOf = 0
-//     let chosenNode = ""
-
-//     for(n in Nodes) { if(Nodes[n].common) { if(Nodes[n].common === text) {
-
-//         if(Game.counter >= Nodes[n].Value) {
-
-//             let choice = Nodes[n]
-//             let textarray = choice.text.split("|")
-//             let linkarray = []
-//             for(let n = 1; n < textarray.length; n++) {
-//                 linkarray[n-1] = textarray[n].split("~")
-//             }
-    
-//             topScreen.innerHTML = `<p class='messageStrip line'>${textarray[0]}</p>`
-    
-    
-//             for(n in linkarray) { if(linkarray[n][0] == "D"){
-//                 topScreen.innerHTML += `<br> <span class='bracket'> ></span> <a onclick="link('${linkarray[n][2]}', false)">${linkarray[n][1]}</a>`
-           
-//             } else if(linkarray[n][0] == "S") {
-//                 topScreen.innerHTML += `<br> <span class='bracket'> ></span> <a  onclick="linkSplit('${linkarray[n][2]}', false)">${linkarray[n][1]}</a>`
-//             }
-//         }
-//         chosenNode = choice.title
-
-//         Game.adventureLog[Game.adventureLog.length] = choice.title
-//         choiceNumberOf++
-    
-//          }
-//          if(Nodes[n] !== undefined) if(Game.counter <= Nodes[n].Value) writeMessage(`${Nodes[n].Value} Energy Needed`, false, 0, "")
-
-//      }}}
-
-
-//      let constData = Game.adventureLog.length
-//      for(let n = constData - 1; n > constData - 1 - choiceNumberOf; n--)  {
-//      if(Game.adventureLog[n] !== chosenNode) Game.adventureLog.splice(n, 1) 
-//      }
-
-//      Game.counter -= Nodes [ Game.adventureLog[Game.adventureLog.length - 1 ] ].Value
-//      writeMessage(`${ Nodes [ Game.adventureLog[Game.adventureLog.length - 1 ] ].Value} Energy Used`, false, 0, "")
-
-//      if(back) Game.adventureLog.splice(Game.adventureLog.length-1, 1)
-
-//      topScreen.innerHTML += `<br><br> <a id='back' onclick="link('${Game.adventureLog[Game.adventureLog.length-2]}',true)">Go Back </a>`
-//  }
-
-
-let health = 0;
-
-
 
 // secondHeart.addEventListener("click", ()=>{
 //     if (heartOffset < 80) { heartOffset = Math.ceil(( health * 80) / 100)
@@ -1511,7 +1455,6 @@ let health = 0;
 ///////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////SAVING/LOADING//////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////
-
 
 
 function SAVE(isClear) {
@@ -1560,7 +1503,6 @@ function SAVE(isClear) {
 }
 
 //////
-
 
 function LOAD() {
 
@@ -1631,16 +1573,6 @@ function LOAD() {
 console.log("LOADED!")
 
 
-
-    switch (autosavetoggle) {
-        case true:
-      //  autosave.innerHTML = "<span id='on'>[ON]</span> AUTOSAVE"
-        break;
-        case false:
-      //  autosave.innerHTML = "<span id='off'>[OFF]</span> AUTOSAVE"
-        break;
-    }
-
 d.querySelector(".outer").style = "min-width: 200px;"
 
 
@@ -1677,11 +1609,12 @@ function bootLOAD() {
     writeMessage("Press > to start", false, 0, "")
 
   if(localStorage.boot) Game.BEGIN = localStorage.boot === "true"?true:false
-  if(localStorage.Game0 !== "howdy" && !Game.BEGIN){
+
+  if(localStorage.Game0 !== "howdy" && Game.BEGIN){
     console.log("welcome back!")
      LOAD()
     
-    } else if (Game.BEGIN){
+    } else if (!Game.BEGIN){
        // prologue1();
     }
     autosavedelay = false
@@ -1734,23 +1667,12 @@ importSave.addEventListener("click", ()=>{
 autosaveclick = function() {
     autosavetoggle = !autosavetoggle
     if(Game.BEGIN) autosavetoggle = false
-    else{
-    switch (autosavetoggle) {
-        case true:
-        writeMessage("AUTOSAVE ACTIVATED", false, 0, "")
-      //  autosave.innerHTML = "<span id='on'>[ON]</span> AUTOSAVE"
-        break;
-        case false:
-        writeMessage("AUTOSAVE DEACTIVATED", false, 0, "")
-      //  autosave.innerHTML = "<span id='off'>[OFF]</span> AUTOSAVE"
-        break;
-    }
-}}
+
+   }
 
 autosave.addEventListener("click", autosaveclick())
 
 //////
-let autosavedelay = true
 autosavetoggle = false;
 
 
@@ -1788,5 +1710,7 @@ powerButton.addEventListener("click", ()=>{
 powerRow.style.display = "none";
 
 outer.classList.add("Pane")
+columns.left.classList.add("Pane")
+columns.right.classList.add("Pane")
 startGame(); //let's go
 })
