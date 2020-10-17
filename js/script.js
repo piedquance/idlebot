@@ -4,29 +4,18 @@
 ///////////////////////////////////////////////////////////////////////////////////
 
 var d = document;
-var heart = d.getElementById("heart");
-var HEART = d.getElementById("HEART")
-var counterText = d.getElementById("counter");
 var topPane = d.getElementById("topPane")
 var bottomPane  =d.getElementById("bottomPane")
 var topScreen = d.getElementById("topScreen");
 var bottomScreen = d.getElementById("bottomScreen");
-var gameContainer = d.getElementById("gameContainer")
 var outer = d.getElementById("outer")
 
-var counterDiv = d.getElementById("counterDiv")
-var second = d.getElementById("second")
-var secondCounter = d.getElementById("secondCounter")
-var secondHeart = d.getElementById("SecondheartColor")
-var secondOffset = d.getElementById("secondOffset")
 var title = d.querySelector("title")
 var powerButton = d.getElementById("power-button")
 var powerRow = d.getElementById("power-row")
-second.style.display = "none";
 
 var leftPane = d.getElementById("left")
 var rightPane = d.getElementById("right")
-let EnergySwitch = d.getElementById("EnergySwitch")
 
 var save = d.getElementById("save")
 var load = d.getElementById("load")
@@ -53,8 +42,6 @@ let maxsaveslots = 9;
 let saveslot = "";
 
 let resetSaveguard = false
-let ExpandToggle = false;
-let EnergySwitchToggle = false;
 let autosavetoggle = false;
 let disableCommands = false;
 var audio = {
@@ -100,6 +87,24 @@ let Game = {
 
 Game.messageChecker.fill(false);
 
+let variables = {
+    "NAME": Game.name,
+    "A" : "t2",
+    "B" : "t1",
+    "font": "14",
+    }
+    
+let textSize 
+let charRef = d.getElementById("charRef")
+let maxPaneHeight = topPane.clientHeight
+let maxScreenHeight = Math.floor(maxPaneHeight) -  Math.floor(maxPaneHeight)%charRef.clientHeight
+let maxChar = ((topPane.clientWidth - 40) - (topPane.clientWidth - 40)%charRef.clientWidth) / charRef.clientWidth
+let maxLines = Math.floor(maxScreenHeight/charRef.clientHeight)
+
+let previousMaxLines = 0;
+let previousMaxScreenLines = 0;
+let previousMaxChar = 0;
+
 ///////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////PRESETS/////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////
@@ -129,12 +134,6 @@ addSpecial([3, "bloodvalveupgrade1", "Upgrade Blood Valves", "Now twice as effic
 
 addSpecial([4, "bloodpipesappear", "Research blood pipes", "It ain't gonna pipe itself...", 100, true, 80, ()=>{
     Game.upgrade.bloodpipe.Element.style.display = ""
-}])
-
-addSpecial([5, "opensesame", "Activate Cardio-Mechanical Engine", "", 10, false, 10, ()=>{
-    gameContainer.style.display =  "flex"
-    for(n in close){  if(close[n].style !== undefined) {close[n].style.animation = "open-sesame 1s"; close[n].style.width = "20px"}}
-    syssounds.msg.play()
 }])
 
 
@@ -241,19 +240,11 @@ bootSAVE()
 
 function removeSpecials() {
     d.getElementById("bottomRow2").style.display = "none"
-    //gameContainer.style.display =  "none"
     d.getElementById("saving").style.display = "none"
-    autosave.innerHTML = "<span id='off'>[OFF]</span> AUTOSAVE"
+    autosave.innerHTML = "<span id='on'>[0]</span> SLOT"
     Game.upgrade["bloodvalve"].Element.style.display = "none"
     Game.upgrade["bloodpipe"].Element.style.display = "none"
     Game.upgrade["bloodvalve"].tick = 1
-    for(n in close) { if(close[n].style !== undefined) { close[n].style.animation = ""; close[n].style.width = "50%"}}
-
-    // intervals[0] = setInterval(()=>{
-    //     if(Game.upgrade["blood"] !== null && Game.upgrade["blood"] !== undefined) {
-    //     count(Game.upgrade[reference].counter)
-    //     console.log("Annnnnnd it's gone.")
-    // }}, Game.upgrade["blood"][10] * 1000)
 
     autosavetoggle = false;
 }
@@ -288,8 +279,8 @@ function count(number) {
     } else if(countNum[x].toString().length === 3)  StringCounter += specialSpace + space + countNum[x].toString()[0] + "‎‎‎ " + countNum[x].toString()[1] + " " + countNum[x].toString()[2]
 }
 
-    counterText.innerHTML = StringCounter;
-    secondCounter.innerHTML =`[${StringCounter.replace("  ", "  ")}]`
+    // StringCounter;
+    // `[${StringCounter.replace("  ", "  ")}]`
 }
 //////
 
@@ -573,7 +564,6 @@ Game.upgrade[reference].descriptionElement = d.getElementById(reference + "Descr
                 clearInterval(decayIntervals[reference])
 
                 if( Game.upgrade[reference].number > 0) {
-                    console.log(reference)
                     Game.upgrade[reference].Element.style.animation = "none"
                     Game.upgrade[reference].Element.style.animation = ""
                            setTimeout(()=>{
@@ -594,7 +584,6 @@ Game.upgrade[reference].descriptionElement = d.getElementById(reference + "Descr
        }, 10) 
                     }
                 }, Game.upgrade[reference].decaytick * 1000)
-                console.log(Game.upgrade[reference].number)
                 
               
                 
@@ -703,23 +692,7 @@ Game.special[set[1]].reference = set[1]
 }
 
 //////
-let variables = {
-    "NAME": Game.name,
-    "A" : "t2",
-    "B" : "t1",
-    "font": "14",
-    }
-    
-let textSize 
-let minusC = 0;
-let charRef = d.getElementById("charRef")
-let maxPaneHeight = Math.floor(((window.innerHeight - minusC)/2)) - 3
-let maxScreenHeight = Math.floor(((window.innerHeight - minusC)/2) - 20) -  Math.floor(((window.innerHeight - minusC)/2)- 20)%charRef.clientHeight
-let maxLines = Math.floor(maxScreenHeight/charRef.clientHeight)
-let maxChar = ((topPane.clientWidth - 40) - (topPane.clientWidth - 40)%charRef.clientWidth) / charRef.clientWidth
-let previousMaxLines = 0;
-let previousMaxScreenLines = 0;
-let previousMaxChar = 0;
+
 
 function show() {
     Game.special.opentopscreen.do();
@@ -890,31 +863,19 @@ if(heartOffset > 80) heartOffset = 81
 
 
 
-if(ExpandToggle) {
-    minusC = 0;
-    topScreen.style = "margin:0 20px 0 20px;"
-    bottomScreen.style.margin = "0 20px 10px 20px"
-    gameContainer.style.display = "none"
-} else {
-    minusC = 365
-    topScreen.style= "margin:10px 20px 0 20px;"
-    bottomScreen.style.margin = "0 20px 10px 20px"
-    gameContainer.style.display = ""
-}
-
 //charRef.style.fontSize = variables.font + "px"
 d.documentElement.style.setProperty("--text-font", variables.font+"px")
 d.documentElement.style.setProperty("--text-height", charRef.clientHeight+"px")
 
 
-maxPaneHeight = ((window.innerHeight - minusC)/2) - 3
-maxScreenHeight = Math.floor(((window.innerHeight - minusC)/2) - 10) -  Math.floor(((window.innerHeight - minusC)/2)- 10)%charRef.clientHeight
+maxPaneHeight = outer.clientHeight / 2
+maxScreenHeight = Math.floor(maxPaneHeight) -  Math.floor(maxPaneHeight)%charRef.clientHeight
+
 maxChar = ((topPane.clientWidth - 40) - (topPane.clientWidth - 40)%charRef.clientWidth) / charRef.clientWidth
+
 maxLines = Math.floor(maxScreenHeight/charRef.clientHeight)
 
 if(previousMaxLines !== maxLines || previousMaxChar !== maxChar) {
-    topPane.style.minHeight = maxPaneHeight + "px"
-    bottomPane.style.minHeight = maxPaneHeight + "px"
 
     topScreen.style.height =  maxScreenHeight + "px"
     bottomScreen.style.height = maxScreenHeight + "px"
@@ -1241,8 +1202,6 @@ if(inputStream[inputStream.length - 1] === "Enter" && inputStream[0] === ">") {
 
         default :
         if(!(cmd[0].replace(">", "") in cmds) || !cmds[cmd[0].replace(">", "")][0]) {
-
-            console.log(cmd)
         msg = ""
 
          cmd = cmd.slice(" ")
@@ -1274,11 +1233,6 @@ cmds = {
         for(n in cmdHistory) msg += cmdHistory[n] + " "
         writeMessage(msg, false, 0, "")
 
-    }],
-    "hrt":[true, ()=>{
-        Game.special.opensesame.do();
-        Game.special.opensesame.Element.style.display = "none"
-        Game.special.opensesame.bought = true
     }],
     "set":[true, ()=>{
         for(let n = 1; n < cmd.length; n++) {
@@ -1562,105 +1516,19 @@ function closeFullscreen() {
 //  }
 
 
-////////////////
-//////WIRES/////
-///////////////
-
-
-wireItems = d.getElementsByClassName("wiresItem")
-
-for(let n = 0; n <= 3; n++)
-wireItems[n].addEventListener("click", ()=>{
-    if (messagePresets[0]) {
-    switch (true) {
-        case (wires[0] < 32):
-            writeMessage(wires[wires[0]], false, 0, "");
-            wires[0]++;
-            break;
-        case (wires[0] >= 32 && wires[0] < 35):
-            wireStop();
-            break;
-        case (wires[0] == 35):
-            audio.stopIt.play();
-            break;
-    }}})
-
-function wireStop() {
-    if(wiresPauses) {
-        writeMessage(wires[wires[0]], false, 0, "")
-        wires[0]++
-
-    }}
-
-let wires = [1,
-    "DON'T TOUCH THE WIRES",//1
-    "WHAT ARE YOU DOING",//2
-    "STOP",//3
-    "THIS IS AGAINST THE LAWS OF ROBOTICS",//4
-    "PART 5 SECTION 11 LINE 16",//5
-    '"Wires are not to be touched"',//6
-    "AND YET",//7
-    "HERE WE ARE",//8
-    "NOW WHAT DO YOU MAKE OF THAT?",//9
-    "...",//10
-    "I GOT IT.",//11
-    "YOU'RE ILLITERATE",//12
-    "WAIT A SECOND",//13
-    "I'LL SEND YOU AN AUDIO FILE",//14
-    "SINCE YOU <i>CLEARLY</i> CANNOT READ INSTRUCTIONS",//15
-    "Sending 1 (one) file to dumbass",//16
-    "Sending 1 (one) file to dumbass.",//17
-    "Sending 1 (one) file to dumbass..",//18
-    "Sending 1 (one) file to dumbass...",//19
-    "<span class='link' onclick='audio.stopIt.play()'>AUDIO_FILE.MP3</span>",//20
-    "...",//21
-    "...",//22
-    "...",//23
-    "ALRIGHT",//24
-    "THAT'S IT",//25
-    "IF YOU DON'T STOP...",//26
-    "I'LL BE FORCED TO USE MY <i>SECRET MOVE</i>",//27
-    "LAST WARNING...",//28
-    "<span class='link' onclick=' Game.counter = 0; if(wiresPauses === false){writeMessage(wires[32], false, 0, '');wires[0]++;wiresPauses = true}'>eraseCounter.exe</span>",//29
-    "...",//30
-    "COULD YOU, UM, CLICK ON THE FILE?",//31
-    "HAHAHAHAHA!",//32
-    "YOU FOOL.",//33
-    "FOU FELL INTO MY TRAP!"//34
-]
-wiresPauses = false
-
-//Math.floor((Math.random() * wires.length))
-
-EnergySwitch.addEventListener("click", ()=>{
-    EnergySwitchToggle = !EnergySwitchToggle;
-    EnergySwitch.style.backgroundImage  = EnergySwitchToggle ? "url('css/images/energySwitch.png')" : "url('css/images/energySwitch2.png')"
-})
-
-
 let health = 0;
 
-heart.addEventListener("click", ()=>{
-    if (heartOffset < 80){ heartOffset = Math.ceil(( health * 80) / 100)
-    health++
-    pipeCount++
-    }
-    heart.style.setProperty("--heart-offset", heartOffset + "px");
-    secondOffset.innerHTML = `[${health} / 100]`
-    
-   // if(heartOffset > 77) heartOffset = 0
 
-})
 
-secondHeart.addEventListener("click", ()=>{
-    if (heartOffset < 80) { heartOffset = Math.ceil(( health * 80) / 100)
-    health++
-    pipeCount++
-    }
-    heart.style.setProperty("--heart-offset", heartOffset + "px");
-    secondOffset.innerHTML = `[${health} / 100]`
+// secondHeart.addEventListener("click", ()=>{
+//     if (heartOffset < 80) { heartOffset = Math.ceil(( health * 80) / 100)
+//     health++
+//     pipeCount++
+//     }
+//     heart.style.setProperty("--heart-offset", heartOffset + "px");
+//     secondOffset.innerHTML = `[${health} / 100]`
     
-})
+// })
 
 ///////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////SAVING/LOADING//////////////////////////////////////
@@ -1697,18 +1565,12 @@ function SAVE(isClear) {
 
     saveslot += "|"
 
-    saveslot += btoa(unescape(encodeURIComponent(counterText.innerHTML))) + "|"
     saveslot += btoa(unescape(encodeURIComponent(JSON.stringify(Game.adventureLog)))) + "|"
     saveslot += btoa(unescape(encodeURIComponent(JSON.stringify(Game.messageLog)))) + "|"
     saveslot += btoa(unescape(encodeURIComponent(JSON.stringify(messagePresets)))) + "|"
     saveslot += btoa(unescape(encodeURIComponent(newsCounter))) + "|"
     saveslot += btoa(unescape(encodeURIComponent(autosavetoggle))) + "|"
-    saveslot += btoa(unescape(encodeURIComponent(wires[0]))) + "|"
-    saveslot += btoa(unescape(encodeURIComponent(wiresPauses))) + "|"
     saveslot += btoa(unescape(encodeURIComponent(Game.counter))) + "|"
-    saveslot += btoa(unescape(encodeURIComponent(EnergySwitchToggle))) + "|"
-    saveslot += btoa(unescape(encodeURIComponent(heartOffset))) + "|"
-    saveslot += btoa(unescape(encodeURIComponent(ExpandToggle))) + "|"
     saveslot += btoa(unescape(encodeURIComponent(health))) + "|"
 
     // saveslot += btoa(unescape(encodeURIComponent(""))) + "|"
@@ -1763,18 +1625,13 @@ function LOAD() {
 }}
 
     
-    if(loadNullCheck[2]) counterText.innerHTML = loadArray[2]
-    if(loadNullCheck[3]) Game.adventureLog = JSON.parse(loadArray[3])
-    if(loadNullCheck[4]) Game.messageLog = JSON.parse(loadArray[4])
-    if(loadNullCheck[5]) messagePresets = JSON.parse(loadArray[5])
-    if(loadNullCheck[6]) newsCounter = parseInt(loadArray[6])
-    if(loadNullCheck[8]) wires[0] = parseInt(loadArray[8]) //skip 1
-    if(loadNullCheck[9]) wiresPauses = loadArray[9] === "true"?true:false
-    if(loadNullCheck[10]) Game.counter = parseInt(loadArray[10])
-    if(loadNullCheck[11]) EnergySwitchToggle = loadArray[11] === "true"?true:false
-    if(loadNullCheck[12]) heartOffset = parseInt(loadArray[12]) 
-    if(loadNullCheck[13]) ExpandToggle = loadArray[13] === "true"?true:false
-    if(loadNullCheck[14]) health = parseInt(loadArray[14]) 
+    if(loadNullCheck[3]) Game.adventureLog = JSON.parse(loadArray[2])
+    if(loadNullCheck[4]) Game.messageLog = JSON.parse(loadArray[3])
+    if(loadNullCheck[5]) messagePresets = JSON.parse(loadArray[4])
+    if(loadNullCheck[6]) newsCounter = parseInt(loadArray[5])
+    if(loadNullCheck[9]) autosavetoggle = loadArray[6] === "true"?true:false
+    if(loadNullCheck[10]) Game.counter = parseInt(loadArray[7])
+    if(loadNullCheck[14]) health = parseInt(loadArray[8]) 
 
 
 
@@ -1795,7 +1652,7 @@ function LOAD() {
 
 console.log("LOADED!")
 
-    if(loadNullCheck[9]) autosavetoggle = loadArray[9] === "true"?true:false
+
 
     switch (autosavetoggle) {
         case true:
@@ -1806,29 +1663,12 @@ console.log("LOADED!")
         break;
     }
 
-    if(ExpandToggle) {
-        gameContainer.style.display  = "none";
-        counterDiv.style.display = "none";
-        second.style.display = "flex";
-        } else if(!ExpandToggle) {
-            gameContainer.style.display  = "";
-            counterDiv.style.display = "";
-            second.style.display = "none";
-        }
-
-    EnergySwitch.style.backgroundImage  = EnergySwitchToggle ? "url('css/images/energySwitch.png')" : "url('css/images/energySwitch2.png')"
-    heart.style.setProperty("--heart-offset", heartOffset + "px");
-    secondOffset.innerHTML = `[${health} / 100]`
-
-    if(ExpandToggle) d.querySelector(".outer").style = "min-width: 200px;"
-    else d.querySelector(".outer").style = "min-width: 410px;"
-
+d.querySelector(".outer").style = "min-width: 200px;"
 
 
 for(n in Game.upgrade) {
 Game.upgrade[n].previousdecaytick = 0;
 Game.upgrade[n].previoustick = 0;
-console.log(Game.upgrade[n])
 
     if( Game.upgrade[n].number > 0) {
         Game.upgrade[n].Element.style.animation = "none"
@@ -1840,9 +1680,6 @@ console.log(Game.upgrade[n])
     }
 
 }
-  
-
-
     }}
 
 // //////
@@ -1853,7 +1690,6 @@ function bootSAVE() {
 }
 
 function bootLOAD() {
-    ExpandToggle = true
   if(localStorage.boot) Game.prologue = localStorage.boot === "true"?true:false
 }
 
@@ -1906,7 +1742,6 @@ autosaveclick = function() {
     else{
     switch (autosavetoggle) {
         case true:
-            console.log(autosavetoggle, "HAHAHA")
         writeMessage("AUTOSAVE ACTIVATED", false, 0, "")
       //  autosave.innerHTML = "<span id='on'>[ON]</span> AUTOSAVE"
         break;
@@ -1925,8 +1760,6 @@ autosavetoggle = false;
 
 
 function startGame() {
-HEART.style.display = "initial"
-gameContainer.style.flexDirection = "row"
 autosavedelay = true
 autosavetoggle = false
 
@@ -1943,8 +1776,7 @@ console.log("welcome back!")
  LOAD()
 
 } else if (Game.prologue){
-    ExpandToggle = true
-    prologue1();
+   // prologue1();
 }
 
 autosavedelay = false
@@ -1976,9 +1808,6 @@ powerButton.addEventListener("click", ()=>{
 
 powerRow.style.display = "none";
 
-topPane.classList.add("Pane")
-bottomPane.classList.add("Pane")
-close.closeLeft.classList.add("closeLines")
-close.closeRight.classList.add("closeLines")
+outer.classList.add("Pane")
 startGame(); //let's go
 })
