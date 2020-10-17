@@ -233,7 +233,7 @@ t += 10000
     writeMessage("TRY >help", false, t + 2000, "valet")
     writeMessage("THAT SHOULD GET YOU STARTED", false, t + 4000, "valet")
 
-Game.prologue = false
+Game.BEGIN = false
 bootSAVE()
 }
 
@@ -1250,9 +1250,7 @@ cmds = {
         } else writeMessage("No name given", false, 0, "")
     }],
     "clear":[true, ()=>{
-        let clearNum = 0
-        if(ExpandToggle) clearNum = 25
-         else clearNum = 10
+        let clearNum = maxLines*2
         for(let n = 0; n <= clearNum; n++) {
             writeMessage("<br>", false, 0, "")
         } 
@@ -1260,7 +1258,7 @@ cmds = {
     "click":[true, ()=>{
         pipeCount++; heartOffset++;  heart.style.setProperty("--heart-offset", heartOffset + "px");
     }],
-    "r":[true, ()=>{
+    "restart":[true, ()=>{
         window.location.href = window.location.pathname + window.location.search + window.location.hash;
         window.location.replace(window.location.pathname + window.location.search + window.location.hash);
             // does not create a history entry
@@ -1269,26 +1267,6 @@ cmds = {
             //  the web-server again (such as where the document contents
             //  change dynamically) we would pass the argument as 'true'.
             //taken from https://stackoverflow.com/questions/3715047/how-to-reload-a-page-using-javascript
-    }],
-    "expand":[true, ()=>{
-        ExpandToggle = !ExpandToggle
-
-    //     if(ExpandToggle) {   for(n in close) if(close[n].style !== undefined) close[n].style.animation = "close-sesame 0.5s"
-    //    setTimeout(()=>{
-    //     gameContainer.style.display  = "none";
-    //     counterDiv.style.display = "none";
-    //     second.style.display = "flex";
-    //     d.querySelector(".outer").style = "min-width: 200px;"
-    //     openFullscreen();
-    //    }, 500)
-
-    // } else if(!ExpandToggle) {  for(n in close) if(close[n].style !== undefined)  close[n].style.animation = "open-sesame 1s"
-    //     gameContainer.style.display  = "";
-    //     counterDiv.style.display = "";
-    //     second.style.display = "none";
-    //     d.querySelector(".outer").style = "min-width: 410px;"
-    //     closeFullscreen();
-    //     } 
     }],
     "alert":[true, ()=>{
         if(cmd[1]) alert(cmd[1]); else alert("No message written");
@@ -1685,12 +1663,29 @@ Game.upgrade[n].previoustick = 0;
 // //////
 
 function bootSAVE() {
-    localStorage.boot = Game.prologue
-
+    localStorage.boot = Game.BEGIN
 }
 
 function bootLOAD() {
-  if(localStorage.boot) Game.prologue = localStorage.boot === "true"?true:false
+    var date = new Date(); let currentYear = date.getFullYear();
+    console.log(`IdleBot ~~ An incremental game\nCopyright © ${currentYear} https://shutterstacks.net`)
+
+
+    writeMessage("TECH Emergency Terminal System", false, 0, "")
+    writeMessage("Version 15.000.0143", false, 0, "")
+    writeMessage("Sat Dec 31 NaN NaN:Nan:NaN", false, 0, "")
+    writeMessage("Press > to start", false, 0, "")
+
+  if(localStorage.boot) Game.BEGIN = localStorage.boot === "true"?true:false
+  if(localStorage.Game0 !== "howdy" && !Game.BEGIN){
+    console.log("welcome back!")
+     LOAD()
+    
+    } else if (Game.BEGIN){
+       // prologue1();
+    }
+    autosavedelay = false
+    loopGame()
 }
 
 
@@ -1738,7 +1733,7 @@ importSave.addEventListener("click", ()=>{
 
 autosaveclick = function() {
     autosavetoggle = !autosavetoggle
-    if(Game.prologue) autosavetoggle = false
+    if(Game.BEGIN) autosavetoggle = false
     else{
     switch (autosavetoggle) {
         case true:
@@ -1763,25 +1758,9 @@ function startGame() {
 autosavedelay = true
 autosavetoggle = false
 
-
-var date = new Date(); let currentYear = date.getFullYear(); 
-console.log(`IdleBot ~~ An incremental game\nCopyright © ${currentYear} https://shutterstacks.net`)
-
 //generating the content
 
 bootLOAD()
-
-if(localStorage.Game0 !== "howdy" && !Game.prologue){
-console.log("welcome back!")
- LOAD()
-
-} else if (Game.prologue){
-   // prologue1();
-}
-
-autosavedelay = false
-
-loopGame()
 }
 
 function loopGame() {
