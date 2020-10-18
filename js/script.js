@@ -18,12 +18,6 @@ var powerRow = d.getElementById("power-row")
 var leftPane = d.getElementById("left")
 var rightPane = d.getElementById("right")
 
-var save = d.getElementById("save")
-var load = d.getElementById("load")
-var reset = d.getElementById("reset")
-var autosave = d.getElementById("autosave")
-var importSave = d.getElementById("import")
-var exportSave = d.getElementById("export")
 var close = d.getElementsByClassName("close");
 var newsCounter = -1;
 let heartOffset = 0;
@@ -259,13 +253,6 @@ cmds = {
     "" : [true, ()=>{}]
 }
 
-
-let aFile = function(name) {
-    this.name = name
-
-}
-
-
 let root = {
     name:"root",
     nodes:[],
@@ -331,8 +318,44 @@ let aFolder = function(name) {
     }
 }
 
-root.push(new aFolder("home", "root"))
-root.push(new aFolder("system", "root"))
+let aFile = function(name) {
+    this.info = name.split(".")
+    this.name = name
+    this.type = this.info[this.info.length-1]
+
+    this.write = (data) => {
+        this.rawdata = data
+        this.data = root.format(data)
+    }
+}
+
+
+root.format = (data)=>{
+let temp = data.split("//")
+
+}
+
+//PolyiDOS data formatting for .tf
+/*
+ *  paragraph/align//
+ *  paragraph/align//
+ *  ect...
+ * 
+ *  [link]
+ *  $SYS-VARIABLE
+ * 
+ * 
+ * 
+*/
+
+root.push(new aFolder("home"))
+root.push(new aFolder("system"))
+
+root.home.push(new aFolder("Documents"))
+root.home.push(new aFolder("Pictures"))
+root.home.push(new aFolder("Videos"))
+root.home.push(new aFolder("Music"))
+root.home.push(new aFolder("Downloads"))
 
 let inputStream = [];
 let cmd = ""
@@ -344,30 +367,19 @@ let cmdlocation = root.getLocation().name + "/"
 ///////////////////////////////PRESETS/////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////
 
-///  save position, reference, name, description, type, cost, cost increase rate, tick, decay tick, message[o]
+/// reference, name, description, type, cost, cost increase rate, tick, decay tick, message[o]
 
-addUpgrade([0, "bloodvalve", "Blood Valve", "Pumps blood every 1s<br>Decays every 10s", "basicCounter", 10, 5, 1, 10])
-addUpgrade([1, "bloodpipe", "Blood Pipe", "Pipes blood every 0.5s<br>Decays every 20s", "basicCounter", 20, 7, 0.5, 20])
+addUpgrade(["bloodvalve", "Blood Valve", "Pumps blood every 1s<br>Decays every 20s", "basicCounter", 15, 5, 1, 20])
+addUpgrade(["bloodpipe", "Blood Pipe", "Pipes blood every 0.5s<br>Decays every 10s", "basicCounter", 40, 7, 0.5, 10])
 
 
-/// savePosition, reference, name, description, cost, hasCost, appearAt, function, optional marker
-addSpecial([0, "saving", "SAVING", "Allows you to save.", 30, true, 20, ()=>{
-    d.getElementById("bottomRow2").style.display = "flex"
-    d.getElementById("saving").style.display = "flex"
-    autosavetoggle = true;
-    //autosave.innerHTML = "<span id='on'>[ON]</span> AUTOSAVE"
-}])
+/// reference, name, description, cost, hasCost, appearAt, function, optional marker
 
-addSpecial([1, "bloodvalvesappear", "Research Blood Valves", "All valves come equipped with a half-life of 5 seconds.", 50, true, 40, ()=>{
+addSpecial(["bloodvalvesappear", "Research Blood Valves", "All valves come equipped with a half-life of 5 seconds.", 50, true, 40, ()=>{
     Game.upgrade.bloodvalve.Element.style.display = ""
 }])
 
-addSpecial([2, "bloodvalveupgrade1", "Upgrade Blood Valves", "Now twice as efficient!", 100, true, 70, ()=>{
-    Game.upgrade.bloodvalve.tick = 0.5
-    Game.upgrade.bloodvalve.descriptionElement.innerHTML = "Pumps blood every 0.5s<br>Decays every 10s"
-}])
-
-addSpecial([3, "bloodpipesappear", "Research blood pipes", "It ain't gonna pipe itself...", 100, true, 80, ()=>{
+addSpecial(["bloodpipesappear", "Research blood pipes", "It ain't gonna pipe itself...", 100, true, 80, ()=>{
     Game.upgrade.bloodpipe.Element.style.display = ""
 }])
 
@@ -710,30 +722,27 @@ function movePane(pane, out) {
     }
 }
 
-
-
-
 /////
 
 function addUpgrade(preset) {
 
-    Game.upgrade[preset[1]] = {}
-    Game.upgrade[preset[1]].reference = preset[1]
+    Game.upgrade[preset[0]] = {}
+    Game.upgrade[preset[0]].reference = preset[0]
 
-    let reference = Game.upgrade[preset[1]].reference
+    let reference = Game.upgrade[preset[0]].reference
 
     Game.upgrade[reference].counter = 0
     Game.upgrade[reference].number = 0
-    Game.upgrade[reference].savePosition = preset[0]
-    Game.upgrade[reference].name = preset[2]
-    Game.upgrade[reference].description = preset[3]
-    Game.upgrade[reference].type = preset[4]
-    Game.upgrade[reference].cost = preset[5]
-    Game.upgrade[reference].costIncreaseRate = preset[6]
-    Game.upgrade[reference].tick = preset[7]
-    Game.upgrade[reference].previoustick = preset[7]
-    Game.upgrade[reference].decaytick = preset[8]
-    Game.upgrade[reference].previousdecaytick = preset[8]
+    Game.upgrade[reference].savePosition =  Object.keys(Game.upgrade).length
+    Game.upgrade[reference].name = preset[1]
+    Game.upgrade[reference].description = preset[2]
+    Game.upgrade[reference].type = preset[3]
+    Game.upgrade[reference].cost = preset[4]
+    Game.upgrade[reference].costIncreaseRate = preset[5]
+    Game.upgrade[reference].tick = preset[6]
+    Game.upgrade[reference].previoustick = preset[6]
+    Game.upgrade[reference].decaytick = preset[7]
+    Game.upgrade[reference].previousdecaytick = preset[7]
 
 
  var node = d.createElement("DIV");
@@ -830,24 +839,24 @@ Game.upgrade[reference].descriptionElement = d.getElementById(reference + "Descr
 
 function addSpecial(set) {
 
-Game.special[set[1]] = {}
-Game.special[set[1]].reference = set[1]
- let reference = Game.special[set[1]].reference
+Game.special[set[0]] = {}
+Game.special[set[0]].reference = set[0]
+ let reference = Game.special[set[0]].reference
 
- Game.special[reference].savePosition = set[0]
- Game.special[reference].name = set[2]
- Game.special[reference].description = set[3]
- Game.special[reference].cost = set[4]
- Game.special[reference].hasCost = set[5]
- Game.special[reference].appearAt = set[6]
- Game.special[reference].do = function(){set[7]()}
+ Game.special[reference].savePosition = Object.keys(Game.special).length
+ Game.special[reference].name = set[1]
+ Game.special[reference].description = set[2]
+ Game.special[reference].cost = set[3]
+ Game.special[reference].hasCost = set[4]
+ Game.special[reference].appearAt = set[5]
+ Game.special[reference].do = function(){set[6]()}
  Game.special[reference].bought = false
  Game.special[reference].seen = false
 
 
 
 
-   if((Game.special[reference].cost === 0 ||  !Game.special[reference].hasCost) && set[8] === undefined) {
+   if((Game.special[reference].cost === 0 ||  !Game.special[reference].hasCost) && set[7] === undefined) {
     var node = d.createElement("DIV");
     node.id = reference + "Special";
     node.classList.add("tile");
@@ -857,10 +866,10 @@ Game.special[set[1]].reference = set[1]
     +'</p></div><div class=generalNum style="display:none;"><p class="Num" id="'+ reference 
     +'Cost"></p></div>'
 
-   }else if(set[8] === "console") {
+   }else if(set[7] === "console") {
     var node = d.createElement("DIV");
     node.id = reference + "Special";
-    node.classList.add(set[8])
+    node.classList.add(set[7])
     node.classList.add("tile");
 
     node.innerHTML = '<div class="generalDesc"><p class="Description"  id="'+  +'Description">'+  Game.special[reference].description
@@ -889,7 +898,6 @@ Game.special[set[1]].reference = set[1]
     Game.special[reference].Element.style.display = "none"
 
     Game.special[reference].Element.addEventListener("click", ()=> {
-        console.log("asdsaf")
         if(Game.counter >=  Game.special[reference].cost) {
     
             syssounds.msg.play()
@@ -1112,7 +1120,7 @@ autosaveTick++
  } 
 
 //bottomScreen.scrollTop = bottomScreen.scrollHeight;
-title.innerHTML = Math.floor(Game.counter) + " - IdleBot"
+title.innerHTML = cmdlocation
 
 for(const [key, value] of Object.entries(Game.special)) {
     if(Game.counter >=  Game.special[key].appearAt && !Game.special[key].bought) {
@@ -1129,6 +1137,10 @@ for(x in Game.upgrade) {
     Game.upgrade[x].numberElement.innerHTML = Game.upgrade[x].number
     Game.upgrade[x].descriptionElement.innerHTML = Game.upgrade[x].description
     Game.upgrade[x].nameElement.innerHTML = Game.upgrade[x].name
+
+    if(Game.upgrade[x].number < 1) {
+        Game.upgrade[x].Element.style.animation = "none"
+        Game.upgrade[x].Element.style.animation = ""}
 }
 
 
@@ -1640,8 +1652,8 @@ function bootLOAD() {
     console.log(`IdleBot ~~ An incremental game\nCopyright © ${currentYear} https://shutterstacks.net`)
 
 
-    writeMessage("TECH Emergency Terminal System", false, 0, "")
-    writeMessage("Version 15.000.0143", false, 0, "")
+    writeMessage("PolyiDOS M3 Emergency Terminal", false, 0, "")
+    writeMessage("Version 4.000.0143", false, 0, "")
     writeMessage("Sat Dec 31 NaN NaN:Nan:NaN", false, 0, "")
     writeMessage("Press > to start", false, 0, "")
 
@@ -1670,36 +1682,6 @@ function RESET() {
     window.location.replace(window.location.pathname + window.location.search + window.location.hash);
 }
 
-//////
-
-save.addEventListener("click", ()=>{ SAVE(false) })
-load.addEventListener("click", ()=>{ LOAD() })
-
-reset.addEventListener("click", ()=>{ 
-    resetSaveguard= false
-    writeMessage("This will erase all of your saved data. Are you sure that you want to proceed? [<span class='link' onclick='if(!resetSaveguard) RESET() '>YES</span>][<span class='link' onclick='if(!resetSaveguard) {writeMessage(`All right.`, false, 0); resetSaveguard = true}'>NO</span>]", false, 0, "")
-})
-
-exportSave.addEventListener("click", ()=>{ 
-    let exportFile = SAVE(false)
-
-    const text = exportFile
-    try {
-       navigator.clipboard.writeText('"' +text + '"')
-       writeMessage("DATA COPIED TO CLIPBOARD", false, 0, "")
-    } catch (err) {
-        writeMessage("DATA FAILED TO EXPORT", false, 0, "")
-    }})
-
-importSave.addEventListener("click", ()=>{ 
-    try {
-        localStorage["Game" + saveslotnumber] = prompt("Please paste your save Game here:\n")
-        LOAD()
-    } catch (error) {
-        alert("There was an error in importing your Game. Please try again.")
-        console.log(`There was an error in importing: ${error}`)
-    }})
-
 
 autosaveclick = function() {
     autosavetoggle = !autosavetoggle
@@ -1707,9 +1689,7 @@ autosaveclick = function() {
 
    }
 
-autosave.addEventListener("click", autosaveclick())
 
-//////
 autosavetoggle = false;
 
 

@@ -211,36 +211,11 @@ a:visited {
   color: rgb(231, 103, 103);
 }
 
-
 #bottomRow2 {
   display:none;
   flex-direction: row;
   margin: 0 20px;
   padding-bottom: 10px;
-}
-
-.saveRow {
-  z-index:4;
-  display:none;
-  flex-direction: column-reverse;
-}
-
-.saveC {
-  z-index:4;
-  text-align: right;
-  position:relative;
-  animation-name:messageLoad;
-  animation-duration:0.5s;
-}
-
-.saveC:hover {
-  background-color: #fff;
-  color:var(--bg-color);
-}
-
-.saveC:active {
-  background-color:var(--bg-color);
-  color: var(--color);
 }
 
 #on {color:#e25151}
