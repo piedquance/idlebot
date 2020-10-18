@@ -200,9 +200,36 @@ cmds = {
     }],
 
     "cd":[true, ()=>{
-        let temp = root.location
-        root.setLocation(cmd[1])
-        cmdlocation = temp + "\\" + root.getLocation().name + "\\"
+        let location = cmd[1].split("/")
+        console.log(location)
+
+        if(location.length === 1 && location[0] !== "root") {
+            if(root.search(location[0])) {
+            root.setLocation(cmd[1])
+            cmdlocation += root.getLocation().name + "/"
+        }}
+        else if (location[0] === "root") {
+            let temp = root.location
+            let tempCmdLocation = cmdlocation
+            let flag = true
+            cmdlocation = ""
+            for(n in location) {
+                if(root.search(location[n])) {
+                    cmdlocation += location[n] + "/"
+                } else {
+                    flag = false
+                    root.setLocation(temp)
+                    cmdlocation = tempCmdLocation
+                    break
+                } 
+        }
+        if(flag) root.setLocation(location[location.length - 1])
+        }
+    }],
+
+    "mkdir":[true, ()=>{
+       for(let n = 1; n < cmd.length; n++) root.getLocation().push(new aFolder(cmd[n]))
+
     }],
 
     "A":[true, ()=>{
@@ -286,7 +313,7 @@ root.push(new aFolder("system", "root"))
 let inputStream = [];
 let cmd = ""
 let cmdHistory = [];
-let cmdlocation = root.getLocation().name + "\\"
+let cmdlocation = root.getLocation().name + "/"
 
 
 ///////////////////////////////////////////////////////////////////////////////////
@@ -864,8 +891,9 @@ Game.special[set[1]].reference = set[1]
     Game.special[reference].Element.style.display = "none"
 
     Game.special[reference].Element.addEventListener("click", ()=> {
-
+        console.log("asdsaf")
         if(Game.counter >=  Game.special[reference].cost) {
+    
             syssounds.msg.play()
             Game.counter -=  Game.special[reference].cost
             Game.special[reference].Element.style.display = "none"
@@ -1710,7 +1738,7 @@ powerButton.addEventListener("click", ()=>{
 powerRow.style.display = "none";
 
 outer.classList.add("Pane")
-columns.left.classList.add("Pane")
-columns.right.classList.add("Pane")
+//columns.left.classList.add("Pane")
+//columns.right.classList.add("Pane")
 startGame(); //let's go
 })
