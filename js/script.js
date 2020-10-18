@@ -108,14 +108,14 @@ let health = 0;
 
 cmds = {
     "c" : [true, ()=>{
-        if(cmd[1]) Game.counter = parseInt(cmd[1]);
+        if(cmd[m][1]) Game.counter = parseInt(cmd[m][1]);
     }],
     "save" : [false, ()=>{ SAVE()}],
     "load": [false, ()=>{LOAD()}],
     "reset": [true, ()=>{RESET()}],
     "autosave":[true, ()=>{autosaveclick()}],
-    "play":[true, ()=>{if(cmd[1]) if(audio[cmd[1]]) audio[cmd[1]].play();}],
-    "pause":[false, ()=>{if(cmd[1]) if(audio[cmd[1]]) audio[cmd[1]].pause();}],
+    "play":[true, ()=>{if(cmd[m][1]) if(audio[cmd[m][1]]) audio[cmd[m][1]].play();}],
+    "pause":[false, ()=>{if(cmd[m][1]) if(audio[cmd[m][1]]) audio[cmd[m][1]].pause();}],
     "cmdh":[true, ()=>{
         msg = ""
         for(n in cmdHistory) msg += cmdHistory[n] + " "
@@ -123,16 +123,16 @@ cmds = {
 
     }],
     "set":[true, ()=>{
-        for(let n = 1; n < cmd.length; n++) {
-            let settings = cmd[n].split("=");
+        for(let n = 1; n < cmd[m].length; n++) {
+            let settings = cmd[m][n].split("=");
             variables[settings[0]] = settings[1]
             writeMessage(`${settings[0]} has been set to "${variables[settings[0]]}"`, false, 0, "")
         }
         Game.updated = true;
     }],
     "setname":[true, ()=>{
-        if(cmd[1]) {
-            Game.name = cmd[1];
+        if(cmd[m][1]) {
+            Game.name = cmd[m][1];
             variables["NAME"] = Game.name
             writeMessage(`NAME has been set to "${Game.name}"`, false, 0, "")
         } else writeMessage("No name given", false, 0, "")
@@ -157,31 +157,31 @@ cmds = {
             //taken from https://stackoverflow.com/questions/3715047/how-to-reload-a-page-using-javascript
     }],
     "alert":[true, ()=>{
-        if(cmd[1]) alert(cmd[1]); else alert("No message written");
+        if(cmd[m][1]) alert(cmd[m][1]); else alert("No message written");
     }],
     "echo":[true, ()=>{
-        if(cmd[1]) { 
-            if(cmd[cmd.length - 1][0] === "#") { msg = "<span style='color:" + cmd[cmd.length - 1] + "' >"
-            for(let n = 1; n < cmd.length - 1; n++)  msg += cmd[n] + " "
+        if(cmd[m][1]) { 
+            if(cmd[m][cmd[m].length - 1][0] === "#") { msg = "<span style='color:" + cmd[m][cmd[m].length - 1] + "' >"
+            for(let n = 1; n < cmd[m].length - 1; n++)  msg += cmd[m][n] + " "
             msg += "</span>"
             writeMessage(msg, false, 0, "")
             writeMessage("<br>", false, 0, "")
         }  else {
             msg = ""
-            for(let n = 1; n < cmd.length; n++)  msg += cmd[n] + " "
+            for(let n = 1; n < cmd[m].length; n++)  msg += cmd[m][n] + " "
             writeMessage(msg, false, 0, "")
             writeMessage("<br>", false, 0, "")
         }}
     }],
     "wt":[true, ()=>{
-        if(cmd[1] && cmd[2]){
+        if(cmd[m][1] && cmd[m][2]){
             
-            for(let n = 2; n <cmd.length; n++) msg += cmd[n] + " "
+            for(let n = 2; n <cmd[m].length; n++) msg += cmd[m][n] + " "
 
-            download(msg, cmd[1], "txt");
+            download(msg, cmd[m][1], "txt");
         }
-        else if(!cmd[1]) writeMessage("No name given", false, 0, "")
-        else if(!cmd[2]) writeMessage("No data given", false, 0, "")
+        else if(!cmd[m][1]) writeMessage("No name given", false, 0, "")
+        else if(!cmd[m][2]) writeMessage("No data given", false, 0, "")
     }],
     "none":[true, ()=>{
 
@@ -200,12 +200,11 @@ cmds = {
     }],
 
     "cd":[true, ()=>{
-        let location = cmd[1].split("/")
-        console.log(location)
+        let location = cmd[m][1].split("/")
 
         if(location.length === 1 && location[0] !== "root") {
             if(root.search(location[0])) {
-            root.setLocation(cmd[1])
+            root.setLocation(cmd[m][1])
             cmdlocation += root.getLocation().name + "/"
         }}
         else if (location[0] === "root") {
@@ -228,21 +227,25 @@ cmds = {
     }],
 
     "mkdir":[true, ()=>{
-       for(let n = 1; n < cmd.length; n++) root.getLocation().push(new aFolder(cmd[n]))
+       for(let n = 1; n < cmd[m].length; n++) root.getLocation().push(new aFolder(cmd[m][n]))
 
     }],
 
+    "rmdir":[true, ()=>{
+        for(let n = 1; n < cmd[m].length; n++) root.remove(cmd[m][n])
+    }],
+
     "A":[true, ()=>{
-        if(cmd[1]) {
+        if(cmd[m][1]) {
             for(let n = 0; n <= maxLines ; n++) {setScreenLine("A" + (n+1), "");}
-         variables["A"] = cmd[1]
+         variables["A"] = cmd[m][1]
         Game.updated = true}
     }],
 
     "B":[true, ()=>{
-        if(cmd[1]) {
+        if(cmd[m][1]) {
             for(let n = 0; n <= maxLines ; n++) {setScreenLine("B" + (n+1), "");}
-         variables["B"] = cmd[1]
+         variables["B"] = cmd[m][1]
          Game.updated = true}
     }],
 
@@ -278,6 +281,16 @@ let root = {
     push: (name)=> {
         root.nodes.push(name)
         root[name.name] = name
+        name.postion = root.nodes.length - 1
+        name.parentName = root.name
+        name.parent = root
+    },
+
+    remove : (name)=>{
+        if(root.getLocation()[name]) {
+            root.getLocation().nodes.splice(name.position, 1)
+            delete  root.getLocation()[name]
+        }
     },
 
     location: "root",
@@ -304,6 +317,9 @@ let aFolder = function(name) {
     this.push = (name)=>{
         this.nodes.push(name)
         this[name.name] = name
+        name.postion = this.nodes.length - 1
+        name.parent = this
+        name.parentName = this.name
     }
 }
 
@@ -748,19 +764,7 @@ Game.upgrade[reference].descriptionElement = d.getElementById(reference + "Descr
     }
 
     decayIntervals[reference] = setInterval(()=>{
-        if( Game.upgrade[reference].number > 0) {
-        Game.upgrade[reference].number--
-        Game.upgrade[reference].counter--
-        Game.upgrade[reference].cost -= Game.upgrade[reference].costIncreaseRate
-        Game.upgrade[reference].Element.style.animation = "none"
-
-        Game.upgrade[reference].Element.style.animation = ""
-
-               setTimeout(()=>{
-        Game.upgrade[reference].Element.style.animation = "decayTime " + Game.upgrade[reference].decaytick + "s linear"
-       }, 10) 
-
-        }
+            decay(reference)
     }, Game.upgrade[reference].decaytick * 1000)
 
 
@@ -771,7 +775,7 @@ Game.upgrade[reference].descriptionElement = d.getElementById(reference + "Descr
                 Game.upgrade[reference].counter++
                 Game.counter -= Game.upgrade[reference].cost
                 Game.upgrade[reference].cost += Game.upgrade[reference].costIncreaseRate
-
+                Game.upgrade[reference].costIncreaseRate++
                 clearInterval(decayIntervals[reference])
 
                 if( Game.upgrade[reference].number > 0) {
@@ -783,21 +787,8 @@ Game.upgrade[reference].descriptionElement = d.getElementById(reference + "Descr
                 } 
 
                 decayIntervals[reference] = setInterval(()=>{
-                  
-                    if( Game.upgrade[reference].number > 0) {
-                    Game.upgrade[reference].number--
-                    Game.upgrade[reference].counter--
-                    Game.upgrade[reference].cost -= Game.upgrade[reference].costIncreaseRate
-                    Game.upgrade[reference].Element.style.animation = "none"
-                    Game.upgrade[reference].Element.style.animation = ""
-                           setTimeout(()=>{
-        Game.upgrade[reference].Element.style.animation = "decayTime " + Game.upgrade[reference].decaytick + "s linear"
-       }, 10) 
-                    }
+                    decay(reference)
                 }, Game.upgrade[reference].decaytick * 1000)
-                
-              
-                
             }
         })
 
@@ -812,7 +803,6 @@ Game.upgrade[reference].descriptionElement = d.getElementById(reference + "Descr
                 Game.upgrade[reference].number++      
                 Game.counter -= Game.upgrade[reference].cost
                 Game.upgrade[reference].cost += Game.upgrade[reference].costIncreaseRate
-
             }})
 
         intervals[reference] = setInterval(()=>{
@@ -1193,27 +1183,17 @@ if(type == "tick") {
                 } } 
     
     } else {
+
         clearInterval(decayIntervals[name])
 
         if(Game.upgrade[name] !== undefined) {
-
-            if(Game.upgrade[name].type === "basicCounter") {
-
-          decayIntervals[name] = setInterval(()=>{
-
-            if( Game.upgrade[name].number > 0) {
-            Game.upgrade[name].number--
-            Game.upgrade[name].counter--
-            Game.upgrade[name].cost -= Game.upgrade[name].costIncreaseRate
-            Game.upgrade[name].Element.style.animation = "none"
-            Game.upgrade[name].Element.style.animation = ""
-                               setTimeout(()=>{
-        Game.upgrade[name].Element.style.animation = "decayTime " + Game.upgrade[name].decaytick + "s linear"
-       }, 10) 
     
-    }
+            if(Game.upgrade[name].type === "basicCounter") {
+    
+          decayIntervals[name] = setInterval(()=>{
+            decay(name)
         }, Game.upgrade[name].decaytick * 1000)
-
+    
         if( Game.upgrade[name].number > 0) {
             Game.upgrade[name].Element.style.animation = "none"
             Game.upgrade[name].Element.style.animation = ""
@@ -1221,8 +1201,13 @@ if(type == "tick") {
         Game.upgrade[name].Element.style.animation = "decayTime " + Game.upgrade[name].decaytick + "s linear"
        }, 10) 
         } 
+    
+    }
+    
+    }
 
-    }}}} else if(type = "all") {
+}
+} else if(type = "all") {
         updateTick("all", "tick")
         updateTick("all", "decay")
     }}
@@ -1237,6 +1222,19 @@ function updateEverything() {
 
 
 //////
+function decay(reference) {
+    if( Game.upgrade[reference].number > 0) {
+        Game.upgrade[reference].number--
+        Game.upgrade[reference].counter--
+        Game.upgrade[reference].costIncreaseRate--
+        Game.upgrade[reference].cost -= Game.upgrade[reference].costIncreaseRate
+        Game.upgrade[reference].Element.style.animation = "none"
+        Game.upgrade[reference].Element.style.animation = ""
+               setTimeout(()=>{
+Game.upgrade[reference].Element.style.animation = "decayTime " + Game.upgrade[reference].decaytick + "s linear"
+}, 10) 
+        }
+}
 
 function checkUpgradeCost() {
     for(x in Game.upgrade) {
@@ -1381,49 +1379,52 @@ if(inputStream[inputStream.length - 1] === "Enter" && inputStream[0] === ">") {
     for(n in inputStream) cmd += inputStream[n]
 
     inputStream = []
+    cmd = cmd.split(";")
 
-    cmd = cmd.split(" ")
+    for(n in cmd){ cmd[n] = cmd[n].split(" ")
 
-   // console.log(cmd)
+    for(m in cmd[n]) {
 
-    for(n in cmd) {
-         cmd[n] = cmd[n].replace(/Shift/g, '');
-         cmd[n] = cmd[n].replace(/Backspace/g, '');
+        if(cmd[n][m] == "") cmd[n].splice(cmd[n].indexOf(cmd[n][m]), 1)
 
-        if(cmd[n].includes("$")) { ;cmd[n] = cmd[n].replace('$', ''); if(variables[cmd[n]])  cmd[n] = variables[cmd[n]]  }
-      //  console.log(cmd[n])
+         cmd[n][m] = cmd[n][m].replace(/Shift/g, '');
+         cmd[n][m] = cmd[n][m].replace(/Backspace/g, '');
+         cmd[n][m] = cmd[n][m].replace(/>/g, '');
+
+        if(cmd[n][m].includes("$")) { ;cmd[n][m] = cmd[n][m].replace('$', ''); if(variables[cmd[n][m]])  cmd[n][m] = variables[cmd[n][m]]  }
+
     }
-
+}
     cmdHistory.push(cmd)
 
-   // console.log(cmd)
-
     let msg = ""
-    defaultBreak = false
 
+for(m in cmd) {
+    defaultBreak = false
     for(n in cmds) {
         if(!defaultBreak) {
-    switch(cmd[0]) {
+    switch(cmd[m][0]) {
 
-        case ">" + n:
+        case n:
         if(cmds[n][0]) { cmds[n][1]();  break;}
       
 
         default :
-        if(!(cmd[0].replace(">", "") in cmds) || !cmds[cmd[0].replace(">", "")][0]) {
+        if(!(cmd[m][0] in cmds) || !cmds[cmd[m][0]][0]) {
         msg = ""
 
-         cmd = cmd.slice(" ")
+         cmd[m] = cmd[m].slice(" ")
 
-         for(n in cmd) msg += cmd[n] + " "
+         for(n in cmd[m]) msg += cmd[m][n] + " "
+
          msg += "is not a command. Try again."
          writeMessage(msg, false, 0, "")
          writeMessage("<br>", false, 0, "")
          defaultBreak = true
          }break;
 
-    } if(cmd[0] == ">" + n) break;
-}}}});
+    } if(cmd[m][0] ==  n) break;
+}}}}});
 
 function download(Game, filename, type) {
     var file = new Blob([Game], {type: type});

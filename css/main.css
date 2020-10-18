@@ -296,7 +296,7 @@ a:visited {
   display:flex;
   background-color:var(--bg-color);
   background-size: 200% 100%;
-  background-image: linear-gradient(to right, #000 0%, #000 50.5%,  var(--color) 50.5%, var(--color) 51%, #000 51%, #000 100%);
+  background-image: linear-gradient(to right, #000 0%, #000 50.3%,  var(--color) 50.5%, var(--color) 51%, #000 51%, #000 100%);
   border-width: 3px;
   border-color: var(--color);
   border-style: double;
