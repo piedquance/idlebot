@@ -203,8 +203,9 @@ cmds = {
         let location = cmd[m][1].split("/")
 
         if(location.length === 1 && location[0] !== "root") {
+            console.log(location[0])
             if(root.search(location[0])) {
-            root.setLocation(cmd[m][1])
+            root.setLocation(location[0])
             cmdlocation += root.getLocation().name + "/"
         }}
         else if (location[0] === "root") {
@@ -235,6 +236,11 @@ cmds = {
         for(let n = 1; n < cmd[m].length; n++) root.remove(cmd[m][n])
     }],
 
+    "pwd":[true, ()=>{
+
+        writeMessage(cmdlocation, false, 0, "")
+    }],
+
     "A":[true, ()=>{
         if(cmd[m][1]) {
             for(let n = 0; n <= maxLines ; n++) {setScreenLine("A" + (n+1), "");}
@@ -254,7 +260,7 @@ cmds = {
 }
 
 
-let aFile = function(name, path) {
+let aFile = function(name) {
     this.name = name
 
 }
@@ -275,6 +281,8 @@ let root = {
             }
             return result;
        }
+
+
        return null;
     }, // taken from https://stackoverflow.com/questions/9133500/how-to-find-a-node-in-a-tree-with-javascript
 
