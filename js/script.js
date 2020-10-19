@@ -91,7 +91,8 @@ let variables = {
     "A" : "t2",
     "B" : "t1",
     "font": "14",
-    "$AA" : "aa"
+    "$COLOR" : "green",
+    "$DEFAULT": "A"
     }
     
 let textSize 
@@ -271,6 +272,13 @@ cmds = {
          Game.updated = true}
     }],
 
+    "open":[true, ()=>{
+        if(cmd[m][1]) {
+            for(let n = 0; n <= maxLines ; n++) {setScreenLine(variables.$DEFAULT + (n+1), "");}
+         variables[variables.$DEFAULT] = cmd[m][1]
+         Game.updated = true}
+
+    }],
 
     "" : [true, ()=>{}]
 }
@@ -278,6 +286,7 @@ cmds = {
 let root = {
     name:"root",
     nodes:[],
+
     search : (matchingTitle, element) => {
         if(element === undefined) element = root
         if(element.name == matchingTitle){
@@ -290,8 +299,6 @@ let root = {
             }
             return result;
        }
-
-
        return null;
     }, // taken from https://stackoverflow.com/questions/9133500/how-to-find-a-node-in-a-tree-with-javascript
 
@@ -344,11 +351,26 @@ let aFile = function(name) {
     this.info = name.split(".")
     this.name = this.info[0]
     this.type = this.info[this.info.length-1]
+    this.data = [0, ""]
 
     this.write = (data) => {
         this.rawdata = data
         this.data = root.format(data)
     }
+
+    this.add = (data) =>{
+        this.rawdata += data
+        this.data = root.format(this.rawdata)
+    }
+
+    this.scroll = (value) => {
+        this.data[0] = value
+        Game.updated = true
+    }
+
+    this.scrollD = () => {  if(this.data[1].length-maxLines+1 > this.data[0]) this.scroll(this.data[0] + 1)}
+
+    this.scrollU = () => {  if(this.data[0]-1 >= 0)  this.scroll(this.data[0] - 1)}
 }
 
 //PolyiDOS data formatting for .tf
@@ -364,7 +386,7 @@ let aFile = function(name) {
  * 
 */
 let links = {
-    "[test]" : "<test link>"
+    "[test]" : "0test link0"
     }
     
     
@@ -393,7 +415,7 @@ for(n in temp) {
     return links[match]
 })
 } 
-return temp
+return [0, temp]
 }
 
 
@@ -411,7 +433,11 @@ root.home.push(new aFolder("Downloads"))
 
 root.system.push(new aFile("help.doc"))
 
-root.system.help.write("left//this is some text/center//this is a $AA and a [test]")
+root.system.help.write("left//HELP DOCUMENT/center//this is a $COLOR and a [test]")
+
+for(let n = 0; n < maxLines; n++) root.system.help.add("//this is a $COLOR and a [test]")
+
+root.system.help.add("//the end!")
 
 
 let inputStream = [];
@@ -976,28 +1002,28 @@ if(variables[screen] === "t1") {
 } else if(variables[screen] === "t2") {
     for(let n = 0; n <= maxLines ; n++){ if(getMessage(newsCounter - maxLines - n) !== undefined)   setScreenLine(screen + (n+1), getMessage(newsCounter- maxLines - n))}
 
-} else if(variables[screen] = "help") {
-    let text =  boxIt(root.system.help.data)
+} else if(root.search(variables[screen])) {
+    let text =  boxIt(root.system[variables[screen]].data)
     for(let n = 0; n <= maxLines ; n++) setScreenLine(screen + (n), text[n])
 }}
 
 
-function boxIt(text) {
+function boxIt(data) {
 let reBox = []
 let reText = []
 let reTextArray = []
 let initialReText = ""
 //top, bottom, and empty space
-let line = ""
-for(let n = 0; n <= maxChar; n++) line += "/"
-let emptyspace = ""
-for(let n = 0; n <= maxChar; n++) emptyspace += "#"
-reBox[maxLines] = line
+let scrollValue = Math.ceil(data[0] / (data[1].length-maxLines+1) * 100).toString()
+let line = scrollValue + "%"
+for(let n = 0; n <= maxChar - scrollValue.length-1; n++) line += "█"
 reBox[1] = line
 
 //the text
+let text = data[1]
+
 for(let n = 0; n < text.length; n++) {
-let pos = maxLines - 1 - n
+let pos = maxLines - n
 reText[pos] = ""
 
 switch(text[n][1]) {
@@ -1065,13 +1091,13 @@ switch(text[n][1]) {
 }
 //putting it in reBox
 
-emptyspace = emptyspace.replace(/#+/g, "<span class=\"b\">█</span>")
+    emptyspace = "<span class=\"b\">█</span>"
 
-for(let n = maxLines-1; n > 1 ; n--) {
-    if(reText[n]) reBox[n] = reText[n]
-    else reBox[n] = emptyspace}
+    for(let n = maxLines; n > 1 ; n--) {
+      if(reText[n - data[0]]) reBox[n] = reText[n - data[0]]
+      else reBox[n] = emptyspace}
 
-return reBox
+    return reBox
 }
 
 function chill() {
@@ -1346,6 +1372,18 @@ keysoundon = true
 keysoundstimout =  setTimeout(()=>{
      keysoundon = false
  }, 100)
+
+ if(inputStream[inputStream.length - 1] === "ArrowDown" && !disableCommands) {
+    root.search(variables[variables.$DEFAULT]).scrollD()
+
+    inputStream = []; 
+ }
+
+ if(inputStream[inputStream.length - 1] === "ArrowUp" && !disableCommands) {
+    root.search(variables[variables.$DEFAULT]).scrollU()
+
+    inputStream = []; 
+ }
 
 
 if(inputStream[inputStream.length - 1] === ">" && !disableCommands) { 
