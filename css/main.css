@@ -333,20 +333,15 @@ display:flex;
 justify-content: center;
 }
 
-#power-button {
-height:100px;
-width:100px;
-}
-
 #power-stroke {
   stroke:var(--color)
 }
 
-#power-center {
+#power-button {
   stroke:var(--color)
 }
 
-#power-center:hover {
+#power-button:hover {
 fill:var(--color);
 }
 

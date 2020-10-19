@@ -91,6 +91,7 @@ let variables = {
     "A" : "t2",
     "B" : "t1",
     "font": "14",
+    "$AA" : "aa"
     }
     
 let textSize 
@@ -341,19 +342,13 @@ let aFolder = function(name) {
 
 let aFile = function(name) {
     this.info = name.split(".")
-    this.name = name
+    this.name = this.info[0]
     this.type = this.info[this.info.length-1]
 
     this.write = (data) => {
         this.rawdata = data
         this.data = root.format(data)
     }
-}
-
-
-root.format = (data)=>{
-let temp = data.split("//")
-
 }
 
 //PolyiDOS data formatting for .tf
@@ -368,6 +363,42 @@ let temp = data.split("//")
  * 
  * 
 */
+let links = {
+    "[test]" : "<test link>"
+    }
+    
+    
+let varRegex = /\$[A-Z]+/g
+    
+let linkRegex = /\[.+\]/g
+
+root.format = (data)=>{
+let temp = data.split("//")
+let alignment = ""
+
+if(temp[0] === "left" ||temp[0] === "right" ||temp[0] === "center" ) {
+    alignment = temp.shift()
+}
+
+for(n in temp) {
+ temp[n] = temp[n].split("/")
+
+ if(alignment && temp[n][1] === undefined) temp[n].push(alignment)
+
+ temp[n][0] = temp[n][0].replace(varRegex, (match)=>{
+     return variables[match]
+ })
+
+ temp[n][0] = temp[n][0].replace(linkRegex, (match)=>{
+    return links[match]
+})
+} 
+return temp
+}
+
+
+
+
 
 root.push(new aFolder("home"))
 root.push(new aFolder("system"))
@@ -377,6 +408,11 @@ root.home.push(new aFolder("Pictures"))
 root.home.push(new aFolder("Videos"))
 root.home.push(new aFolder("Music"))
 root.home.push(new aFolder("Downloads"))
+
+root.system.push(new aFile("help.doc"))
+
+root.system.help.write("left//this is some text/center//this is a $AA and a [test]")
+
 
 let inputStream = [];
 let cmd = ""
@@ -552,8 +588,8 @@ function count(number) {
 }
 //////
 
-function writeMessage(text, check, delay, type) {
-
+function writeMessage(text, check, delay, type, align) {
+    if(align === undefined) align = "left"
     let result = false
     if(check == true) return true;
     if(type == undefined) type = ""
@@ -564,24 +600,28 @@ function writeMessage(text, check, delay, type) {
         for(n in textArray) if(textArray[n].includes("$")) { textArray[n] = textArray[n].replace('$', ''); if(variables[textArray[n]])  textArray[n] = variables[textArray[n]]}
         text = ""
         for(n in textArray) text += textArray[n] + " "
-        if(delay === 0) result = basicWriter(text, type)
-        else setTimeout(()=>{ result =  basicWriter(text, type)}, delay) 
+        if(delay === 0) result = basicWriter(text, type, align)
+        else setTimeout(()=>{ result =  basicWriter(text, type, align)}, delay, align) 
 return result;
 }}
 
-function basicWriter(text, type) {
+function basicWriter(text, type, align) {
     newsCounter++
         if(type !== "") keysounds[1].play()
-//         bottomScreen.innerHTML += '<p class="' + type +' messageStrip" id="strip'+ newsCounter  +'">' + text + '</p>';
-    
-//     d.getElementById("strip" + newsCounter).style.animation = "messageLoad 0.3s"
-//    setTimeout(()=>{
-//        if(d.getElementById("strip" + newsCounter != null)) {
-//     d.getElementById("strip" + newsCounter).style = "";
-//    }}, 500)
-    // for(let n = 0; n < newsCounter;n++) d.getElementById("strip" + n).style.animation = ""
+        let temp = text
+    if(align === "center") {
+        text = "<span class='b'>"
+        for(let n = 0; n < (maxChar-temp.length)/2; n++) text += "█"
+        text += "</span>" + temp
+        text += "<span class='b'>"
+        for(let n = 0; n < (maxChar-temp.length)/2; n++) text += "█"
+        text += "</span>"
+    }
+
      Game.messageLog[newsCounter] = `<span class="${type}">${text}</span>`
      Game.updated = true;
+
+    
      return true
 }
 
@@ -592,48 +632,6 @@ if(Game.messageLog[position] !== undefined) return Game.messageLog[position]
 function setMessage(position, text) {
     if(Game.messageLog[position] !== undefined) Game.messageLog[position] = text
 }
-
-
-function writeCharacter(char, type) {
-   
-    for(let n = newsCounter; n>=0; n--) Game.messageLog[n] = Game.messageLog[n].replaceAll('<span id=\"blinky\">█</span>', "")
-
-if(type === "start") {
-    keysounds[1].play()
-
-    // for(let n = 0; n < newsCounter;n++) {
-    //     d.getElementById("strip" + n).style.animation = ""
-    // }
-    writeMessage(char.replace(" ",  ""), false, 0, "")
-    Game.messageLog[newsCounter] += '<span id="blinky">█</span>'
-
-    // if(newsCounter > 0) {
-    //     for(let number = 0; number < maxLines*2; number++) {
-    //         let child = d.getElementById("B" + number)
-    //         if (child.children[(child.children.length - 1)] !== undefined)  {
-    //         if (child.children[child.children.length - 1].innerHTML == '█')  { child.removeChild(child.childNodes[1]) }
-    //     }}
-    // }
-
-} else if(type === "open") {
-  //  keysounds[Math.floor((Math.random() * keysounds.length))].play()
-  Game.messageLog[newsCounter] = Game.messageLog[newsCounter].replaceAll('</span><span id="blinky">█</span>', "")
-  Game.messageLog[newsCounter] = Game.messageLog[newsCounter].replaceAll('<span id="blinky">█</span>', "")
-Game.messageLog[newsCounter] += char + '</span><span id="blinky">█</span>'
-} else if(type === "end") {
-    keysounds[0].play()
-    Game.messageLog[newsCounter] = Game.messageLog[newsCounter].replaceAll('<span id="blinky">█</span>', "")
-    Game.messageLog[newsCounter] =  Game.messageLog[newsCounter]
-
-} else if(type == "erase") {
-  //  keysounds[Math.floor((Math.random() * keysounds.length))].play()
-  Game.messageLog[newsCounter] = Game.messageLog[newsCounter].replaceAll('</span><span id="blinky">█</span>', "")
-  Game.messageLog[newsCounter] = Game.messageLog[newsCounter].replaceAll('<span id="blinky">█</span>', "")
-
-    let array =  Game.messageLog[newsCounter].split("")
-    array.pop()
-    Game.messageLog[newsCounter] = array.toString().replace(/,/g, "")  + '<span id="blinky">█</span>' 
-}}
 
 // Game.messageLog[newsCounter].removeChild(d.getElementById("strip" + newsCounter).childNodes[1])
 // d.getElementById("strip" + newsCounter).innerHTML = d.getElementById("strip" + newsCounter).innerHTML.slice(0, this.length - 1)
@@ -979,10 +977,7 @@ if(variables[screen] === "t1") {
     for(let n = 0; n <= maxLines ; n++){ if(getMessage(newsCounter - maxLines - n) !== undefined)   setScreenLine(screen + (n+1), getMessage(newsCounter- maxLines - n))}
 
 } else if(variables[screen] = "help") {
-    let text =  boxIt(
-        [   ["HELP DOCUMENT", "center"],
-            ["###First things first, how can you scroll around in here?", "left"]
-        ])
+    let text =  boxIt(root.system.help.data)
     for(let n = 0; n <= maxLines ; n++) setScreenLine(screen + (n), text[n])
 }}
 
@@ -1082,8 +1077,6 @@ return reBox
 function chill() {
         writeMessage("chill", false, 0, "valet")
 }
-
-
 
 function updateEverythingbutTick() {
 
@@ -1368,7 +1361,6 @@ inputStream.push(">")
 
 
 
-//writeCharacter(cmdlocation + "&gt;", "start")
 }
 //Game.messageLog[newsCounter].replaceAll('<span id="blinky">█</span>', "")
 
@@ -1407,7 +1399,6 @@ if(inputStream[inputStream.length - 1] === "Backspace" && inputStream[0] === ">"
 if(inputStream[inputStream.length - 1] === "Enter" && inputStream[0] === ">") { 
     keysounds[0].play()
 
-   // writeCharacter("", "end")
    let line = getMessage(newsCounter).replaceAll('</span><span id="blinky">█</span>', "")
    setMessage(newsCounter, line + '</span>') 
 
@@ -1697,18 +1688,17 @@ let polyidos = [
 
 function bootLOAD() {
  
-    disableCommands = true
-    setTimeout(()=>{disableCommands = false},(polyidos.length+1) * 10)
-
     console.log(`\nPolyiDOS M3 ~ Copyright © ${currentYear} https://polyidos.net`)
 
-    writeMessage("PolyiDOS M3 Emergency Terminal  Version 4.000.0143", false, 0, "")
+    writeMessage("PolyiDOS M3 Emergency Terminal  Version 4.000.0143", false, 0, "", "center")
 
     for(n in polyidos) {
-        writeMessage(polyidos[n], false, n*10, "")
+        writeMessage(polyidos[n], false, 0, "", "center")
     }
 
-    writeMessage("Sat Dec 31 NaN NaN:Nan:NaN        Press > to start", false, polyidos.length * 10, "")
+    writeMessage("Sat Dec 31 NaN     NaN:Nan:NaN    Press > to start", false, 0, "", "center")
+
+    for(let n = 0; n  < maxLines-(polyidos.length+2)/2; n++) writeMessage("", false, 0, "", "")
 
 
   if(localStorage.boot) Game.BEGIN = localStorage.boot === "true"?true:false
