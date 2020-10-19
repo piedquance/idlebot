@@ -1,0 +1,3 @@
+learn regex /\[.{1,}\]/g.test("[2324]")
+finish root.format
+finish web dev course

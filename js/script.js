@@ -1,8 +1,16 @@
+/*
+ *  ALL CODE REGISTERED UNDER THE POLYIDOS LICENSE
+ *
+ *  Copyright © POLYIDOS CORPORATION
+ * 
+*/
+
+
 
 ///////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////VARIABLES///////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////
-
+var date = new Date(); let currentYear = date.getFullYear();
 var d = document;
 var topPane = d.getElementById("topPane")
 var bottomPane  =d.getElementById("bottomPane")
@@ -37,7 +45,8 @@ let disableCommands = false;
 var audio = {
     "stopIt" : new Audio('css/audio/AUDIO_FILE.mp3'),
     "AllStar":  new Audio('css/audio/AllStar.mp3'),
-    "turtles": new Audio('css/audio/HappyTogether.mp3')
+    "turtles": new Audio('css/audio/HappyTogether.mp3'),
+    "cat": new Audio("css/audio/cat.mp3")
 }
 
 var keysounds = [
@@ -140,6 +149,7 @@ cmds = {
     "click":[true, ()=>{
         pipeCount++; heartOffset++;  heart.style.setProperty("--heart-offset", heartOffset + "px");
     }],
+    
     "restart":[true, ()=>{
         window.location.href = window.location.pathname + window.location.search + window.location.hash;
         window.location.replace(window.location.pathname + window.location.search + window.location.hash);
@@ -150,6 +160,17 @@ cmds = {
             //  change dynamically) we would pass the argument as 'true'.
             //taken from https://stackoverflow.com/questions/3715047/how-to-reload-a-page-using-javascript
     }],
+
+    "quit":[true, ()=>{
+        window.location.href = window.location.pathname + window.location.search + window.location.hash;
+        window.location.replace(window.location.pathname + window.location.search + window.location.hash);
+    }],
+
+    "exit":[true, ()=>{
+        window.location.href = window.location.pathname + window.location.search + window.location.hash;
+        window.location.replace(window.location.pathname + window.location.search + window.location.hash);
+    }],
+
     "alert":[true, ()=>{
         if(cmd[m][1]) alert(cmd[m][1]); else alert("No message written");
     }],
@@ -1296,7 +1317,8 @@ function checkSpecialCost() {
 
 
 window.document.addEventListener('keydown', e => {
-    if(e.key === "Backspace" || e.key === "'") {
+    if(e.key === "Backspace" || e.key === "'" ) {
+      e.returnValue = false;
       e.preventDefault();
       e.stopPropagation();
       //Put some logic to simulate backspacke key in your input content here
@@ -1312,7 +1334,8 @@ window.document.addEventListener('keydown', e => {
 
 //      d.preventDefault();
 //      d.stopPropagation();
-//   }; //taken from https://stackoverflow.com/questions/49280847/firefox-switching-tab-on-backspace
+//   }; 
+//taken from https://stackoverflow.com/questions/49280847/firefox-switching-tab-on-backspace
 
 
 ////////////////////////////////////////////////////////////////
@@ -1647,15 +1670,46 @@ function bootSAVE() {
     localStorage.boot = Game.BEGIN
 }
 
+let polyidos = [
+"NOkOKNMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMN0dc,':0",
+"k.  .,cd0WMMMMMMMMMMMMMMMMMMMMMMMMMMMMMNkc'.    .x",
+"k.      .;dKWMMMMMMMMMMMMMMMMMMMMMMMWXd;.       '0",
+"K,        .'cONMMMMMMMMMMMMMMMMMMMMKo'.'.       :N",
+"Nc        .  .;kNMMMMMMMMMMMMMMMMXd.   ..       dW",
+"Nx.             :OWWWMMMMWMMMMMNk,             .OM",
+"X0,              .lKNWWWWMMMMWO;               ;XM",
+"XXc         ..     .oKWWWWWWKc.     .'.        ;XM",
+"XXo.        .,'.     ,kNNWNx'    .,:c,.        cNM",
+"XNk.        .':lc;.   .,;;,.  .,lxxl;.        .oWM",
+"XXKl.        .,lxkxo:.      ,ok0K0xc'.      .:kNMM",
+"XXNX0l.      .':dO000Od:'.,o0KXXKOd:.       'xNMMM",
+"XNNN0;         .;lxO00Kx;.:0XK0Oxl,.         ,0MMM",
+"NNNW0,           .:oxO0xdkxkK0do:.           lWMMM",
+"NNWWWk.           .;cocoXMXocdc'.          .cKMMMM",
+"NNWWMW0,            .'lKMMMXd,.           .lXMMMMM",
+"KNWMMMMKl.          .oNMMMMMW0,          .oNMMMMMM",
+"KNMMMMMMWx.        'xNMMMMMMMMXo'        oNMMMMMMM",
+"WMMMMMMMMN:      .lXMMMMMMMMMMMMXd,.    .dWMMMMMMM",
+"MMMMMMMMMWkllc;ckXMMMMMMMMMMMMMMMMWKxok00XMMMMMMMM",
+"MMMMMMMMMMMMMMWMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM"
+]
+
+
 function bootLOAD() {
-    var date = new Date(); let currentYear = date.getFullYear();
-    console.log(`IdleBot ~~ An incremental game\nCopyright © ${currentYear} https://shutterstacks.net`)
+ 
+    disableCommands = true
+    setTimeout(()=>{disableCommands = false},(polyidos.length+1) * 10)
 
+    console.log(`\nPolyiDOS M3 ~ Copyright © ${currentYear} https://polyidos.net`)
 
-    writeMessage("PolyiDOS M3 Emergency Terminal", false, 0, "")
-    writeMessage("Version 4.000.0143", false, 0, "")
-    writeMessage("Sat Dec 31 NaN NaN:Nan:NaN", false, 0, "")
-    writeMessage("Press > to start", false, 0, "")
+    writeMessage("PolyiDOS M3 Emergency Terminal  Version 4.000.0143", false, 0, "")
+
+    for(n in polyidos) {
+        writeMessage(polyidos[n], false, n*10, "")
+    }
+
+    writeMessage("Sat Dec 31 NaN NaN:Nan:NaN        Press > to start", false, polyidos.length * 10, "")
+
 
   if(localStorage.boot) Game.BEGIN = localStorage.boot === "true"?true:false
 
@@ -1714,7 +1768,7 @@ updateEverything();
 
 powerButton.addEventListener("click", ()=>{
     syssounds.start.play()
-
+    //openFullscreen()
     setTimeout(()=>{
         syssounds.fan.play()
         syssounds.fan.addEventListener('ended', function() {
