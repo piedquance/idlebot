@@ -119,8 +119,11 @@ cmds = {
     "load": [false, ()=>{LOAD()}],
     "reset": [true, ()=>{RESET()}],
     "autosave":[true, ()=>{autosaveclick()}],
-    "play":[true, ()=>{if(cmd[m][1]) if(audio[cmd[m][1]]) audio[cmd[m][1]].play();}],
-    "pause":[false, ()=>{if(cmd[m][1]) if(audio[cmd[m][1]]) audio[cmd[m][1]].pause();}],
+
+    "play":[true, ()=>{if(cmd[m][1]) if(root.getLocation()[cmd[m][1]]) root.getLocation()[cmd[m][1]].data.play()}],
+
+    "pause":[true, ()=>{if(cmd[m][1]) if(root.getLocation()[cmd[m][1]]) root.getLocation()[cmd[m][1]].data.pause()}],
+
     "cmdh":[true, ()=>{
         msg = ""
         for(n in cmdHistory) msg += cmdHistory[n] + " "
@@ -204,48 +207,25 @@ cmds = {
 
     }],
 
-    "CORE4":[true, ()=>{
-
-    }],
-
     "help":[true, ()=>{
         writeMessage("type \">set A=help\" or \">A help\" to open the help document", false, 0, "")
     }],
 
     "ls":[true, ()=>{
-       writeMessage(root.list(), false, 0, "")
+        let result = ""
+        for(let n = 0; n < root.getLocation().nodes.length; n++){
+            result += root.getLocation().nodes[n].name + " "
+            console.log(n, root.getLocation().nodes[n])
+        } 
+       writeMessage(result, false, 0, "")
     }],
 
     "cd":[true, ()=>{
-        let location = cmd[m][1].split("/")
-
-        if(location.length === 1 && location[0] !== "root") {
-            console.log(location[0])
-            if(root.search(location[0])) {
-            root.setLocation(location[0])
-            cmdlocation += root.getLocation().name + "/"
-        }}
-        else if (location[0] === "root") {
-            let temp = root.location
-            let tempCmdLocation = cmdlocation
-            let flag = true
-            cmdlocation = ""
-            for(n in location) {
-                if(root.search(location[n])) {
-                    cmdlocation += location[n] + "/"
-                } else {
-                    flag = false
-                    root.setLocation(temp)
-                    cmdlocation = tempCmdLocation
-                    break
-                } 
-        }
-        if(flag) root.setLocation(location[location.length - 1])
-        }
+       if(cmd[m][1]) if(root.setLocation(cmd[m][1])) root.setLocation(cmd[m][1])
     }],
 
     "mkdir":[true, ()=>{
-       for(let n = 1; n < cmd[m].length; n++) root.getLocation().push(new aFolder(cmd[m][n]))
+       for(let n = 1; n < cmd[m].length; n++) root.getLocation().add(new aFolder(cmd[m][n]))
 
     }],
 
@@ -283,9 +263,10 @@ cmds = {
     "" : [true, ()=>{}]
 }
 
-let root = {
+this.root = {
     name:"root",
     nodes:[],
+    path: "",
 
     search : (matchingTitle, element) => {
         if(element === undefined) element = root
@@ -302,12 +283,13 @@ let root = {
        return null;
     }, // taken from https://stackoverflow.com/questions/9133500/how-to-find-a-node-in-a-tree-with-javascript
 
-    push: (name)=> {
+    add: (name)=> {
         root.nodes.push(name)
         root[name.name] = name
         name.postion = root.nodes.length - 1
         name.parentName = root.name
         name.parent = root
+        name.path = name.name
     },
 
     remove : (name)=>{
@@ -317,33 +299,66 @@ let root = {
         }
     },
 
-    location: "root",
+    location: "",
 }
 
+root.get = (data) => {
+
+    data = data.split("/")
+
+    let result = root
+
+    for(n in data) {
+
+       if(data[n] !== "") result = result[data[n]]
+    }
+
+    return result
+}
+
+
 root.getLocation = ()=>{
-    return root.search(root.location)
+
+    return root.get(root.location)
+
 }
 
 root.setLocation = (name)=>{
-  if(root.search(name))  root.location = root.search(name).name
+
+    if(name[0] === "/") {
+       name = name.split("/")
+       name.shift()
+       name = name.join("/")
+    } else if(name[0] === "~") {
+        name = name.split("/")
+        name.shift()
+        name.unshift("home")
+        name = name.join("/")
+    } else if(name.includes("../")) {
+
+    if(root.getLocation().parent) name.replace(/[..\/]+/, root.getLocation().parent.path)
+    else name = ""
+
+    console.log(name)
+    }
+
+    let path = root.get(name).path
+    root.location = path
+    cmdlocation = "root/" + path
 }
 
-root.list = () => {
-    let result = ""
-    for(n in root.getLocation().nodes) result += root.getLocation().nodes[n].name + " "
-    return result
-}
 
 let aFolder = function(name) {
     this.name = name
     this.nodes = []
 
-    this.push = (name)=>{
+    this.add = (name)=>{
         this.nodes.push(name)
         this[name.name] = name
         name.postion = this.nodes.length - 1
         name.parent = this
         name.parentName = this.name
+        name.path = this.path + "/" + name.name
     }
 }
 
@@ -354,13 +369,13 @@ let aFile = function(name) {
     this.data = [0, ""]
 
     this.write = (data) => {
-        this.rawdata = data
-        this.data = root.format(data)
+        this.rawdata = this.type + data
+        this.data = root.format([this.type, data])
     }
 
     this.add = (data) =>{
         this.rawdata += data
-        this.data = root.format(this.rawdata)
+        this.data = root.format([this.type, this.rawdata])
     }
 
     this.scroll = (value) => {
@@ -395,8 +410,11 @@ let varRegex = /\$[A-Z]+/g
 let linkRegex = /\[.+\]/g
 
 root.format = (data)=>{
-let temp = data.split("//")
+let temp = data[1].split("//")
 let alignment = ""
+
+
+if(data[0] === "doc" || data[0] === "tf") {
 
 if(temp[0] === "left" ||temp[0] === "right" ||temp[0] === "center" ) {
     alignment = temp.shift()
@@ -416,22 +434,34 @@ for(n in temp) {
 })
 } 
 return [0, temp]
+
+}   else if(data[0] === "af") {
+    return new Audio(temp)
+}
+
 }
 
 
 
 
 
-root.push(new aFolder("home"))
-root.push(new aFolder("system"))
+root.add(new aFolder("home"))
+root.add(new aFolder("system"))
 
-root.home.push(new aFolder("Documents"))
-root.home.push(new aFolder("Pictures"))
-root.home.push(new aFolder("Videos"))
-root.home.push(new aFolder("Music"))
-root.home.push(new aFolder("Downloads"))
+root.home.add(new aFolder("Documents"))
+root.home.add(new aFolder("Pictures"))
+root.home.add(new aFolder("Videos"))
+root.home.add(new aFolder("Music"))
+root.home.add(new aFolder("Downloads"))
 
-root.system.push(new aFile("help.doc"))
+root.home.Music.add(new aFile("turtles.af"))
+root.home.Music.turtles.write("css/audio/HappyTogether.mp3")
+
+root.home.Music.add(new aFile("cat.af"))
+root.home.Music.cat.write("css/audio/cat.mp3")
+
+
+root.system.add(new aFile("help.doc"))
 
 root.system.help.write("left//HELP DOCUMENT/center//this is a $COLOR and a [test]")
 
@@ -1002,10 +1032,11 @@ if(variables[screen] === "t1") {
 } else if(variables[screen] === "t2") {
     for(let n = 0; n <= maxLines ; n++){ if(getMessage(newsCounter - maxLines - n) !== undefined)   setScreenLine(screen + (n+1), getMessage(newsCounter- maxLines - n))}
 
-} else if(root.search(variables[screen])) {
+} else if(root.search(variables[screen]) && root.search(variables[screen]).type === "doc") {
     let text =  boxIt(root.system[variables[screen]].data)
     for(let n = 0; n <= maxLines ; n++) setScreenLine(screen + (n), text[n])
-}}
+}
+}
 
 
 function boxIt(data) {
@@ -1194,12 +1225,9 @@ for(x in Game.special) {
 }
 
 
-
 function updateTick(name, type) {
-
 if(type == "tick") {
     if(name === "all") {
-       
         for(n in Game.upgrade) {
             if(Game.upgrade[n].previoustick !== Game.upgrade[n].tick) {
                 updateTick(n, "tick")
@@ -1207,7 +1235,6 @@ if(type == "tick") {
             } } 
 
 } else {
-
     clearInterval(intervals[name])
     
     if(Game.upgrade[name] !== undefined) {
@@ -1336,7 +1363,7 @@ function checkSpecialCost() {
 
 
 window.document.addEventListener('keydown', e => {
-    if(e.key === "Backspace" || e.key === "'" ) {
+    if(e.key === "Backspace" || e.key === "'" || e.key === "/") {
       e.returnValue = false;
       e.preventDefault();
       e.stopPropagation();
