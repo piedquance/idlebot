@@ -213,10 +213,14 @@ cmds = {
 
     "ls":[true, ()=>{
         let result = ""
-        for(let n = 0; n < root.getLocation().nodes.length; n++){
-            result += root.getLocation().nodes[n].name + " "
-            console.log(n, root.getLocation().nodes[n])
-        } 
+        let path = root.location
+        if(cmd[m][1])  path = root.formatPath(cmd[m][1])
+        else path = root.location
+
+            if(root.get(path)) for(let n = 0; n < root.get(path).nodes.length; n++){
+                result += root.get(path).nodes[n].name + " "
+        }
+      
        writeMessage(result, false, 0, "")
     }],
 
@@ -323,48 +327,59 @@ root.getLocation = ()=>{
 
 }
 
-root.setLocation = (name)=>{
-
+root.formatPath = (name) => {
     if(name[0] === "/") {
-       name = name.split("/")
-       name.shift()
-       name = name.join("/")
-    } else if(name[0] === "~") {
         name = name.split("/")
         name.shift()
-        name.unshift("home")
         name = name.join("/")
-    } else if(name.includes("../")) {
+     } else if(name[0] === "~") {
+         name = name.split("/")
+         name.shift()
+         name.unshift("home")
+         name = name.join("/")
+     } else if(name.includes("../")) {
+ 
+     if(root.getLocation().parent)  {
+         let temp = root.getLocation()
+ 
+         name.replace(/..\/?/g, (match) => {
+ 
+             if(temp.parent)  temp = temp.parent    
+         })
 
-    if(root.getLocation().parent)  {
-        let temp = root.getLocation()
+         name = name.replace(/[..\/?]+/, temp.path)
+        
+     } else name = ""
+ 
+ 
+     } else if(name === "..") {
+ 
+        if(root.getLocation().parent) name = root.getLocation().parent.path
+ 
+     }   else {
+         name = root.getLocation().path + "/" + name
+     }
 
-        name.replace(/..\/?/g, (match) => {
+     name = name.split("/")
 
-            if(temp.parent)  temp = temp.parent    
-        })
+     for(let n = 0; n < name.length; n++) {
+         if(name[n] === "..") {
 
-        console.log(temp.name + " path is: " + temp.path)
+             temp = name.slice(0, n)
+             name = name.slice(n+1, name.length-n+2)
+             let temp2 = root.get(temp.join("/")).parent.path.split("/")
+            name = temp2.concat(name)
+            n = 0;
+         }
+     }
+     name = name.join("/")
 
-        console.log(name)
+     return name
+}
 
-        name = name.replace(/[..\/?]+/, temp.path)
-       
-    
-        console.log(name)
+root.setLocation = (name)=>{
 
-    } else name = ""
-
-
-    } else if(name === "..") {
-
-       if(root.getLocation().parent) name = root.getLocation().parent.path
-
-    }   else {
-        name = root.getLocation().path + "/" + name
-
-        console.log(name)
-    }
+   name = root.formatPath(name)
 
     let path = root.get(name).path
     root.location = path
