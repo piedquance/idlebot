@@ -336,10 +336,34 @@ root.setLocation = (name)=>{
         name = name.join("/")
     } else if(name.includes("../")) {
 
-    if(root.getLocation().parent) name.replace(/[..\/]+/, root.getLocation().parent.path)
-    else name = ""
+    if(root.getLocation().parent)  {
+        let temp = root.getLocation()
 
-    console.log(name)
+        name.replace(/..\/?/g, (match) => {
+
+            if(temp.parent)  temp = temp.parent    
+        })
+
+        console.log(temp.name + " path is: " + temp.path)
+
+        console.log(name)
+
+        name = name.replace(/[..\/?]+/, temp.path)
+       
+    
+        console.log(name)
+
+    } else name = ""
+
+
+    } else if(name === "..") {
+
+       if(root.getLocation().parent) name = root.getLocation().parent.path
+
+    }   else {
+        name = root.getLocation().path + "/" + name
+
+        console.log(name)
     }
 
     let path = root.get(name).path
