@@ -361,16 +361,18 @@ root.formatPath = (name) => {
      }
 
      name = name.split("/")
+     if(name[name.length - 1] === "") name.pop()
 
-     for(let n = 0; n < name.length; n++) {
+   let initialLength = name.length
+     for(let n = 0; n < initialLength; n++) {
          if(name[n] === "..") {
 
              temp = name.slice(0, n)
-             name = name.slice(n+1, name.length-n+2)
+             name = name.slice(n+1, name.length)
              let temp2 = root.get(temp.join("/")).parent.path.split("/")
-            name = temp2.concat(name)
-            n = 0;
-         }
+             name = temp2.concat(name)
+             n = 0
+         } 
      }
      name = name.join("/")
 
