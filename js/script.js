@@ -403,30 +403,29 @@ let aFolder = function(name) {
     }
 }
 
-let aFile = function(name) {
-    this.info = name.split(".")
-    this.name = this.info[0]
+let aFile = function(data) {
+    this.info = data.name.split(".")
+    this.name = data.name
     this.type = this.info[this.info.length-1]
-    this.data = [0, ""]
+    if(data.rawdata) this.rawdata = data.rawdata
+    this.scroll = 0;
 
     this.write = (data) => {
-        this.rawdata = this.type + data
-        this.data = root.format([this.type, data])
+        this.rawdata = data
     }
 
     this.add = (data) =>{
         this.rawdata += data
-        this.data = root.format([this.type, this.rawdata])
     }
 
     this.scroll = (value) => {
-        this.data[0] = value
+        this.scroll = value
         Game.updated = true
     }
 
-    this.scrollD = () => {  if(this.data[1].length-maxLines+1 > this.data[0]) this.scroll(this.data[0] + 1)}
+    this.scrollD = () => {  if(this.data[1].length-maxLines+1 > scroll) this.scroll(this.scroll + 1)}
 
-    this.scrollU = () => {  if(this.data[0]-1 >= 0)  this.scroll(this.data[0] - 1)}
+    this.scrollU = () => {  if(this.scroll-1 >= 0)  this.scroll(this.scroll - 1)}
 }
 
 //PolyiDOS data formatting for .tf
@@ -482,10 +481,6 @@ return [0, temp]
 
 }
 
-
-
-
-
 root.add(new aFolder("home"))
 root.add(new aFolder("system"))
 
@@ -495,21 +490,14 @@ root.home.add(new aFolder("Videos"))
 root.home.add(new aFolder("Music"))
 root.home.add(new aFolder("Downloads"))
 
-root.home.Music.add(new aFile("turtles.af"))
-root.home.Music.turtles.write("css/audio/HappyTogether.mp3")
+root.home.Music.add(new aFile({ "name": "turtles.af",
+                                "rawdata": "css/audio/HappyTogether.mp3"}))
 
-root.home.Music.add(new aFile("cat.af"))
-root.home.Music.cat.write("css/audio/cat.mp3")
+root.home.Music.add(new aFile({ "name": "cat.af",
+                                "rawdata": "css/audio/cat.mp3"}))
 
-
-root.system.add(new aFile("help.doc"))
-
-root.system.help.write("left//HELP DOCUMENT/center//this is a $COLOR and a [test]")
-
-for(let n = 0; n < maxLines; n++) root.system.help.add("//this is a $COLOR and a [test]")
-
-root.system.help.add("//the end!")
-
+root.system.add(new aFile({ "name": "help.doc",
+                            "rawdata": "left//HELP DOCUMENT/center//this is a $COLOR and a [test]"}))
 
 let inputStream = [];
 let cmd = ""
@@ -541,6 +529,121 @@ addSpecial(["bloodpipesappear", "Research blood pipes", "It ain't gonna pipe its
 ///////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////FUNCTIONS///////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////
+
+let fileSoftware = {
+    "af" : "",
+    "tf": "",
+    "doc": ""
+}
+
+function openFile(file) {
+
+
+}
+
+
+function writeToScreen(screen) {
+    if(variables[screen] === "t1") {
+        for(let n = 0; n <= maxLines ; n++){ if(getMessage(newsCounter - n) !== undefined)   setScreenLine(screen + (n+1), getMessage(newsCounter - n))}
+    
+    } else if(variables[screen] === "t2") {
+        for(let n = 0; n <= maxLines ; n++){ if(getMessage(newsCounter - maxLines - n) !== undefined)   setScreenLine(screen + (n+1), getMessage(newsCounter- maxLines - n))}
+    
+    } else if(root.search(variables[screen]) && root.search(variables[screen]).type === "doc") {
+        let text =  boxIt(root.system[variables[screen]].data)
+        for(let n = 0; n <= maxLines ; n++) setScreenLine(screen + (n), text[n])
+    }
+    }
+    
+    
+function boxIt(data) {
+    let reBox = []
+    let reText = []
+    let reTextArray = []
+    let initialReText = ""
+    //top, bottom, and empty space
+    let scrollValue = Math.ceil(data[0] / (data[1].length-maxLines+1) * 100).toString()
+    let line = scrollValue + "%"
+    for(let n = 0; n <= maxChar - scrollValue.length-1; n++) line += "█"
+    reBox[1] = line
+    
+    //the text
+    let text = data[1]
+    
+    for(let n = 0; n < text.length; n++) {
+    let pos = maxLines - n
+    reText[pos] = ""
+    
+    switch(text[n][1]) {
+        case "left":
+            if(text[n][0].length > maxChar) {
+                text.splice(n+1, 0, [text[n][0].slice(maxChar-1, text[n][0].length), "left"])
+                text[n][0] = text[n][0].slice(0, maxChar-1) + "-"
+            }
+            reText[pos] += text[n][0]
+            reTextArray = reText[pos].match(/#+/g)
+            reText[pos] = reText[pos].replace(/#+/g, "")
+            initialReText = reText[pos]
+            reText[pos] = "<span class=\"b\">"
+            if(reTextArray !== null) for( m in reTextArray[0].split("")) {
+                reText[pos] += "█"
+            }
+            reText[pos] += "</span>" + initialReText
+    
+            for(let m = text[n][0].length; m < maxChar; m++) reText[pos] += "#"
+    
+            reTextArray = reText[pos].match(/#+/g)
+            reText[pos] = reText[pos].replace(/#/g, "")
+            reText[pos] = reText[pos] + "<span class=\"b\">"
+           if(reTextArray !== null)  for( m in reTextArray[0].split("")) {
+                reText[pos] += "█"
+            }
+            reText[pos] += "</span>"
+            break;
+    
+        case "right":
+           
+            for(let m = 0; m < maxChar-text[n][0].length; m++) reText[pos] += "#"
+            reText[pos] += text[n][0]
+    
+    
+            break;
+    
+        case "center":
+    
+            for(let m = 0; m < Math.floor((maxChar-text[n][0].length)/2) ; m++) reText[pos] += "#"
+            reText[pos] += text[n][0]
+    
+            reTextArray = reText[pos].match(/#+/g)
+            reText[pos] = reText[pos].replace(/#+/g, "")
+            initialReText = reText[pos]
+            reText[pos] = "<span class=\"b\">"
+            for( m in reTextArray[0].split("")) {
+                reText[pos] += "█"
+            }
+            reText[pos] += "</span>" + initialReText
+    
+            for(let m = 0; m < Math.floor((maxChar-text[n][0].length)/2); m++) reText[pos] += "#"
+    
+            reTextArray = reText[pos].match(/#+/g)
+            reText[pos] = reText[pos].replace(/#/g, "")
+            reText[pos] = reText[pos] + "<span class=\"b\">"
+            for( m in reTextArray[0].split("")) {
+                reText[pos] += "█"
+            }
+            reText[pos] += "</span>"
+            break;
+    }
+}
+//putting it in reBox
+    emptyspace = "<span class=\"b\">█</span>"
+    
+    for(let n = maxLines; n > 1 ; n--) {
+        if(reText[n - data[0]]) reBox[n] = reText[n - data[0]]
+        else reBox[n] = emptyspace}
+    
+     return reBox
+}
 
 function prologue1() {
 
@@ -1065,116 +1168,6 @@ function getScreenLine(line) {
     if(d.getElementById(line) !== null) return d.getElementById(line).innerHTML
 }
 
-
-function writeToScreen(screen) {
-if(variables[screen] === "t1") {
-    for(let n = 0; n <= maxLines ; n++){ if(getMessage(newsCounter - n) !== undefined)   setScreenLine(screen + (n+1), getMessage(newsCounter - n))}
-
-} else if(variables[screen] === "t2") {
-    for(let n = 0; n <= maxLines ; n++){ if(getMessage(newsCounter - maxLines - n) !== undefined)   setScreenLine(screen + (n+1), getMessage(newsCounter- maxLines - n))}
-
-} else if(root.search(variables[screen]) && root.search(variables[screen]).type === "doc") {
-    let text =  boxIt(root.system[variables[screen]].data)
-    for(let n = 0; n <= maxLines ; n++) setScreenLine(screen + (n), text[n])
-}
-}
-
-
-function boxIt(data) {
-let reBox = []
-let reText = []
-let reTextArray = []
-let initialReText = ""
-//top, bottom, and empty space
-let scrollValue = Math.ceil(data[0] / (data[1].length-maxLines+1) * 100).toString()
-let line = scrollValue + "%"
-for(let n = 0; n <= maxChar - scrollValue.length-1; n++) line += "█"
-reBox[1] = line
-
-//the text
-let text = data[1]
-
-for(let n = 0; n < text.length; n++) {
-let pos = maxLines - n
-reText[pos] = ""
-
-switch(text[n][1]) {
-    case "left":
-        if(text[n][0].length > maxChar) {
-            text.splice(n+1, 0, [text[n][0].slice(maxChar-1, text[n][0].length), "left"])
-            text[n][0] = text[n][0].slice(0, maxChar-1) + "-"
-        }
-        reText[pos] += text[n][0]
-        reTextArray = reText[pos].match(/#+/g)
-        reText[pos] = reText[pos].replace(/#+/g, "")
-        initialReText = reText[pos]
-        reText[pos] = "<span class=\"b\">"
-        if(reTextArray !== null) for( m in reTextArray[0].split("")) {
-            reText[pos] += "█"
-        }
-        reText[pos] += "</span>" + initialReText
-
-        for(let m = text[n][0].length; m < maxChar; m++) reText[pos] += "#"
-
-        reTextArray = reText[pos].match(/#+/g)
-        reText[pos] = reText[pos].replace(/#/g, "")
-        reText[pos] = reText[pos] + "<span class=\"b\">"
-       if(reTextArray !== null)  for( m in reTextArray[0].split("")) {
-            reText[pos] += "█"
-        }
-        reText[pos] += "</span>"
-        break;
-
-    case "right":
-       
-        for(let m = 0; m < maxChar-text[n][0].length; m++) reText[pos] += "#"
-        reText[pos] += text[n][0]
-
-
-        break;
-
-    case "center":
-
-        for(let m = 0; m < Math.floor((maxChar-text[n][0].length)/2) ; m++) reText[pos] += "#"
-        reText[pos] += text[n][0]
-
-        reTextArray = reText[pos].match(/#+/g)
-        reText[pos] = reText[pos].replace(/#+/g, "")
-        initialReText = reText[pos]
-        reText[pos] = "<span class=\"b\">"
-        for( m in reTextArray[0].split("")) {
-            reText[pos] += "█"
-        }
-        reText[pos] += "</span>" + initialReText
-
-        for(let m = 0; m < Math.floor((maxChar-text[n][0].length)/2); m++) reText[pos] += "#"
-
-        reTextArray = reText[pos].match(/#+/g)
-        reText[pos] = reText[pos].replace(/#/g, "")
-        reText[pos] = reText[pos] + "<span class=\"b\">"
-        for( m in reTextArray[0].split("")) {
-            reText[pos] += "█"
-        }
-        reText[pos] += "</span>"
-        break;
-}
-
-
-}
-//putting it in reBox
-
-    emptyspace = "<span class=\"b\">█</span>"
-
-    for(let n = maxLines; n > 1 ; n--) {
-      if(reText[n - data[0]]) reBox[n] = reText[n - data[0]]
-      else reBox[n] = emptyspace}
-
-    return reBox
-}
-
-function chill() {
-        writeMessage("chill", false, 0, "valet")
-}
 
 function updateEverythingbutTick() {
 
