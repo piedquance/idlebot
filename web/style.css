@@ -1,20 +1,36 @@
 body, html {
     margin:0;
+    height:100%;
 }
 
 .container {
     display:grid;
+  height:100%;
+    grid-template-columns: 20% 60% 20%;
 
-    grid-template-rows: 20% 60% 20%;
-    /* This is better for small screens, once min() is better supported */
-    /* grid-template-columns: repeat(auto-fill, minmax(min(200px, 100%), 1fr)); */
-    grid-gap: 1rem;
-    /* This is the standardized property now, but has slightly less support */
-    /* gap: 1rem */
+    background-image: url(leaving.jpg);
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position:center;
+  
+
 }
 
-.container > div {
-  background: #EDE7F6;
-  padding: 1.5rem;
-  border-radius: 1rem;
+.margin {
+  background-color: #000;
+  opacity:0.9;
+
+}
+
+.center {
+
+}
+
+
+#logo {
+  z-index:1;
+  width:40%;
+  display:block;
+  margin:auto;
+  margin-top: 10px;
 }
