@@ -1,11 +1,2 @@
-learn regex /\[.+\]/g.test("[2324]")     /\$[A-Z]+/g.test("$AASF sd")
-finish root.format
 finish web dev course
-
-
-function replaceVar(match) {
-    return variables[match]
-}
-
-let varRegex = /\$[A-Z]{1,}/g
-
+do the polyi sites

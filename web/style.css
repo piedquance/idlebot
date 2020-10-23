@@ -5,7 +5,7 @@ body, html {
 .container {
     display:grid;
 
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    grid-template-rows: 20% 60% 20%;
     /* This is better for small screens, once min() is better supported */
     /* grid-template-columns: repeat(auto-fill, minmax(min(200px, 100%), 1fr)); */
     grid-gap: 1rem;
