@@ -48,9 +48,13 @@ body, html {
 
 .window {
   z-index: 3;
-  background-color: rgb(195, 222, 235);
+  background-color: rgb(205, 224, 233);
   flex-grow: 1;
   border: 1px rgb(0, 0, 0) solid;
+  display: flex;
+
+  align-items: top;
+  justify-content: space-around;
 }
 
 
@@ -69,4 +73,32 @@ body, html {
   font-weight: 600;
   font-style: italic;
   font-family: Helvetica, sans-serif;
+}
+
+
+
+.article {
+  display: flex;
+  margin:5px;
+  font-family: Helvetica, sans-serif;
+  padding-bottom: 3px;
+  border-bottom: 2px #000 solid;
+}
+
+.article-photo {
+  width:200px;
+}
+
+.article-content {
+  margin:0;
+}
+
+.article-title, .article-date {
+  margin:0;
+}
+
+.article-date {
+  padding-left: 5px;
+  color:#777;
+  font-weight: 600;
 }

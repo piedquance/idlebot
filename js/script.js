@@ -120,7 +120,15 @@ cmds = {
     "reset": [true, ()=>{RESET()}],
     "autosave":[true, ()=>{autosaveclick()}],
 
-    "play":[true, ()=>{if(cmd[m][1]) if(root.getLocation()[cmd[m][1]]) root.getLocation()[cmd[m][1]].data.play()}],
+    "play":[true, ()=>{
+        if(cmd[m][1]) if(root.getLocation()[cmd[m][1]]) {
+
+            let temp = new Audio(root.getLocation()[cmd[m][1]].rawdata)
+
+            temp.play()
+        } 
+    
+    }],
 
     "pause":[true, ()=>{if(cmd[m][1]) if(root.getLocation()[cmd[m][1]]) root.getLocation()[cmd[m][1]].data.pause()}],
 
