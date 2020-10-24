@@ -216,7 +216,7 @@ cmds = {
     }],
 
     "help":[true, ()=>{
-        writeMessage("type \">set A=help\" or \">A help\" to open the help document", false, 0, "")
+        writeMessage("type \">open help\" to open the help document", false, 0, "")
     }],
 
     "ls":[true, ()=>{

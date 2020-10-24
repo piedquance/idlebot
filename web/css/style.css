@@ -33,6 +33,7 @@ body, html {
     background-size: cover;
     background-position:bottom;
 }
+
 #menu-image {
   z-index: 2;
       position: absolute;
@@ -57,6 +58,35 @@ body, html {
   justify-content: space-around;
 }
 
+.article-window {
+  z-index: 3;
+  background-color: rgb(205, 224, 233);
+  flex-grow: 1;
+  border: 1px rgb(0, 0, 0) solid;
+  display: flex;
+  flex-direction: column;
+  align-items: top;
+  padding:80px;
+  padding-top: 40px;
+  font-family: Helvetica, sans-serif;
+}
+
+.full-photo {
+  align-self:center;
+  width:90%;
+}
+
+.article-meta {
+  padding-left: 20px;
+}
+
+.article-text {
+  align-self:center;
+  text-align: justify;
+  font-weight: 600;
+  width:90%;
+}
+
 
 #logo {
   z-index: 3;
@@ -75,14 +105,21 @@ body, html {
   font-family: Helvetica, sans-serif;
 }
 
-
-
 .article {
   display: flex;
   margin:5px;
   font-family: Helvetica, sans-serif;
   padding-bottom: 3px;
   border-bottom: 2px #000 solid;
+}
+
+a {
+  text-decoration: none;
+  color:#000;
+}
+
+a:hover {
+  text-decoration: underline;
 }
 
 .article-photo {
@@ -97,8 +134,13 @@ body, html {
   margin:0;
 }
 
-.article-date {
+.article-date,.article-date-full {
   padding-left: 5px;
   color:#777;
   font-weight: 600;
+  padding-bottom: 5px;
+}
+
+.article-date-full{
+  padding-left: 25px;
 }
