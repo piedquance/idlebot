@@ -6,6 +6,10 @@ body, html {
     overflow-x: hidden; 
 }
 
+:root {
+  --color:rgb(205, 224, 233);
+}
+
 .container {
     display:grid;
   height:100%;
@@ -49,15 +53,14 @@ body, html {
       opacity: 0.5;
 }
 
-.main-container {
-  display: flex;
-  flex-direction: column;
-  justify-content:space-around
+#time {
+  opacity: 0.8;
 }
+
 
 .window {
   z-index: 3;
-  background-color: rgb(205, 224, 233);
+
   flex-grow: 1;
   border: 1px rgb(0, 0, 0) solid;
   display: flex;
@@ -66,9 +69,18 @@ body, html {
   justify-content: space-around;
 }
 
+.software {
+  background-color: var(--color);
+  flex-grow: 1;
+}
+
+.articles {
+  flex-grow: 1;
+}
+
 .article-window {
   z-index: 3;
-  background-color: rgb(205, 224, 233);
+  background-color: var(--color);
   flex-grow: 1;
   border: 1px rgb(0, 0, 0) solid;
   display: flex;
@@ -91,7 +103,7 @@ body, html {
 .article-text {
   align-self:center;
   text-align: justify;
-  font-weight: 600;
+
   width:90%;
 }
 
@@ -108,7 +120,7 @@ body, html {
   z-index: 3;
   margin-left: 10px;
   font-size: 1.5vw;
-  font-weight: 600;
+ font-weight: 600;
   font-style: italic;
   font-family: Helvetica, sans-serif;
 }
@@ -121,14 +133,6 @@ body, html {
   border-bottom: 2px #000 solid;
 }
 
-a {
-  text-decoration: none;
-  color:#000;
-}
-
-a:hover {
-  text-decoration: underline;
-}
 
 .article-photo {
   width:200px;
@@ -138,14 +142,18 @@ a:hover {
   margin:0;
 }
 
-.article-title, .article-date {
-  margin:0;
+.article-date-update {
+  text-align: center;
+  padding-top: 5px;
 }
 
-.article-date,.article-date-full {
+.article-title, .article-date, .article-date-update {
+  font-family: Helvetica, sans-serif;
+  margin:0;
+}
+.article-date, .article-date-full {
   padding-left: 5px;
-  color:#777;
-  font-weight: 600;
+  color:#444;
   padding-bottom: 5px;
 }
 
@@ -157,14 +165,12 @@ a:hover {
   z-index: 4;
   color: #000;
   font-family: Helvetica, sans-serif;
-  font-weight: 600;
   display: flex;
   justify-content: space-around;
-  background-color: rgb(205, 224, 233);
   border: 1px #000 solid;
-
+  border-top:0;
 }
 
 .footer-link {
-  margin:5px 0 5px 0;
+  margin:2px 0 2px 0;
 }
