@@ -3,6 +3,7 @@ body, html {
   z-index: 3;
     margin:0;
     height:100%;
+    overflow-x: hidden; 
 }
 
 .container {
@@ -21,6 +22,7 @@ body, html {
   z-index: 3;
   display: flex;
   flex-direction: column;
+  min-width: 60%;
 }
 
 .menu {
@@ -45,6 +47,12 @@ body, html {
       height:10%;
       background-color: #fff;
       opacity: 0.5;
+}
+
+.main-container {
+  display: flex;
+  flex-direction: column;
+  justify-content:space-around
 }
 
 .window {
@@ -143,4 +151,20 @@ a:hover {
 
 .article-date-full{
   padding-left: 25px;
+}
+
+.footer {
+  z-index: 4;
+  color: #000;
+  font-family: Helvetica, sans-serif;
+  font-weight: 600;
+  display: flex;
+  justify-content: space-around;
+  background-color: rgb(205, 224, 233);
+  border: 1px #000 solid;
+
+}
+
+.footer-link {
+  margin:5px 0 5px 0;
 }
