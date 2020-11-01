@@ -110,7 +110,7 @@ let autosavedelay = true
 let keysoundon = false
 let keysoundstimout
 let health = 0;
-
+let temp;
 cmds = {
     "c" : [true, ()=>{
         if(cmd[m][1]) Game.counter = parseInt(cmd[m][1]);
@@ -121,16 +121,24 @@ cmds = {
     "autosave":[true, ()=>{autosaveclick()}],
 
     "play":[true, ()=>{
-        if(cmd[m][1]) if(root.getLocation()[cmd[m][1]]) {
+        if(cmd[m][1]){ if(root.getLocation()[cmd[m][1]]) {
 
-            let temp = new Audio(root.getLocation()[cmd[m][1]].rawdata)
+         if(typeof temp === "object")   temp.pause()
+
+            temp = new Audio(root.getLocation()[cmd[m][1]].rawdata)
 
             temp.play()
         } 
+    } else {
+        if(typeof temp === "object")  temp.play()
+    }
     
     }],
 
-    "pause":[true, ()=>{if(cmd[m][1]) if(root.getLocation()[cmd[m][1]]) root.getLocation()[cmd[m][1]].data.pause()}],
+    "pause":[true, ()=>{
+            //let temp = new Audio(root.getLocation()[cmd[m][1]].rawdata)
+            if(typeof temp === "object")    temp.pause()
+    }],
 
     "cmdh":[true, ()=>{
         msg = ""
