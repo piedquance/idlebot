@@ -501,25 +501,27 @@ root.add(new aFolder("system"))
 root.system.add(new aFolder("cmds"))
 
 root.system.cmds.add(new aFile({ "name": "cd.ef",
-                                  "rawdata": "no snooping!"}))
+                                  "rawdata": "left//no snooping!"}))
 root.system.cmds.add(new aFile({ "name": "ls.ef",
-                                  "rawdata": "no snooping!"}))                
+                                  "rawdata": "left//no snooping!"}))                
 root.system.cmds.add(new aFile({ "name": "help.ef",
-                                 "rawdata": "no snooping!"}))
+                                 "rawdata": "left//no snooping!"}))
 root.system.cmds.add(new aFile({ "name": "close.ef",
-                                 "rawdata": "no snooping!"})) 
+                                 "rawdata": "left//no snooping!"})) 
 root.system.cmds.add(new aFile({ "name": "exit.ef",
-                                 "rawdata": "no snooping!"})) 
+                                 "rawdata": "left//no snooping!"})) 
 root.system.cmds.add(new aFile({ "name": "quit.ef",
-                                 "rawdata": "no snooping!"}))   
+                                 "rawdata": "left//no snooping!"}))   
 root.system.cmds.add(new aFile({ "name": "mkdir.ef",
-                                 "rawdata": "no snooping!"}))  
+                                 "rawdata": "left//no snooping!"}))  
 root.system.cmds.add(new aFile({ "name": "rmdir.ef",
-                                 "rawdata": "no snooping!"}))
+                                 "rawdata": "left//no snooping!"}))
 root.system.cmds.add(new aFile({ "name": "A.ef",
-                                 "rawdata": "no snooping!"}))  
+                                 "rawdata": "left//no snooping!"}))  
 root.system.cmds.add(new aFile({ "name": "B.ef",
-                                 "rawdata": "no snooping!"}))  
+                                 "rawdata": "left//no snooping!"}))  
+root.system.cmds.add(new aFile({ "name": "echo.ef",
+                                 "rawdata": "left//everybody likes echo."}))  
 
 root.system.add(new aFolder("files"))
 
@@ -1609,6 +1611,7 @@ if(inputStream[inputStream.length - 1] === "Enter" && inputStream[0] === ">") {
          cmd[n][m] = cmd[n][m].replace(/Shift/g, '');
          cmd[n][m] = cmd[n][m].replace(/Backspace/g, '');
          cmd[n][m] = cmd[n][m].replace(/>/g, '');
+         cmd[n][m] = cmd[n][m].replace(/{s}/g, ';');
 
         if(cmd[n][m].includes("$")) { ;cmd[n][m] = cmd[n][m].replace('$', ''); if(variables[cmd[n][m]])  cmd[n][m] = variables[cmd[n][m]]  }
 
