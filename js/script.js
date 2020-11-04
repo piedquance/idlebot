@@ -457,11 +457,8 @@ let varRegex = /\$[A-Z]+/g
 let linkRegex = /\[.+\]/g
 
 root.format = (data)=>{
-let temp = data[1].split("//")
+let temp = data.split("//")
 let alignment = ""
-
-
-if(data[0] === "doc" || data[0] === "tf") {
 
 if(temp[0] === "left" ||temp[0] === "right" ||temp[0] === "center" ) {
     alignment = temp.shift()
@@ -482,10 +479,6 @@ for(n in temp) {
 } 
 return [0, temp]
 
-}   else if(data[0] === "af") {
-    return new Audio(temp)
-}
-
 }
 
 root.add(new aFolder("home"))
@@ -502,6 +495,10 @@ root.system.cmds.add(new aFile({ "name": "ls.ef",
 root.system.add(new aFolder("files"))
 
 root.home.add(new aFolder("Documents"))
+
+root.home.Documents.add(new aFile({ "name": "hello.tf",
+                            "rawdata": "left//HELP DOCUMENT/center//this is a $COLOR and a [test]"}))
+
 root.home.add(new aFolder("Pictures"))
 root.home.add(new aFolder("Videos"))
 root.home.add(new aFolder("Music"))
@@ -561,6 +558,7 @@ addSpecial(["bloodpipesappear", "Research blood pipes", "It ain't gonna pipe its
 ///////////////////////////////FUNCTIONS///////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////
 
+let printingTemp = ""
 
 function openFile(file) {
 
@@ -577,9 +575,14 @@ function openFile(file) {
    
             tempForCommands.play()
             break;
+        case "tf":
+            root.get(temp.path).data = root.format(temp.rawdata);
+
+            variables[variables.$DEFAULT] = temp.path;
+
     }
 
-        
+      printingTemp =   temp.path;
     
 }
 
@@ -591,8 +594,8 @@ function writeToScreen(screen) {
     } else if(variables[screen] === "t2") {
         for(let n = 0; n <= maxLines ; n++){ if(getMessage(newsCounter - maxLines - n) !== undefined)   setScreenLine(screen + (n+1), getMessage(newsCounter- maxLines - n))}
     
-    } else if(root.search(variables[screen]) && root.search(variables[screen]).type === "doc") {
-        let text =  boxIt(root.system[variables[screen]].data)
+    } else /*if(root.search(variables[screen]) && root.search(variables[screen]).type === "doc")*/ {
+        let text = boxIt(root.get(variables[screen]).data)
         for(let n = 0; n <= maxLines ; n++) setScreenLine(screen + (n), text[n])
     }
     }
@@ -1477,13 +1480,13 @@ keysoundstimout =  setTimeout(()=>{
  }, 100)
 
  if(inputStream[inputStream.length - 1] === "ArrowDown" && !disableCommands) {
-    root.search(variables[variables.$DEFAULT]).scrollD()
+    root.get(variables[variables.$DEFAULT]).scrollD()
 
     inputStream = []; 
  }
 
  if(inputStream[inputStream.length - 1] === "ArrowUp" && !disableCommands) {
-    root.search(variables[variables.$DEFAULT]).scrollU()
+    root.get(variables[variables.$DEFAULT]).scrollU()
 
     inputStream = []; 
  }
