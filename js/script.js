@@ -85,15 +85,6 @@ let Game = {
 }
 
 Game.messageChecker.fill(false);
-
-let variables = {
-    "NAME": Game.name,
-    "A" : "t2",
-    "B" : "t1",
-    "font": "14",
-    "$COLOR" : "green",
-    "$DEFAULT": "A"
-    }
     
 let textSize 
 let charRef = d.getElementById("charRef")
@@ -110,7 +101,7 @@ let autosavedelay = true
 let keysoundon = false
 let keysoundstimout
 let health = 0;
-let temp;
+let tempForCommands;
 cmds = {
     "c" : [true, ()=>{
         if(cmd[m][1]) Game.counter = parseInt(cmd[m][1]);
@@ -123,21 +114,21 @@ cmds = {
     "play":[true, ()=>{
         if(cmd[m][1]){ if(root.getLocation()[cmd[m][1]]) {
 
-         if(typeof temp === "object")   temp.pause()
+         if(typeof tempForCommands === "object")   tempForCommands.pause()
 
-            temp = new Audio(root.getLocation()[cmd[m][1]].rawdata)
+         tempForCommands = new Audio(root.getLocation()[cmd[m][1]].rawdata)
 
-            temp.play()
+         tempForCommands.play()
         } 
     } else {
-        if(typeof temp === "object")  temp.play()
+        if(typeof tempForCommands === "object")  tempForCommands.play()
     }
     
     }],
 
     "pause":[true, ()=>{
             //let temp = new Audio(root.getLocation()[cmd[m][1]].rawdata)
-            if(typeof temp === "object")    temp.pause()
+            if(typeof tempForCommands === "object")    tempForCommands.pause()
     }],
 
     "cmdh":[true, ()=>{
@@ -230,7 +221,7 @@ cmds = {
     "ls":[true, ()=>{
         let result = ""
         let path = root.location
-        if(cmd[m][1])  path = root.formatPath(cmd[m][1])
+        if(cmd[m][1]) if(cmd[m][1].indexOf(".") > -1) if(root.get(root.formatPath(cmd[m][1])) !== undefined) path = root.formatPath(cmd[m][1])
         else path = root.location
 
             if(root.get(path)) for(let n = 0; n < root.get(path).nodes.length; n++){
@@ -241,11 +232,11 @@ cmds = {
     }],
 
     "cd":[true, ()=>{
-       if(cmd[m][1]) if(root.setLocation(cmd[m][1])) root.setLocation(cmd[m][1])
+       if(cmd[m][1]) if(cmd[m][1].indexOf(".") === -1) if(root.get(root.formatPath(cmd[m][1])) !== undefined) root.setLocation(cmd[m][1])
     }],
 
     "mkdir":[true, ()=>{
-       for(let n = 1; n < cmd[m].length; n++) root.getLocation().add(new aFolder(cmd[m][n]))
+       for(let n = 1; n < cmd[m].length; n++) if(cmd[m][n].indexOf(".") === -1) root.getLocation().add(new aFolder(cmd[m][n]))
 
     }],
 
@@ -500,6 +491,16 @@ return [0, temp]
 root.add(new aFolder("home"))
 root.add(new aFolder("system"))
 
+root.system.add(new aFolder("cmds"))
+
+root.system.cmds.add(new aFile({ "name": "cd.ef",
+                                  "rawdata": "no snooping!"}))
+
+root.system.cmds.add(new aFile({ "name": "ls.ef",
+                                  "rawdata": "no snooping!"}))                                 
+
+root.system.add(new aFolder("files"))
+
 root.home.add(new aFolder("Documents"))
 root.home.add(new aFolder("Pictures"))
 root.home.add(new aFolder("Videos"))
@@ -516,10 +517,24 @@ root.system.add(new aFile({ "name": "help.doc",
                             "rawdata": "left//HELP DOCUMENT/center//this is a $COLOR and a [test]"}))
 
 let inputStream = [];
-let cmd = ""
+let cmd = [];
 let cmdHistory = [];
 let cmdlocation = root.getLocation().name + "/"
 
+let variables = {
+    "NAME": Game.name,
+    "A" : "t2",
+    "B" : "t1",
+    "font": "14",
+    "$COLOR" : "green",
+    "$DEFAULT": "A",
+    "$PATH": [root.system.cmds.nodes],
+    fileSoftware: {
+        "af" : "",
+        "tf": "",
+        "doc": ""
+    }
+    }
 
 ///////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////PRESETS/////////////////////////////////////////////
@@ -546,15 +561,26 @@ addSpecial(["bloodpipesappear", "Research blood pipes", "It ain't gonna pipe its
 ///////////////////////////////FUNCTIONS///////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////
 
-let fileSoftware = {
-    "af" : "",
-    "tf": "",
-    "doc": ""
-}
 
 function openFile(file) {
 
+    let temp = {}
 
+    if(file.indexOf("/") === -1)  temp =  root.getLocation()[file]
+    else temp = root.get(root.formatPath(file).nodes)
+
+    switch(temp.type) {
+        case "af":
+            if(typeof tempForCommands === "object")   tempForCommands.pause()
+
+            tempForCommands = new Audio(root.getLocation()[cmd[m][0]].rawdata)
+   
+            tempForCommands.play()
+            break;
+    }
+
+        
+    
 }
 
 
@@ -1550,30 +1576,48 @@ if(inputStream[inputStream.length - 1] === "Enter" && inputStream[0] === ">") {
 
 for(m in cmd) {
     defaultBreak = false
-    for(n in cmds) {
         if(!defaultBreak) {
-    switch(cmd[m][0]) {
 
-        case n:
-        if(cmds[n][0]) { cmds[n][1]();  break;}
+        if(cmd[m][0].indexOf(".") === -1) {
+
+            if(cmd[m].indexOf("/") === -1) {
+
+                for(n in variables.$PATH) for(o in variables.$PATH[n]) if(variables.$PATH[n][o].name.split(".")[0] === cmd[m][0]) { cmds[cmd[m][0]][1]();  break;}
+                
+            } else {
+                let tempCommand = root.formatPath(cmd[m])
+
+               // cmds[cmd[m][0]][1]()
+
+            }
+        } else {
+
+            openFile(cmd[m][0]);
+            }
+        }
+
+
+        // if(cmds[n][0]) { cmds[n][1]();  break;}
+        // else for(n in root.getLocation().nodes)
       
 
-        default :
-        if(!(cmd[m][0] in cmds) || !cmds[cmd[m][0]][0]) {
-        msg = ""
+        // default :
+        // if(!(cmd[m][0] in cmds) || !cmds[cmd[m][0]][0]) {
+        // msg = ""
 
-         cmd[m] = cmd[m].slice(" ")
+        //  cmd[m] = cmd[m].slice(" ")
 
-         for(n in cmd[m]) msg += cmd[m][n] + " "
+        //  for(n in cmd[m]) msg += cmd[m][n] + " "
 
-         msg += "is not a command. Try again."
-         writeMessage(msg, false, 0, "")
-         writeMessage("<br>", false, 0, "")
-         defaultBreak = true
-         }break;
+        //  msg += "is not a command. Try again."
+        //  writeMessage(msg, false, 0, "")
+        //  writeMessage("<br>", false, 0, "")
+        //  defaultBreak = true
+        //  }break;
 
-    } if(cmd[m][0] ==  n) break;
-}}}}});
+    //  if(cmd[m][0] ==  n) break;
+}}});
+
 
 function download(Game, filename, type) {
     var file = new Blob([Game], {type: type});
