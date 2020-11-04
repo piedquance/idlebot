@@ -215,7 +215,7 @@ cmds = {
     }],
 
     "help":[true, ()=>{
-        writeMessage("type \">open help\" to open the help document", false, 0, "")
+        openFile("system/files/help.doc")
     }],
 
     "ls":[true, ()=>{
@@ -232,7 +232,10 @@ cmds = {
     }],
 
     "cd":[true, ()=>{
+        console.log(cmd[m])
+
        if(cmd[m][1]) if(cmd[m][1].indexOf(".") === -1) if(root.get(root.formatPath(cmd[m][1])) !== undefined) root.setLocation(cmd[m][1])
+
     }],
 
     "mkdir":[true, ()=>{
@@ -269,6 +272,14 @@ cmds = {
          variables[variables.$DEFAULT] = cmd[m][1]
          Game.updated = true}
 
+    }],
+
+    "close":[true, ()=>{
+        for(let n = 0; n <= maxLines ; n++) {setScreenLine("A" + (n+1), "");}
+        for(let n = 0; n <= maxLines ; n++) {setScreenLine("B" + (n+1), "");}
+        variables.B = "t1";
+        variables.A = "t2";
+        Game.updated = true;
     }],
 
     "" : [true, ()=>{}]
@@ -314,16 +325,11 @@ this.root = {
 }
 
 root.get = (data) => {
-
     data = data.split("/")
-
     let result = root
-
     for(n in data) {
-
        if(data[n] !== "") result = result[data[n]]
     }
-
     return result
 }
 
@@ -415,7 +421,7 @@ let aFile = function(data) {
     this.name = data.name
     this.type = this.info[this.info.length-1]
     if(data.rawdata) this.rawdata = data.rawdata
-    this.scroll = 0;
+    this.scrolln = 0;
 
     this.write = (data) => {
         this.rawdata = data
@@ -426,27 +432,17 @@ let aFile = function(data) {
     }
 
     this.scroll = (value) => {
-        this.scroll = value
+        this.scrolln = value
+        this.data[0] = this.scrolln
         Game.updated = true
     }
 
-    this.scrollD = () => {  if(this.data[1].length-maxLines+1 > scroll) this.scroll(this.scroll + 1)}
+    this.scrollD = () => {  if(this.data[1].length-maxLines+1 > this.scrolln) this.scroll(this.scrolln + 1)}
 
-    this.scrollU = () => {  if(this.scroll-1 >= 0)  this.scroll(this.scroll - 1)}
+    this.scrollU = () => {  if(this.scrolln-1 >= 0)  this.scroll(this.scrolln - 1)}
 }
 
-//PolyiDOS data formatting for .tf
-/*
- *  paragraph/align//
- *  paragraph/align//
- *  ect...
- * 
- *  [link]
- *  $SYS-VARIABLE
- * 
- * 
- * 
-*/
+
 let links = {
     "[test]" : "0test link0"
     }
@@ -476,11 +472,29 @@ for(n in temp) {
  temp[n][0] = temp[n][0].replace(linkRegex, (match)=>{
     return links[match]
 })
+
+temp[n][0] = temp[n][0].replace(/{~}/g, (match)=>{
+    return "/"
+})
+
+
 } 
 return [0, temp]
 
 }
 
+//PolyiDOS data formatting for .tf
+/*
+ *  paragraph/align//
+ *  paragraph/align//
+ *  ect...
+ * 
+ *  [link]
+ *  $SYS-VARIABLE
+ * 
+ * 
+ * 
+*/
 root.add(new aFolder("home"))
 root.add(new aFolder("system"))
 
@@ -488,16 +502,31 @@ root.system.add(new aFolder("cmds"))
 
 root.system.cmds.add(new aFile({ "name": "cd.ef",
                                   "rawdata": "no snooping!"}))
-
 root.system.cmds.add(new aFile({ "name": "ls.ef",
-                                  "rawdata": "no snooping!"}))                                 
+                                  "rawdata": "no snooping!"}))                
+root.system.cmds.add(new aFile({ "name": "help.ef",
+                                 "rawdata": "no snooping!"}))
+root.system.cmds.add(new aFile({ "name": "close.ef",
+                                 "rawdata": "no snooping!"})) 
+root.system.cmds.add(new aFile({ "name": "exit.ef",
+                                 "rawdata": "no snooping!"})) 
+root.system.cmds.add(new aFile({ "name": "quit.ef",
+                                 "rawdata": "no snooping!"}))   
+root.system.cmds.add(new aFile({ "name": "mkdir.ef",
+                                 "rawdata": "no snooping!"}))  
+root.system.cmds.add(new aFile({ "name": "rmdir.ef",
+                                 "rawdata": "no snooping!"}))
+root.system.cmds.add(new aFile({ "name": "A.ef",
+                                 "rawdata": "no snooping!"}))  
+root.system.cmds.add(new aFile({ "name": "B.ef",
+                                 "rawdata": "no snooping!"}))  
 
 root.system.add(new aFolder("files"))
 
 root.home.add(new aFolder("Documents"))
 
 root.home.Documents.add(new aFile({ "name": "hello.tf",
-                            "rawdata": "left//HELP DOCUMENT/center//this is a $COLOR and a [test]"}))
+                            "rawdata": "left//hello, you."}))
 
 root.home.add(new aFolder("Pictures"))
 root.home.add(new aFolder("Videos"))
@@ -510,8 +539,8 @@ root.home.Music.add(new aFile({ "name": "turtles.af",
 root.home.Music.add(new aFile({ "name": "cat.af",
                                 "rawdata": "css/audio/cat.mp3"}))
 
-root.system.add(new aFile({ "name": "help.doc",
-                            "rawdata": "left//HELP DOCUMENT/center//this is a $COLOR and a [test]"}))
+root.system.files.add(new aFile({ "name": "help.doc",
+                            "rawdata": "left//HELP DOCUMENT/center//QUICK START//Jump to Content Table//Use the arrow keys to move around documents.//This document utilizes hyperlinks to connect different sections together. In order to jump to a section, position your Cerebral Display Position Indicator on top of the link and click it.//Passing a string to the prompt will search all accessible directories for the referenced file. If two or more files are found to share the same name, the prompt will ask you to choose between the two or cancel your command. A shortened list of most useful universal files, or commands, will be listed below.//Commands can be chained with the ; marker, like so: >cmd1;cmd2//Additionally, arguments and flags to commands can be passed like so: >cmd1 arg1 arg2 arg3//Finally, The prompt will always display your present position in the file system, unless you choose to deactivate that option. More details are available in Variables and Customization.// //>ls path{~}to{~}file//This command will list all folders and files in the specified directory. If no directory is specified, it will use the current one.// //>cd path{~}to{~}file//This command will change directory to the specified directory.//A note on paths: There are multiple ways to specify the path you desire. These will be listed below."}))
 
 let inputStream = [];
 let cmd = [];
@@ -558,32 +587,29 @@ addSpecial(["bloodpipesappear", "Research blood pipes", "It ain't gonna pipe its
 ///////////////////////////////FUNCTIONS///////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////
 
-let printingTemp = ""
-
 function openFile(file) {
 
     let temp = {}
 
     if(file.indexOf("/") === -1)  temp =  root.getLocation()[file]
-    else temp = root.get(root.formatPath(file).nodes)
+    else temp = root.get(root.formatPath(file))
 
     switch(temp.type) {
         case "af":
             if(typeof tempForCommands === "object")   tempForCommands.pause()
 
-            tempForCommands = new Audio(root.getLocation()[cmd[m][0]].rawdata)
+            tempForCommands = new Audio(root.get(temp.path).rawdata)
    
             tempForCommands.play()
             break;
+        case "doc":
         case "tf":
             root.get(temp.path).data = root.format(temp.rawdata);
-
             variables[variables.$DEFAULT] = temp.path;
+            break;
 
     }
 
-      printingTemp =   temp.path;
-    
 }
 
 
@@ -1442,7 +1468,7 @@ function checkSpecialCost() {
 
 
 window.document.addEventListener('keydown', e => {
-    if(e.key === "Backspace" || e.key === "'" || e.key === "/") {
+    if(e.key === "Backspace" || e.key === "'" || e.key === "/" || e.key === "Tab") {
       e.returnValue = false;
       e.preventDefault();
       e.stopPropagation();
@@ -1491,8 +1517,7 @@ keysoundstimout =  setTimeout(()=>{
     inputStream = []; 
  }
 
-
-if(inputStream[inputStream.length - 1] === ">" && !disableCommands) { 
+if(inputStream[inputStream.length - 1] === ">" && !disableCommands) {
 
 for(n in Game.messageLog) Game.messageLog[n] = Game.messageLog[n].replaceAll('<span id="blinky">█</span>', "")
 
@@ -1508,7 +1533,7 @@ inputStream.push(">")
 }
 //Game.messageLog[newsCounter].replaceAll('<span id="blinky">█</span>', "")
 
-if(inputStream[0] === ">" && !disableCommands && key !== ">" && key !== "Backspace" && key !== "Shift" && key !== "Enter") {
+if(inputStream[0] === ">" && !disableCommands && key !== ">" && key !== "Backspace" && key !== "Shift" && key !== "Enter" && key !== "Tab") {
 
     setMessage(newsCounter, cmdlocation + "&gt;")
     let line = getMessage(newsCounter).replaceAll('</span><span id="blinky">█</span>', "")
@@ -1536,6 +1561,22 @@ if(inputStream[inputStream.length - 1] === "Backspace" && inputStream[0] === ">"
 
    setMessage(newsCounter, line + word + '</span><span id="blinky">█</span>') 
    Game.updated = true;
+}
+
+if(inputStream[inputStream.length - 1] === "Tab" && inputStream[0] === ">") {
+
+let tempStream = inputStream
+let tempCmd = ""
+
+tempStream.shift()
+
+for(n in tempStream) tempCmd += tempStream[n]
+
+tempCmd = tempCmd.replace(/Tab/g, '');
+tempCmd = tempCmd.split(" ");
+tempCmd = tempCmd[tempCmd.length - 1]
+
+
 }
 
 //if(inputStream[inputStream.length - 1] === "ArrowUp") { }
@@ -1575,15 +1616,13 @@ if(inputStream[inputStream.length - 1] === "Enter" && inputStream[0] === ">") {
 }
     cmdHistory.push(cmd)
 
-    let msg = ""
-
 for(m in cmd) {
     defaultBreak = false
         if(!defaultBreak) {
 
         if(cmd[m][0].indexOf(".") === -1) {
 
-            if(cmd[m].indexOf("/") === -1) {
+            if(cmd[m][0].indexOf("/") === -1) {
 
                 for(n in variables.$PATH) for(o in variables.$PATH[n]) if(variables.$PATH[n][o].name.split(".")[0] === cmd[m][0]) { cmds[cmd[m][0]][1]();  break;}
                 
