@@ -138,6 +138,10 @@ html, body {
   text-shadow: none;
 }
 
+.blue {
+  color:#00F;
+}
+
 .line {
   animation-name: bottomScreen;
   animation-duration: 0.5s;
