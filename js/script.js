@@ -3,13 +3,6 @@ if(code === "fnm29q34u34uwszhetgn43uh9tgnzaPU4nutnzATg48atn9ganwt4p9tpogzwpo8tfg
 let time = document.getElementById("time")
 let date = new Date();
 
-
-// setInterval(()=>{
-// date = new Date();
-// time.innerHTML = `Now is ${date.toString()}`
-
-// }, 100)
-
 let iteration = 0;
 
 window.addEventListener("load", ()=>{
@@ -32,12 +25,12 @@ mods = [
 
 if (document.addEventListener) {
     document.addEventListener('contextmenu', function(e) {
-      alert("You've tried to open context menu"); //here you draw your own menu
+      alert("no"); //here you draw your own menu
       e.preventDefault();
     }, false);
   } else {
     document.attachEvent('oncontextmenu', function() {
-      alert("You've tried to open context menu");
+      alert("no");
       window.event.returnValue = false;
     });
   }

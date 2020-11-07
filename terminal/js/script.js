@@ -525,6 +525,24 @@ root.system.cmds.add(new aFile({ "name": "rmdir.ef",
 root.system.cmds.add(new aFile({ "name": "A.ef",
                                  "rawdata": "left//no snooping!"}))  
 root.system.cmds.add(new aFile({ "name": "B.ef",
+                                 "rawdata": "left//no snooping!"}))
+                                 root.system.cmds.add(new aFile({ "name": "cmdh.ef",
+                                 "rawdata": "left//no snooping!"}))  
+                                 root.system.cmds.add(new aFile({ "name": "set.ef",
+                                 "rawdata": "left//no snooping!"}))  
+                                 root.system.cmds.add(new aFile({ "name": "setname.ef",
+                                 "rawdata": "left//no snooping!"}))  
+                                 root.system.cmds.add(new aFile({ "name": "clear.ef",
+                                 "rawdata": "left//no snooping!"}))  
+                                 root.system.cmds.add(new aFile({ "name": "click.ef",
+                                 "rawdata": "left//no snooping!"}))  
+                                 root.system.cmds.add(new aFile({ "name": "restart.ef",
+                                 "rawdata": "left//no snooping!"}))  
+                                 root.system.cmds.add(new aFile({ "name": "alert.ef",
+                                 "rawdata": "left//no snooping!"}))  
+                                 root.system.cmds.add(new aFile({ "name": "wt.ef",
+                                 "rawdata": "left//no snooping!"}))  
+                                 root.system.cmds.add(new aFile({ "name": "pwd.ef",
                                  "rawdata": "left//no snooping!"}))  
 root.system.cmds.add(new aFile({ "name": "echo.ef",
                                  "rawdata": "left//everybody likes echo."}))  
@@ -535,8 +553,8 @@ root.home.add(new aFolder("Documents"))
 
 root.home.Documents.add(new aFolder("logs"))
 
-root.home.Documents.logs.add(new aFile({ "name": "ELISA_1.tf",
-                            "rawdata": "left//This is a test file, please ignore//////////////////////////////////////////It does get lonely around here, when there isn’t anything to do. Standing guard, or a maintenance tour. I could write a log, I guess, but who would read it?////Today, everyone positioned at the west wing had to cerebrally recalibrate. I’m at the south wing, so our turn will come in 5-6 days. I could ask, but I really don’t want to. This is the kind of thing I should know already.//Farewell"}))
+// root.home.Documents.logs.add(new aFile({ "name": "ELISA_1.tf",
+//                             "rawdata": "left//This is a test file, please ignore//////////////////////////////////////////It does get lonely around here, when there isn’t anything to do. Standing guard, or a maintenance tour. I could write a log, I guess, but who would read it?////Today, everyone positioned at the west wing had to cerebrally recalibrate. I’m at the south wing, so our turn will come in 5-6 days. I could ask, but I really don’t want to. This is the kind of thing I should know already.//Farewell"}))
 
 root.home.add(new aFolder("Pictures"))
 root.home.add(new aFolder("Videos"))
@@ -550,7 +568,7 @@ root.home.Music.add(new aFile({ "name": "cat.af",
                                 "rawdata": "css/audio/cat.mp3"}))
 
 root.system.files.add(new aFile({ "name": "help.doc",
-                            "rawdata": "left//HELP DOCUMENT/center//QUICK START//Jump to Content Table//Use the arrow keys to move around documents.//This document utilizes hyperlinks to connect different sections together. In order to jump to a section, position your Cerebral Display Position Indicator on top of the link and click it.//Passing a string to the prompt will search all accessible directories for the referenced file. If two or more files are found to share the same name, the prompt will ask you to choose between the two or cancel your command. A shortened list of most useful universal files, or commands, will be listed below.//Commands can be chained with the ; marker, like so: >cmd1;cmd2//Additionally, arguments and flags to commands can be passed like so: >cmd1 arg1 arg2 arg3//Finally, The prompt will always display your present position in the file system, unless you choose to deactivate that option. More details are available in Variables and Customization.////>ls path{~}to{~}file//This command will list all folders and files in the specified directory. If no directory is specified, it will use the current one.////>cd path{~}to{~}file//This command will change directory to the specified directory.////A note on paths: There are multiple ways to specify the path you desire. These will be listed below.//{~}path{~}to{~}file//The path from root//Path{~}to{~}file//The path from your current directory//Path{~}to{~}file{~}..//Move one directory back//Path{~}to{~}file{~}..{~}..//Move two directories back, and so on…//~{~}Documents//~ stands for the home directory////>mkdir dir1 dir2 dir3//This command makes new directories in your current directories, with names dir1, dir2, …////>rmdir dir1//This command removes a directory////>echo text text text optional_color//This command prints the given text to the terminal. The text can be colored by adding a hex value at the end of the line, like so: >echo This text will be blue #00F//This will print out the following: <span style='color:#00F;'>This text will be blue<{~}span>////>help//You know what this does already. More importantly, files in directories can be opened by typing the full file name in the prompt. If the file extension is unknown, you will be prompted for further action."}))
+                            "rawdata": "left//HELP DOCUMENT/center//QUICK START//// <span style='color:#F00;'>NOTICE<{~}span>: You are currently running the M3 Emergency Terminal, also known as the Portable Rescue System. As such, many core features of the M3 specification will be missing from this system. These features include but are not limited to: Mechanical controls, environmental scanners, and full-body and cerebral recalibration////Overall usability has been reduced to favor longest possible survivability of unit.////Use the arrow keys to move around documents.//This document utilizes hyperlinks to connect different sections together. In order to jump to a section, position your Cerebral Display Position Indicator on top of the link and click it.//Passing a string to the prompt will search all accessible directories for the referenced file. If two or more files are found to share the same name, the prompt will ask you to choose between the two or cancel your command. A shortened list of most useful universal files, or commands, will be listed below.//Commands can be chained with the ; marker, like so: >cmd1;cmd2//Additionally, arguments and flags to commands can be passed like so: >cmd1 arg1 arg2 arg3//Finally, The prompt will always display your present position in the file system, unless you choose to deactivate that option. More details are available in Variables and Customization.////>ls path{~}to{~}file//This command will list all folders and files in the specified directory. If no directory is specified, it will use the current one.////>cd path{~}to{~}file//This command will change directory to the specified directory.////A note on paths: There are multiple ways to specify the path you desire. These will be listed below.//{~}path{~}to{~}file//The path from root//Path{~}to{~}file//The path from your current directory//Path{~}to{~}file{~}..//Move one directory back//Path{~}to{~}file{~}..{~}..//Move two directories back, and so on…//~{~}Documents//~ stands for the home directory////>mkdir dir1 dir2 dir3//This command makes new directories in your current directories, with names dir1, dir2, …////>rmdir dir1//This command removes a directory////>echo text text text optional_color//This command prints the given text to the terminal. The text can be colored by adding a hex value at the end of the line, like so: >echo This text will be blue #00F//This will print out the following: <span style='color:#00F;'>This text will be blue<{~}span>////>help//You know what this does already. More importantly, files in directories can be opened by typing the full file name in the prompt. If the file extension is unknown, you will be prompted for further action."}))
            
 
 let inputStream = [];
@@ -1722,7 +1740,17 @@ function closeFullscreen() {
     document.msExitFullscreen();
   }
 }
-
+if (document.addEventListener) {
+    document.addEventListener('contextmenu', function(e) {
+      alert("no"); //here you draw your own menu
+      e.preventDefault();
+    }, false);
+  } else {
+    document.attachEvent('oncontextmenu', function() {
+      alert("no");
+      window.event.returnValue = false;
+    });
+  }
 // secondHeart.addEventListener("click", ()=>{
 //     if (heartOffset < 80) { heartOffset = Math.ceil(( health * 80) / 100)
 //     health++
