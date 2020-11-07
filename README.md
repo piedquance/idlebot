@@ -1,2 +1,2 @@
 # idlebot
-An incremental game ==> https://shutterstacks.net/idlebot/
+An incremental game ==> https://shutterstacks.net/idlebot/  
