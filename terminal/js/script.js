@@ -10,24 +10,28 @@
 ///////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////VARIABLES///////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////
-var date = new Date(); let currentYear = date.getFullYear();
-var d = document;
-var topPane = d.getElementById("topPane")
-var bottomPane  =d.getElementById("bottomPane")
-var topScreen = d.getElementById("topScreen");
-var bottomScreen = d.getElementById("bottomScreen");
-var outer = d.getElementById("outer")
-var columns = d.getElementsByClassName("column")
 
-var title = d.querySelector("title")
-var powerButton = d.getElementById("power-button")
-var powerRow = d.getElementById("power-row")
+let a = (code) => {
 
-var leftPane = d.getElementById("left")
-var rightPane = d.getElementById("right")
 
-var close = d.getElementsByClassName("close");
-var newsCounter = -1;
+let date = new Date(); let currentYear = date.getFullYear();
+let d = document;
+let topPane = d.getElementById("topPane")
+let bottomPane  =d.getElementById("bottomPane")
+let topScreen = d.getElementById("topScreen");
+let bottomScreen = d.getElementById("bottomScreen");
+let outer = d.getElementById("outer")
+let columns = d.getElementsByClassName("column")
+
+let title = d.querySelector("title")
+let powerButton = d.getElementById("power-button")
+let powerRow = d.getElementById("power-row")
+
+let leftPane = d.getElementById("left")
+let rightPane = d.getElementById("right")
+
+let close = d.getElementsByClassName("close");
+let newsCounter = -1;
 let heartOffset = 0;
 let pipeCount = 0;
 let gameTick = 10;
@@ -42,35 +46,35 @@ let saveslot = "";
 let resetSaveguard = false
 let autosavetoggle = false;
 let disableCommands = false;
-var audio = {
+let audio = {
     "stopIt" : new Audio('css/audio/AUDIO_FILE.mp3'),
     "AllStar":  new Audio('css/audio/AllStar.mp3'),
     "turtles": new Audio('css/audio/HappyTogether.mp3'),
     "cat": new Audio("css/audio/cat.mp3")
 }
 
-var keysounds = [
+let keysounds = [
     new Audio("css/audio/key1.mp3"),
     new Audio("css/audio/key2.mp3"),
     new Audio("css/audio/keys.mp3"),
 ]
 
-var syssounds = {
+let syssounds = {
 
     "start" : new Audio("css/audio/startup.mp3"),
     "fan":    new Audio("css/audio/fan.mp3"),
     "msg": new Audio("css/audio/tack.mp3")
 }
 
-var countNum = [];
-var StringCounter = "";
+let countNum = [];
+let StringCounter = "";
 
 
-var exportedUpgrade = []
-var exportedSpecial = new Array()
-var intervals = {}
-var decayIntervals = {}
-var messagePresets = [false, false, false]
+let exportedUpgrade = []
+let exportedSpecial = new Array()
+let intervals = {}
+let decayIntervals = {}
+let messagePresets = [false, false, false]
 
 let Game = {
     counter:0,
@@ -295,8 +299,8 @@ this.root = {
         if(element.name == matchingTitle){
             return element;
        }else if (element.nodes != null){
-            var i;
-            var result = null;
+            let i;
+            let result = null;
             for(i=0; result == null && i < element.nodes.length; i++){
                  result = root.search(matchingTitle, element.nodes[i]);
             }
@@ -778,7 +782,7 @@ function prologue1() {
 
 //animation,color/type, tick, cycles, delay, append it?, keep text after?, optional stuff
     
-var nameInterval = setInterval(()=>{
+let nameInterval = setInterval(()=>{
 if(cmdHistory[cmdHistory.length - 1] !== undefined) { if(cmdHistory[cmdHistory.length - 1][0] == ">CORE4"&&cmdHistory[cmdHistory.length - 1][1] !== "") {
             clearInterval(nameInterval)
             prologue2()
@@ -839,8 +843,8 @@ function count(number) {
     countNum[2] = Math.floor(Game.counter/1000000);
     countNum[1] = Math.floor((Game.counter - countNum[2]*1000000)/1000);
     countNum[0] = Math.floor((Game.counter - countNum[2]*1000000 - countNum[1]*1000));
-    var space = " "
-    var specialSpace = ""
+    let space = " "
+    let specialSpace = ""
     for(let x = 2; x >= 0; x--) {
         if(x == 0) {
             space = " "
@@ -1042,7 +1046,7 @@ function addUpgrade(preset) {
     Game.upgrade[reference].previousdecaytick = preset[7]
 
 
- var node = d.createElement("DIV");
+ let node = d.createElement("DIV");
  node.id = reference + "Upgrade";
  node.classList.add("tile");
 
@@ -1150,11 +1154,11 @@ Game.special[set[0]].reference = set[0]
  Game.special[reference].bought = false
  Game.special[reference].seen = false
 
-
+ let node = d.createElement("DIV");
 
 
    if((Game.special[reference].cost === 0 ||  !Game.special[reference].hasCost) && set[7] === undefined) {
-    var node = d.createElement("DIV");
+
     node.id = reference + "Special";
     node.classList.add("tile");
 
@@ -1164,7 +1168,7 @@ Game.special[set[0]].reference = set[0]
     +'Cost"></p></div>'
 
    }else if(set[7] === "console") {
-    var node = d.createElement("DIV");
+
     node.id = reference + "Special";
     node.classList.add(set[7])
     node.classList.add("tile");
@@ -1173,7 +1177,7 @@ Game.special[set[0]].reference = set[0]
     +'</p></div><div class=generalNum style="display:none;"><p class="Num" id="'+ reference 
     +'Cost"></p></div>'
    } else {
-    var node = d.createElement("DIV");
+   
     node.id = reference + "Special";
     node.classList.add("tile");
 
@@ -1183,6 +1187,8 @@ Game.special[set[0]].reference = set[0]
     +'</p></div><div class=generalNum><p class="Num" id="'+ reference 
     +'Cost"></p></div>'
    }
+
+   console.log(typeof node)
     rightPane.appendChild(node)
 
 
@@ -1204,6 +1210,9 @@ Game.special[set[0]].reference = set[0]
              Game.special[reference].do()
         }
     })
+
+
+
 }
 
 //////
@@ -1670,11 +1679,11 @@ for(m in cmd) {
 
 
 function download(Game, filename, type) {
-    var file = new Blob([Game], {type: type});
+    let file = new Blob([Game], {type: type});
     if (window.navigator.msSaveOrOpenBlob) // IE10+
         window.navigator.msSaveOrOpenBlob(file, filename);
     else { // Others
-        var a = document.createElement("a"),
+        let a = document.createElement("a"),
                 url = URL.createObjectURL(file);
         a.href = url;
         a.download = filename;
@@ -1689,7 +1698,7 @@ function download(Game, filename, type) {
 //taken from https://stackoverflow.com/questions/13405129/javascript-create-and-save-file
 
 
-var elem = document.documentElement;
+let elem = document.documentElement;
 function openFullscreen() {
   if (elem.requestFullscreen) {
     elem.requestFullscreen();
@@ -1984,3 +1993,9 @@ outer.classList.add("Pane")
 //columns.right.classList.add("Pane")
 startGame(); //let's go
 })
+
+    }
+
+a();
+
+a = null;
